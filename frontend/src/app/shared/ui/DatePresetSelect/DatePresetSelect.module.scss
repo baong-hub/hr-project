@@ -1,0 +1,224 @@
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary, #4b5563);
+}
+
+.trigger {
+  width: 100%;
+  height: 38px;
+  background: var(--bg-input, #ffffff);
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 8px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #3b82f6;
+  }
+
+  &.active {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+}
+
+[data-theme='dark'] .trigger {
+  background: #1e1e28;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.triggerText {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary, #111827);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.triggerIcon {
+  color: var(--text-secondary, #6b7280);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1000;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  min-width: 220px;
+}
+
+[data-theme='dark'] .popover {
+  background: #1e1e28;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Preset List Mode (Image 1) */
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  max-height: 280px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.optionItem {
+  padding: 9px 16px;
+  font-size: 0.85rem;
+  color: var(--text-primary, #374151);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: var(--bg-hover, #f3f4f6);
+    color: #111827;
+  }
+
+  &.selected {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+
+    &:hover {
+      background-color: #1d4ed8;
+      color: #ffffff;
+    }
+  }
+}
+
+[data-theme='dark'] .optionItem {
+  color: #e5e7eb;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  &.selected {
+    background-color: #2563eb;
+    color: #ffffff;
+  }
+}
+
+/* Custom Date Range Mode (Image 2) */
+.customForm {
+  padding: 16px;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary, #374151);
+}
+
+.dateInput {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  background: var(--bg-input, #ffffff);
+  color: var(--text-primary, #111827);
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  }
+}
+
+[data-theme='dark'] .dateInput {
+  background: #181820;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f3f4f6;
+}
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btnClose {
+  height: 34px;
+  padding: 0 14px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary, #4b5563);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: var(--bg-hover, #f3f4f6);
+    color: #111827;
+  }
+}
+
+[data-theme='dark'] .btnClose {
+  color: #9ca3af;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f3f4f6;
+  }
+}
+
+.btnSearch {
+  height: 34px;
+  padding: 0 18px;
+  background-color: #1d5dbf;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #164998;
+  }
+}

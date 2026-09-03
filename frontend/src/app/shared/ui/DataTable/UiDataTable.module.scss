@@ -1,0 +1,104 @@
+.tableWrapper {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.tableScroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+
+  thead {
+    background-color: var(--color-bg-subtle);
+    
+    th {
+      padding: 10px var(--table-cell-padding-x);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+      border-bottom: 1px solid var(--color-border-default);
+      border-right: 1px solid var(--color-border-default);
+      white-space: normal;
+      line-height: var(--line-height-tight);
+      vertical-align: middle;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      height: 48px;
+      border-bottom: 1px solid var(--color-border-default);
+      transition: var(--transition-fast);
+
+      &:hover {
+        background-color: var(--color-bg-subtle);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: 10px var(--table-cell-padding-x);
+      color: var(--color-text-primary);
+      line-height: var(--line-height-normal);
+      vertical-align: middle;
+      border-right: 1px solid var(--color-border-default);
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+}
+
+.stickyCol {
+  position: sticky;
+  left: 0;
+  background-color: inherit;
+  z-index: var(--z-base);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 4px;
+    box-shadow: inset 4px 0 6px -2px rgba(15, 23, 42, 0.08);
+    pointer-events: none;
+  }
+}
+
+.emptyCell {
+  text-align: center;
+  padding: var(--space-10) 0 !important;
+  color: var(--color-text-muted);
+}
+
+.skeletonRow {
+  .skeletonItem {
+    height: 16px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+  }
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

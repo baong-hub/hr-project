@@ -1,0 +1,305 @@
+.jobsPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* === Title Area === */
+.titleArea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.titleArea h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.titleActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-brand-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btnPrimary:hover {
+  background: var(--color-brand-primary-dark, #1d6fb5);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btnSecondary:hover {
+  background: var(--color-bg-hover);
+}
+
+/* === Filter Panel === */
+.filterPanel {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 1279px) {
+  .filterGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 767px) {
+  .filterGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.filterGroup label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.filterGroup input,
+.filterGroup select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
+  transition: border-color 0.2s;
+}
+.filterGroup input:focus,
+.filterGroup select:focus {
+  border-color: var(--color-brand-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.15);
+}
+
+.filterActions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+/* === Data Table === */
+.tableCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.dataTable thead {
+  background: var(--color-bg-subtle);
+  border-bottom: 2px solid var(--color-border-default);
+}
+
+.dataTable th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.dataTable td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-light, #f0f0f0);
+  color: var(--color-text-primary);
+}
+
+.dataTable tbody tr:hover {
+  background: var(--color-bg-hover, #f8fafc);
+}
+
+/* Action column sticky */
+.colAction {
+  width: 112px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: inherit;
+}
+.dataTable thead .colAction {
+  background: var(--color-bg-subtle);
+}
+.dataTable tbody tr:hover .colAction {
+  background: var(--color-bg-hover, #f8fafc);
+}
+
+.actionBtns {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.actionBtn:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-brand-primary);
+}
+.actionBtnDanger:hover {
+  color: var(--color-error, #e53e3e);
+  background: rgba(229, 62, 62, 0.08);
+}
+
+/* Status badges */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+.badgePending {
+  background: #fff8e1;
+  color: #f59e0b;
+}
+.badgePublished {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.badgeRejected {
+  background: #fce4ec;
+  color: #c62828;
+}
+.badgeExpired {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.badgeClosed {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+.badgeDraft {
+  background: #f3f4f6;
+  color: #9e9e9e;
+}
+
+.salaryCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.emptyValue {
+  color: var(--color-text-muted, #bdbdbd);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.paginationInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.paginationInfo select {
+  padding: 2px 6px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.paginationButtons {
+  display: flex;
+  gap: 2px;
+}
+
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pageBtn:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+.pageBtnActive {
+  background: var(--color-brand-primary);
+  color: #fff;
+  border-color: var(--color-brand-primary);
+}

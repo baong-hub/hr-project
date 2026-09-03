@@ -1,0 +1,14 @@
+using MediatR;
+
+namespace HR.Application.Applications;
+
+public record ApplyJobCommand(
+    int JobId,
+    int CandidateCvId,
+    string? CoverLetter
+) : IRequest<int>;
+
+public record UpdateApplicationStatusCommand(
+    int Id,
+    string Status
+) : IRequest<bool>;

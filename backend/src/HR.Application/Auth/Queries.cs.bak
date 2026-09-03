@@ -1,0 +1,23 @@
+using MediatR;
+
+namespace HR.Application.Auth;
+
+public record GetMeQuery() : IRequest<UserInfo>;
+
+public record GetAuthorizedMenusQuery() : IRequest<IEnumerable<MenuDto>>;
+
+public record MenuDto(
+    int Id, 
+    string Code, 
+    string Name, 
+    string? ShortName,
+    string? Icon, 
+    string? Route, 
+    int SortOrder, 
+    IEnumerable<MenuDto> Children);
+
+public record PublicAuthConfigDto(string CompanyEmailDomain, bool IsCompanyEmailDomainLoginEnabled);
+
+public record GetPublicAuthConfigQuery() : IRequest<PublicAuthConfigDto>;
+
+

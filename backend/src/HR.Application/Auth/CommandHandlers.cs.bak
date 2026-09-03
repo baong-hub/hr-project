@@ -1,0 +1,540 @@
+using HR.Application.Common.Interfaces;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using HR.Domain.Entities;
+using HR.Domain.Enums;
+
+namespace HR.Application.Auth;
+
+public class LoginCommandHandler(
+    IApplicationDbContext context, 
+    IJwtService jwtService, 
+    IPasswordHasher passwordHasher, 
+    IActivityLogService activityLogService,
+    IOrganizationService organizationService,
+    ILogger<LoginCommandHandler> logger)
+    : IRequestHandler<LoginCommand, LoginResult>
+{
+    public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var user = await context.Users
+                .AsNoTracking()
+            .Include(u => u.Site)
+                .ThenInclude(s => s.Company)
+            .Include(u => u.UserSites)
+            .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RolePermissions)
+                            .ThenInclude(rp => rp.Permission)
+                .FirstOrDefaultAsync(u => u.Username == request.Username && u.IsActive, cancellationToken);
+
+            if (user is null || !passwordHasher.Verify(request.Password, user.PasswordHash))
+            {
+                await activityLogService.LogAsync("auth", null, "LOGIN_FAILED", null, null, request.Username, cancellationToken);
+                return new LoginResult(false, null, "Tên đăng nhập hoặc mật khẩu không đúng", null);
+            }
+
+            // Tự động gán vai trò mặc định nếu User chưa được gán vai trò trong DB (self-healing)
+            if (!user.UserRoles.Any())
+            {
+                var roleName = user.AccountType == AccountType.Admin ? "Super Admin" : "Tư vấn viên";
+                var defaultRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName, cancellationToken)
+                    ?? await context.Roles.FirstAsync(cancellationToken);
+
+                context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = defaultRole.Id });
+                await context.SaveChangesAsync(cancellationToken);
+
+                user = await context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Site)
+                        .ThenInclude(s => s.Company)
+                    .Include(u => u.UserSites)
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                            .ThenInclude(r => r.RolePermissions)
+                                .ThenInclude(rp => rp.Permission)
+                    .FirstAsync(u => u.Id == user.Id, cancellationToken);
+            }
+
+            var roles = user.UserRoles
+                .Where(ur => ur.Role != null)
+                .Select(ur => ur.Role!.Name)
+                .Distinct()
+                .ToList();
+
+            var minRoleLevel = user.UserRoles
+                .Where(ur => ur.Role != null)
+                .Select(ur => ur.Role!.Level)
+                .DefaultIfEmpty(5)
+                .Min();
+
+            int? staffId = null;
+
+            var userPermissions = await context.UserPermissions
+                .AsNoTracking()
+                .Include(up => up.Permission)
+                .Where(up => up.UserId == user.Id)
+                .ToListAsync(cancellationToken);
+
+            var jwtPermissions = userPermissions
+                .Select(up => $"{up.Permission.Code}#{(int)up.DataScope}")
+                .ToList();
+
+            var plainPermissions = userPermissions
+                .Select(up => up.Permission.Code)
+                .ToList();
+
+            var allowedSiteIds = user.UserSites.Select(us => us.SiteId).ToList();
+            if (user.SiteId > 0 && !allowedSiteIds.Contains(user.SiteId))
+            {
+                allowedSiteIds.Add(user.SiteId);
+            }
+
+            var now = DateTime.Now;
+            var sessionId = Guid.NewGuid().ToString("N");
+            var deviceName = request.DeviceName ?? "Unknown Device";
+            var browser = request.Browser ?? "Unknown Browser";
+
+            var existingSessions = await context.UserSessions
+                .Where(x => x.UserId == user.Id && !x.IsRevoked && (x.ExpiresAt <= now || (x.DeviceName == deviceName && x.Browser == browser)))
+                .ToListAsync(cancellationToken);
+
+            if (existingSessions.Any())
+            {
+                foreach (var s in existingSessions)
+                {
+                    s.IsRevoked = true;
+                    s.RevokedAt = now;
+                    s.UpdatedAt = now;
+                }
+            }
+
+            try
+            {
+                var session = new UserSession
+                {
+                    SessionId = sessionId,
+                    UserId = user.Id,
+                    DeviceName = deviceName,
+                    Browser = browser,
+                    IpAddress = request.IpAddress ?? "0.0.0.0",
+                    LastActiveAt = now,
+                    ExpiresAt = now.AddHours(8),
+                    IsRevoked = false,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                };
+                context.UserSessions.Add(session);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Bỏ qua lỗi lưu session nếu DB schema chưa khớp id auto_increment
+            }
+
+            var subordinateUserIds = await organizationService.GetAllowedUserIdsAsync(user.Id, cancellationToken);
+            var token = jwtService.GenerateToken(user.Id, user.Username, user.SiteId, allowedSiteIds, minRoleLevel, roles, jwtPermissions, staffId, sessionId, user.AccountType.ToString());
+
+            var userInfo = new UserInfo(
+                Id: user.Id,
+                Username: user.Username,
+                FullName: user.FullName,
+                Email: user.Email,
+                Phone: user.Phone,
+                AvatarUrl: user.AvatarUrl,
+                AccountType: user.AccountType.ToString(),
+                SiteId: user.SiteId,
+                SiteName: user.Site?.Name ?? "N/A",
+                AllowedSites: allowedSiteIds,
+                MinRoleLevel: minRoleLevel,
+                Roles: roles,
+                Permissions: plainPermissions,
+                StaffId: staffId,
+                CompanyCode: user.Site?.Company?.Code,
+                CompanyLogo: user.Site?.Company?.Logo,
+                SubordinateUserIds: subordinateUserIds);
+
+            // Ghi log đăng nhập
+            await activityLogService.LogAsync("auth", null, "LOGIN", user.Id, null, user.Username, cancellationToken);
+
+            var systemConfigsList = await context.SettingConfigs
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            var systemConfigs = systemConfigsList
+                .GroupBy(s => s.ConfigKey)
+                .ToDictionary(g => g.Key, g => g.Last().ConfigValue);
+
+            return new LoginResult(true, token, null, userInfo, systemConfigs);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Login failed for user {Username}", request.Username);
+            throw;
+        }
+    }
+}
+
+public class LogoutCommandHandler(
+    ICurrentUserService currentUserService,
+    IApplicationDbContext context,
+    ISessionValidationService sessionValidationService,
+    IActivityLogService activityLogService
+) : IRequestHandler<LogoutCommand, bool>
+{
+    public async Task<bool> Handle(LogoutCommand request, CancellationToken cancellationToken)
+    {
+        int? userId = currentUserService.UserId > 0 ? (int?)currentUserService.UserId : null;
+        var sessionId = request.SessionId ?? currentUserService.SessionId;
+
+        if (!string.IsNullOrEmpty(sessionId))
+        {
+            var session = await context.UserSessions
+                .FirstOrDefaultAsync(x => x.SessionId == sessionId, cancellationToken);
+            if (session != null)
+            {
+                session.IsRevoked = true;
+                session.RevokedAt = DateTime.Now;
+                session.UpdatedAt = DateTime.Now;
+                await context.SaveChangesAsync(cancellationToken);
+
+                sessionValidationService.InvalidateSessionCache(sessionId);
+            }
+        }
+
+        if (userId.HasValue)
+        {
+            await activityLogService.LogAsync("auth", null, "LOGOUT", userId.Value, null, null, cancellationToken);
+        }
+        return true;
+    }
+}
+
+public class GoogleLoginCommandHandler(
+    IApplicationDbContext context,
+    IJwtService jwtService,
+    IPasswordHasher passwordHasher,
+    IActivityLogService activityLogService,
+    IOrganizationService organizationService,
+    ILogger<GoogleLoginCommandHandler> logger)
+    : IRequestHandler<GoogleLoginCommand, LoginResult>
+{
+    public async Task<LoginResult> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var email = request.Email?.Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(email) && !string.IsNullOrWhiteSpace(request.GoogleToken))
+            {
+                email = ExtractEmailFromJwt(request.GoogleToken);
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return new LoginResult(false, null, "Vui lòng nhập Email công ty hoặc xác thực Google Token", null);
+            }
+
+            var domainSetting = await context.SettingConfigs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.ConfigKey == "system.company_email_domain", cancellationToken);
+
+            var allowedDomain = domainSetting?.ConfigValue?.Trim().ToLowerInvariant();
+            if (!string.IsNullOrEmpty(allowedDomain))
+            {
+                allowedDomain = allowedDomain.StartsWith("@") ? allowedDomain.Substring(1) : allowedDomain;
+                var emailDomain = email.Contains('@') ? email.Split('@')[1] : "";
+                if (!emailDomain.Equals(allowedDomain, StringComparison.OrdinalIgnoreCase))
+                {
+                    return new LoginResult(false, null, $"Chỉ chấp nhận email thuộc tên miền @{allowedDomain}", null);
+                }
+            }
+
+            var emailUsername = email.Contains('@') ? email.Split('@')[0] : email;
+
+            var user = await context.Users
+                .Include(u => u.Site)
+                    .ThenInclude(s => s.Company)
+                .Include(u => u.UserSites)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RolePermissions)
+                            .ThenInclude(rp => rp.Permission)
+                .FirstOrDefaultAsync(u => (u.Email != null && u.Email.ToLower() == email) || u.Username.ToLower() == email || u.Username.ToLower() == emailUsername, cancellationToken);
+
+            if (user is null)
+            {
+                if (!string.IsNullOrEmpty(request.GoogleToken))
+                {
+                    var defaultSite = await context.Sites.FirstOrDefaultAsync(cancellationToken)
+                        ?? new Site { Code = "HQ", Name = "Trụ sở chính", IsActive = true, CompanyId = 1 };
+
+                    var defaultRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Tư vấn viên", cancellationToken)
+                        ?? await context.Roles.FirstAsync(cancellationToken);
+
+                    var fullName = ExtractNameFromJwt(request.GoogleToken) ?? emailUsername;
+
+                    user = new User
+                    {
+                        Username = emailUsername,
+                        Email = email,
+                        FullName = fullName,
+                        PasswordHash = passwordHasher.Hash(Guid.NewGuid().ToString("N")),
+                        SiteId = defaultSite.Id,
+                        AccountType = AccountType.User,
+                        IsActive = true,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    };
+
+                    context.Users.Add(user);
+                    await context.SaveChangesAsync(cancellationToken);
+
+                    context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = defaultRole.Id });
+                    context.UserSites.Add(new UserSite { UserId = user.Id, SiteId = defaultSite.Id });
+
+
+
+                    await context.SaveChangesAsync(cancellationToken);
+
+                    user = await context.Users
+                        .Include(u => u.Site)
+                            .ThenInclude(s => s.Company)
+                        .Include(u => u.UserSites)
+                        .Include(u => u.UserRoles)
+                            .ThenInclude(ur => ur.Role)
+                                .ThenInclude(r => r.RolePermissions)
+                                    .ThenInclude(rp => rp.Permission)
+                        .FirstAsync(u => u.Id == user.Id, cancellationToken);
+                }
+                else
+                {
+                    await activityLogService.LogAsync("auth", null, "LOGIN_FAILED", null, null, email, cancellationToken);
+                    return new LoginResult(false, null, $"Tài khoản email ({email}) chưa được đăng ký trên hệ thống CRM", null);
+                }
+            }
+            else if (!user.IsActive)
+            {
+                await activityLogService.LogAsync("auth", null, "LOGIN_FAILED", null, null, email, cancellationToken);
+                return new LoginResult(false, null, $"Tài khoản ({email}) đã bị khoá", null);
+            }
+
+            // Tự động cập nhật email chính xác cho User nếu chưa khớp
+            if (string.IsNullOrWhiteSpace(user.Email) || !user.Email.Equals(email, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Email = email;
+                user.UpdatedAt = DateTime.Now;
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                if (!passwordHasher.Verify(request.Password, user.PasswordHash))
+                {
+                    await activityLogService.LogAsync("auth", null, "LOGIN_FAILED", null, null, email, cancellationToken);
+                    return new LoginResult(false, null, "Tên đăng nhập hoặc mật khẩu không đúng", null);
+                }
+            }
+            else if (string.IsNullOrEmpty(request.GoogleToken))
+            {
+                return new LoginResult(false, null, "Vui lòng nhập mật khẩu xác thực", null);
+            }
+
+            if (!user.UserRoles.Any())
+            {
+                var roleName = user.AccountType == AccountType.Admin ? "Super Admin" : "Tư vấn viên";
+                var defaultRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName, cancellationToken)
+                    ?? await context.Roles.FirstAsync(cancellationToken);
+
+                context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = defaultRole.Id });
+                await context.SaveChangesAsync(cancellationToken);
+
+                user = await context.Users
+                    .AsNoTracking()
+                    .Include(u => u.Site)
+                        .ThenInclude(s => s.Company)
+                    .Include(u => u.UserSites)
+                    .Include(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
+                            .ThenInclude(r => r.RolePermissions)
+                                .ThenInclude(rp => rp.Permission)
+                    .FirstAsync(u => u.Id == user.Id, cancellationToken);
+            }
+
+            var roles = user.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role!.Name).Distinct().ToList();
+            int? staffId = null;
+
+            List<UserPermission> userPermissions;
+            if (user.UserRoles.Any())
+            {
+                var rolePermissions = await context.RolePermissions
+                    .AsNoTracking()
+                    .Where(rp => user.UserRoles.Select(ur => ur.RoleId).Contains(rp.RoleId))
+                    .Include(rp => rp.Permission)
+                    .ToListAsync(cancellationToken);
+
+                userPermissions = rolePermissions
+                    .GroupBy(rp => rp.PermissionId)
+                    .Select(g => new UserPermission
+                    {
+                        UserId = user.Id,
+                        PermissionId = g.Key,
+                        DataScope = g.Min(rp => rp.DataScope),
+                        Permission = g.First().Permission
+                    })
+                    .ToList();
+            }
+            else
+            {
+                userPermissions = await context.UserPermissions
+                    .AsNoTracking()
+                    .Include(up => up.Permission)
+                    .Where(up => up.UserId == user.Id)
+                    .ToListAsync(cancellationToken);
+            }
+
+            var jwtPermissions = userPermissions.Select(up => $"{up.Permission.Code}#{(int)up.DataScope}").ToList();
+            var plainPermissions = userPermissions.Select(up => up.Permission.Code).ToList();
+            var allowedSiteIds = user.UserSites.Select(us => us.SiteId).ToList();
+            if (user.SiteId > 0 && !allowedSiteIds.Contains(user.SiteId)) allowedSiteIds.Add(user.SiteId);
+            var minRoleLevel = user.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role!.Level).DefaultIfEmpty(5).Min();
+
+            var sessionId = Guid.NewGuid().ToString();
+            var now = DateTime.Now;
+            var deviceName = request.DeviceName ?? "Unknown Device";
+            var browser = request.Browser ?? "Unknown Browser";
+
+            var existingSessions = await context.UserSessions.Where(x => x.UserId == user.Id && !x.IsRevoked && (x.ExpiresAt <= now || (x.DeviceName == deviceName && x.Browser == browser))).ToListAsync(cancellationToken);
+            if (existingSessions.Any())
+            {
+                foreach (var s in existingSessions)
+                {
+                    s.IsRevoked = true;
+                    s.RevokedAt = now;
+                    s.UpdatedAt = now;
+                }
+            }
+
+            try
+            {
+                var session = new UserSession
+                {
+                    SessionId = sessionId,
+                    UserId = user.Id,
+                    DeviceName = deviceName,
+                    Browser = browser,
+                    IpAddress = request.IpAddress ?? "0.0.0.0",
+                    LastActiveAt = now,
+                    ExpiresAt = now.AddHours(8),
+                    IsRevoked = false,
+                    CreatedAt = now,
+                    UpdatedAt = now
+                };
+                context.UserSessions.Add(session);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception)
+            {
+                // Bỏ qua lỗi lưu session nếu DB schema chưa khớp id auto_increment
+            }
+
+            var subordinateUserIds = await organizationService.GetAllowedUserIdsAsync(user.Id, cancellationToken);
+            var token = jwtService.GenerateToken(user.Id, user.Username, user.SiteId, allowedSiteIds, minRoleLevel, roles, jwtPermissions, staffId, sessionId, user.AccountType.ToString());
+            var userInfo = new UserInfo(
+                Id: user.Id,
+                Username: user.Username,
+                FullName: user.FullName,
+                Email: user.Email,
+                Phone: user.Phone,
+                AvatarUrl: user.AvatarUrl,
+                AccountType: user.AccountType.ToString(),
+                SiteId: user.SiteId,
+                SiteName: user.Site?.Name ?? "N/A",
+                AllowedSites: allowedSiteIds,
+                MinRoleLevel: minRoleLevel,
+                Roles: roles,
+                Permissions: plainPermissions,
+                StaffId: staffId,
+                CompanyCode: user.Site?.Company?.Code,
+                CompanyLogo: user.Site?.Company?.Logo,
+                SubordinateUserIds: subordinateUserIds);
+
+            await activityLogService.LogAsync("auth", null, "LOGIN", user.Id, null, user.Email ?? user.Username, cancellationToken);
+
+            var systemConfigsList = await context.SettingConfigs.AsNoTracking().ToListAsync(cancellationToken);
+            var systemConfigs = systemConfigsList.GroupBy(s => s.ConfigKey).ToDictionary(g => g.Key, g => g.Last().ConfigValue);
+
+            return new LoginResult(true, token, null, userInfo, systemConfigs);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Google login failed for email {Email}", request.Email);
+            throw;
+        }
+    }
+
+    private static string? ExtractEmailFromJwt(string jwtToken)
+    {
+        try
+        {
+            var parts = jwtToken.Split('.');
+            if (parts.Length < 2) return null;
+
+            var payload = parts[1];
+            payload = payload.Replace('-', '+').Replace('_', '/');
+            switch (payload.Length % 4)
+            {
+                case 2: payload += "=="; break;
+                case 3: payload += "="; break;
+            }
+
+            var jsonBytes = Convert.FromBase64String(payload);
+            using var doc = System.Text.Json.JsonDocument.Parse(jsonBytes);
+            if (doc.RootElement.TryGetProperty("email", out var emailProp))
+            {
+                return emailProp.GetString()?.Trim().ToLowerInvariant();
+            }
+        }
+        catch
+        {
+            // Ignore invalid token format
+        }
+        return null;
+    }
+
+    private static string? ExtractNameFromJwt(string? jwtToken)
+    {
+        if (string.IsNullOrEmpty(jwtToken)) return null;
+        try
+        {
+            var parts = jwtToken.Split('.');
+            if (parts.Length < 2) return null;
+
+            var payload = parts[1];
+            payload = payload.Replace('-', '+').Replace('_', '/');
+            switch (payload.Length % 4)
+            {
+                case 2: payload += "=="; break;
+                case 3: payload += "="; break;
+            }
+
+            var jsonBytes = Convert.FromBase64String(payload);
+            using var doc = System.Text.Json.JsonDocument.Parse(jsonBytes);
+            if (doc.RootElement.TryGetProperty("name", out var nameProp))
+            {
+                return nameProp.GetString()?.Trim();
+            }
+        }
+        catch
+        {
+            // Ignore invalid token format
+        }
+        return null;
+    }
+}
+
+
+

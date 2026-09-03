@@ -1,0 +1,75 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using HR.Application.Common.Interfaces;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace HR.Application.Companies;
+
+public class GetCompaniesQueryHandler(IApplicationDbContext context)
+    : IRequestHandler<GetCompaniesQuery, List<CompanyDto>>
+{
+    public async Task<List<CompanyDto>> Handle(GetCompaniesQuery request, CancellationToken cancellationToken)
+    {
+        var query = context.Companies.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(request.Keyword))
+        {
+            var kw = request.Keyword.ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(kw) 
+                || c.Industry.ToLower().Contains(kw) 
+                || (c.Description != null && c.Description.ToLower().Contains(kw)));
+        }
+
+        var items = await query
+            .OrderByDescending(c => c.CreatedAt)
+            .Select(c => new CompanyDto(
+                c.Id,
+                c.Code,
+                c.Name,
+                c.LogoUrl,
+                c.BannerUrl,
+                c.Description,
+                c.Website,
+                c.SizeRange,
+                c.Industry,
+                c.AddressList,
+                c.IsVerified,
+                c.IsActive
+            ))
+            .ToListAsync(cancellationToken);
+
+        return items;
+    }
+}
+
+public class GetCompanyByIdQueryHandler(IApplicationDbContext context)
+    : IRequestHandler<GetCompanyByIdQuery, CompanyDto?>
+{
+    public async Task<CompanyDto?> Handle(GetCompanyByIdQuery request, CancellationToken cancellationToken)
+    {
+        var c = await context.Companies
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+
+        if (c == null) return null;
+
+        return new CompanyDto(
+            c.Id,
+            c.Code,
+            c.Name,
+            c.LogoUrl,
+            c.BannerUrl,
+            c.Description,
+            c.Website,
+            c.SizeRange,
+            c.Industry,
+            c.AddressList,
+            c.IsVerified,
+            c.IsActive
+        );
+    }
+}

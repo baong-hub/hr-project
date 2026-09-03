@@ -1,0 +1,16 @@
+namespace HR.Application.Companies;
+
+public record CompanyDto(
+    int Id,
+    string Code,
+    string Name,
+    string? LogoUrl,
+    string? BannerUrl,
+    string? Description,
+    string? Website,
+    string SizeRange,
+    string Industry,
+    string AddressList,
+    bool IsVerified,
+    bool IsActive
+);

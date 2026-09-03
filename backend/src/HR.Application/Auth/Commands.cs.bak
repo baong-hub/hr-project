@@ -1,0 +1,16 @@
+using MediatR;
+
+namespace HR.Application.Auth;
+
+// ── Commands ──────────────────────────────────────────────────────────────────
+public record LoginCommand(string Username, string Password, string? DeviceName = null, string? Browser = null, string? IpAddress = null) : IRequest<LoginResult>;
+
+public record GoogleLoginCommand(string? Email = null, string? Password = null, string? GoogleToken = null, string? DeviceName = null, string? Browser = null, string? IpAddress = null) : IRequest<LoginResult>;
+
+public record LogoutCommand(string? SessionId = null) : IRequest<bool>;
+
+public record LoginResult(bool Success, string? Token, string? Message, UserInfo? User, Dictionary<string, string>? SystemConfigs = null);
+
+public record UserInfo(int Id, string Username, string? FullName, string? Email, string? Phone, string? AvatarUrl, string AccountType, int SiteId, string SiteName,
+    IEnumerable<int> AllowedSites, int MinRoleLevel, IEnumerable<string> Roles, IEnumerable<string> Permissions, int? StaffId = null, string? CompanyCode = null, string? CompanyLogo = null, IEnumerable<int>? SubordinateUserIds = null);
+

@@ -1,0 +1,273 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+  width: 100%;
+
+  .label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.5px;
+  }
+
+  .inputWrapper {
+    position: relative;
+    cursor: pointer;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md); // Rounded like in the image
+    padding: 2px 16px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--color-brand-gold);
+    }
+
+    .mainInput {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      color: var(--text-color);
+      width: 100%;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .clearIcon {
+      color: var(--color-text-muted);
+      margin-left: 8px;
+      padding: 2px;
+      border-radius: 50%;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: var(--color-bg-hover);
+        color: var(--color-danger);
+      }
+    }
+
+    .calendarIcon {
+      color: var(--color-text-secondary);
+      margin-left: 8px;
+    }
+  }
+
+  .popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 1000;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    display: flex;
+    overflow: hidden;
+    min-width: 750px;
+    animation: slideDown 0.2s ease-out;
+  }
+
+  .sidebar {
+    width: 200px;
+    border-right: 1px solid #f0f0f0;
+    padding: 8px 0;
+    background: #fafafa;
+
+    .presetItem {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      color: #666;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f0f0f0;
+        color: var(--color-brand-gold);
+      }
+
+      &.active {
+        background: var(--color-brand-gold);
+        color: #fff;
+      }
+    }
+  }
+
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .calendars {
+    display: flex;
+    padding: 20px;
+    gap: 30px;
+  }
+
+  .calendar {
+    flex: 1;
+
+    .calendarHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 0 10px;
+
+      span {
+        font-weight: 600;
+        color: #444;
+      }
+
+      button {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        color: #999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        border-radius: 50%;
+
+        &:hover {
+          background: #f5f5f5;
+          color: #333;
+        }
+      }
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      margin-bottom: 10px;
+
+      span {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #a0a0c0; // bluish grey from image
+      }
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .day {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+      border-radius: 4px;
+      transition: all 0.2s;
+      color: #333;
+
+      &:hover {
+        background: #f0f0ff;
+        color: var(--color-brand-gold);
+      }
+
+      &.notCurrent {
+        color: #ccc;
+      }
+
+      &.selected {
+        background: var(--color-brand-gold) !important;
+        color: #fff !important;
+      }
+
+      &.inRange {
+        background: #f0f0ff;
+        border-radius: 0;
+      }
+
+      &.rangeStart {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+
+      &.rangeEnd {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+  }
+
+  .footer {
+    border-top: 1px solid #f0f0f0;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .selectedRange {
+      font-size: var(--font-size-sm);
+      color: #777;
+    }
+
+    .footerActions {
+      display: flex;
+      gap: 12px;
+
+      button {
+        padding: 8px 24px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        transition: all 0.2s;
+        letter-spacing: 1px;
+      }
+
+      .cancelBtn {
+        background: transparent;
+        border: none;
+        color: var(--color-brand-gold);
+
+        &:hover {
+          background: #f5f5f5;
+        }
+      }
+
+      .clearBtn {
+        background: transparent;
+        border: none;
+        color: var(--color-text-muted);
+        font-size: var(--font-size-sm);
+
+        &:hover {
+          color: var(--color-danger);
+        }
+      }
+
+      .applyBtn {
+        background: var(--color-brand-gold);
+        border: none;
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(var(--color-brand-gold-rgb), 0.3);
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(var(--color-brand-gold-rgb), 0.4);
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

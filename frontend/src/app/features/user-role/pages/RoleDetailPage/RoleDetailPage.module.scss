@@ -1,0 +1,197 @@
+.container {
+  padding: var(--space-6);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+
+  h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+}
+
+.backBtn {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: var(--color-bg-subtle);
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: var(--space-8);
+}
+
+.section {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-6);
+
+  h3 {
+    margin: 0 0 var(--space-6) 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border-default);
+    padding-bottom: var(--space-3);
+  }
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-6);
+}
+
+.infoItem {
+  label {
+    display: block;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    margin-bottom: var(--space-1);
+    letter-spacing: 0.5px;
+  }
+  p {
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+  }
+}
+
+.permList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--space-3);
+}
+
+.permItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+}
+
+.permCode {
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-mono);
+}
+
+.permScope {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-gold-dark);
+}
+
+.logTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.logItem {
+  display: flex;
+  gap: var(--space-4);
+  position: relative;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 15px;
+    bottom: -25px;
+    width: 2px;
+    background-color: var(--color-border-default);
+  }
+}
+
+.logDot {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-brand-gold);
+  border: 3px solid var(--color-brand-gold-soft);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.logHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-1);
+}
+
+.logAction {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.logTime {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.logUser {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.logValue {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  padding: var(--space-1);
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.badge {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-xs);
+
+  &.active { background-color: var(--color-success-bg); color: var(--color-success); }
+  &.inactive { background-color: var(--color-danger-bg); color: var(--color-danger); }
+}
+
+.empty, .loading {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--color-text-muted);
+}

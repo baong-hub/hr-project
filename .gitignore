@@ -1,0 +1,40 @@
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Visual Studio
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / IntelliJ
+.idea/
+
+# VS Code
+.vscode/
+
+# Node / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS/Docker
+.dockerignore
+docker-compose.override.yml
