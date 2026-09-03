@@ -71,18 +71,18 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
             .ToListAsync(cancellationToken);
 
         var list = rawList.Select(a => {
-            var score = CalculateMatchScore(a.Job.Title, a.Job.Requirements, a.Candidate.Skills, a.Candidate.ExperienceSummary);
+            var score = CalculateMatchScore(a.Job?.Title ?? string.Empty, a.Job?.Requirements ?? string.Empty, a.Candidate?.Skills, a.Candidate?.ExperienceSummary);
             return new ApplicationDto(
                 a.Id,
                 a.JobId,
-                a.Job.Title,
-                a.Job.Company?.Name ?? "Hệ thống HR",
+                a.Job?.Title ?? string.Empty,
+                a.Job?.Company?.Name ?? "Hệ thống HR",
                 a.CandidateId,
-                a.Candidate.User.FullName ?? "Ứng viên",
-                a.Candidate.User.Email ?? string.Empty,
+                a.Candidate?.User?.FullName ?? a.Candidate?.FullName ?? "Ứng viên",
+                a.Candidate?.User?.Email ?? string.Empty,
                 a.CandidateCvId,
-                a.CandidateCv.CvTitle,
-                a.CandidateCv.FileUrl,
+                a.CandidateCv?.CvTitle ?? string.Empty,
+                a.CandidateCv?.FileUrl ?? string.Empty,
                 a.CoverLetter,
                 a.Status.ToString(),
                 a.AppliedAt,
@@ -155,19 +155,19 @@ public class GetApplicationByIdQueryHandler(IApplicationDbContext context)
 
         if (a == null) return null;
 
-        var score = GetApplicationsQueryHandler.CalculateMatchScore(a.Job.Title, a.Job.Requirements, a.Candidate.Skills, a.Candidate.ExperienceSummary);
+        var score = GetApplicationsQueryHandler.CalculateMatchScore(a.Job?.Title ?? string.Empty, a.Job?.Requirements ?? string.Empty, a.Candidate?.Skills, a.Candidate?.ExperienceSummary);
 
         return new ApplicationDto(
             a.Id,
             a.JobId,
-            a.Job.Title,
-            a.Job.Company?.Name ?? "Hệ thống HR",
+            a.Job?.Title ?? string.Empty,
+            a.Job?.Company?.Name ?? "Hệ thống HR",
             a.CandidateId,
-            a.Candidate.User.FullName ?? "Ứng viên",
-            a.Candidate.User.Email ?? string.Empty,
+            a.Candidate?.User?.FullName ?? a.Candidate?.FullName ?? "Ứng viên",
+            a.Candidate?.User?.Email ?? string.Empty,
             a.CandidateCvId,
-            a.CandidateCv.CvTitle,
-            a.CandidateCv.FileUrl,
+            a.CandidateCv?.CvTitle ?? string.Empty,
+            a.CandidateCv?.FileUrl ?? string.Empty,
             a.CoverLetter,
             a.Status.ToString(),
             a.AppliedAt,

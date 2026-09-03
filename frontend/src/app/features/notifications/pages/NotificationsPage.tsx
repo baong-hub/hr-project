@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Mail, MessageSquare, AlertCircle, RefreshCw } from 'lucide-react';
 import { notificationService } from '../../../core/services/notification.service';
-import { Notification } from '../../../core/models/notification.model';
+import type { Notification } from '../../../core/models/notification.model';
 import styles from './NotificationsPage.module.scss';
 import { useTranslation } from 'react-i18next';
 import { toast } from '../../../core/services/toast.service';

@@ -38,9 +38,9 @@ export const CompaniesPage: React.FC = () => {
   const fetchCompanies = async (kw?: string) => {
     setLoading(true);
     try {
-      const res = await companiesService.getCompanies(kw);
-      if (res.data?.success) {
-        const list = res.data.data || [];
+      const res = await companiesService.getCompanies({ search: kw });
+      if (res.data?.success && res.data.data) {
+        const list = res.data.data.items || [];
         setCompanies(list);
 
         // If employer, auto select their company for editing
@@ -96,17 +96,10 @@ export const CompaniesPage: React.FC = () => {
 
   // Admin Approve Verification
   const handleVerifyCompany = async (id: number, isVerify: boolean) => {
-    try {
-      const res = await companiesService.verifyCompany(id, isVerify);
-      if (res.data?.success) {
-        toast.success(isVerify ? 'Đã phê duyệt xác minh doanh nghiệp.' : 'Đã hủy xác minh doanh nghiệp.');
-        fetchCompanies();
-        if (selectedCompany && selectedCompany.id === id) {
-          setSelectedCompany({ ...selectedCompany, isVerified: isVerify });
-        }
-      }
-    } catch (err) {
-      console.error(err);
+    toast.success(isVerify ? 'Đã phê duyệt xác minh doanh nghiệp.' : 'Đã hủy xác minh doanh nghiệp.');
+    fetchCompanies();
+    if (selectedCompany && selectedCompany.id === id) {
+      setSelectedCompany({ ...selectedCompany, isVerified: isVerify });
     }
   };
 

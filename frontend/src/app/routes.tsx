@@ -78,9 +78,43 @@ const PermissionRoute: React.FC<{ code: string; children: React.ReactNode }> = (
   const user = authService.getUser();
   const permissions = (user?.permissions as string[]) || [];
   const roles = (user?.roles as string[]) || [];
-  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin';
+  const userRole = user?.role || user?.accountType || '';
+  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
 
-  const hasPermission = isSuperAdmin || permissions.includes(code);
+  if (isSuperAdmin) return <>{children}</>;
+
+  const permMap: Record<string, string[]> = {
+    'job:save': ['saved-jobs:view', 'job:save'],
+    'saved-jobs:view': ['saved-jobs:view', 'job:save'],
+    'cv:manage': ['cvs:view', 'cvs:create', 'cvs:update', 'cv:manage'],
+    'cvs:view': ['cvs:view', 'cv:manage'],
+    'job:apply': ['applications:create', 'applications:view', 'job:apply'],
+    'applications:view': ['applications:view', 'job:apply'],
+    'job:manage': ['jobs:create', 'jobs:update', 'jobs:view', 'job:manage'],
+    'job:post': ['jobs:create', 'job:post'],
+    'cv:search': ['cvs:view', 'cv:search'],
+    'company:update': ['companies:update', 'companies:view', 'company:update'],
+    'notification:view': ['notifications:view', 'notification:view'],
+    'notifications:view': ['notifications:view', 'notification:view'],
+    'report:view': ['reports:view', 'report:view'],
+    'reports:view': ['reports:view', 'report:view'],
+    'report:view_all': ['reports:view', 'report:view_all'],
+    'user-role:view': ['user-role:view', 'user-role:manage']
+  };
+
+  const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
+  const isEmployer = userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng');
+
+  if (isCandidate && (code === 'job:save' || code === 'saved-jobs:view' || code === 'cv:manage' || code === 'job:apply' || code === 'notification:view')) {
+    return <>{children}</>;
+  }
+
+  if (isEmployer && (code === 'job:manage' || code === 'job:post' || code === 'cv:search' || code === 'company:update' || code === 'report:view')) {
+    return <>{children}</>;
+  }
+
+  const targetPerms = permMap[code] || [code];
+  const hasPermission = targetPerms.some(p => permissions.includes(p));
   return hasPermission ? <>{children}</> : <Navigate to="/" replace />;
 };
 

@@ -68,7 +68,7 @@ public class GetDashboardStatsQueryHandler(IApplicationDbContext context, ICurre
 
         if (isCandidate || isSuperAdmin)
         {
-            var candidate = await context.Candidates.FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+            var candidate = await context.Candidates.FirstOrDefaultAsync(c => c.Id == userId, cancellationToken);
             if (candidate != null)
             {
                 appliedCount = await context.Applications.CountAsync(a => a.CandidateId == candidate.Id, cancellationToken);

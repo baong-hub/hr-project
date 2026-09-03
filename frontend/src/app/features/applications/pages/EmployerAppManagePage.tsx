@@ -4,9 +4,9 @@ import { applicationsService } from '../../../core/services/applications.service
 import { jobsService } from '../../../core/services/jobs.service';
 import { interviewsService } from '../../../core/services/interviews.service';
 import { toast } from '../../../core/services/toast.service';
-import { ApplicationDto } from '../../../core/models/application.model';
-import { JobDto } from '../../../core/models/job.model';
-import { UiDataTable, ColumnConfig } from '../../../shared/ui/DataTable/UiDataTable';
+import type { ApplicationDto } from '../../../core/models/application.model';
+import type { JobDto } from '../../../core/models/job.model';
+import { UiDataTable, type ColumnConfig } from '../../../shared/ui/DataTable/UiDataTable';
 import styles from './EmployerAppManagePage.module.scss';
 
 export const EmployerAppManagePage: React.FC = () => {
@@ -62,7 +62,8 @@ export const EmployerAppManagePage: React.FC = () => {
 
       const res = await applicationsService.getApplications(params);
       if (res.data?.success) {
-        setApplications((res.data.data as any) || []);
+        const items = res.data.data?.items || (res.data.data as any) || [];
+        setApplications(items);
       } else {
         setError(res.data?.error?.message || 'Có lỗi xảy ra khi tải dữ liệu.');
       }

@@ -9,83 +9,70 @@ export interface SidebarItem {
 
 export const SIDEBAR_MENU: SidebarItem[] = [
   {
-    label: 'Quản lý khách hàng',
-    icon: 'Users',
-    code: 'menu:customer',
-    children: [
-      { label: 'Danh sách khách hàng', icon: 'List', route: '/customers', code: 'module:customer' },
-      { label: 'Xét nghiệm', icon: 'FlaskConical', route: '/customers/lab', code: 'module:lab' },
-      { label: 'Patient chart', icon: 'FileMedical', route: '/customers/chart', code: 'module:chart' },
-      { label: 'Danh sách tiếp nhận', icon: 'UserClock', route: '/customers/reception', code: 'module:reception' },
-      { label: 'Quản lý tiếp đón khách hàng', icon: 'UserPlus', route: '/customer-reception-manager', code: 'module:reception-manager' },
-      { label: 'Khám và Điều trị', icon: 'Stethoscope', route: '/customers/treatment', code: 'module:treatment' },
-      { label: 'Quản lý thẻ đã bán', icon: 'IdCard', route: '/customers/membership', code: 'module:membership' },
-      { label: 'Chẩn đoán hình ảnh', icon: 'XRay', route: '/customers/imaging', code: 'module:imaging' },
-      { label: 'Quản lý nhân viên thực hiện', icon: 'Users', route: '/customers/staff-assignments', code: 'module:staff-assignment' }
-    ]
+    label: 'Quản lý việc làm',
+    shortName: 'Việc làm',
+    icon: 'Briefcase',
+    route: '/jobs',
+    code: 'menu:jobs'
   },
   {
-    label: 'Quản lý lịch hẹn',
+    label: 'Hồ sơ & CV',
+    shortName: 'CV',
+    icon: 'FileText',
+    route: '/cvs',
+    code: 'menu:cvs'
+  },
+  {
+    label: 'Quản lý ứng tuyển',
+    shortName: 'Ứng tuyển',
+    icon: 'Send',
+    route: '/applications',
+    code: 'menu:applications'
+  },
+  {
+    label: 'Lịch phỏng vấn',
+    shortName: 'Lịch phỏng vấn',
     icon: 'Calendar',
-    route: '/appointments',
-    code: 'menu:appointment'
+    route: '/interviews',
+    code: 'menu:interviews'
   },
   {
-    label: 'Quản lý hóa đơn',
-    icon: 'Receipt',
-    code: 'menu:bill',
-    children: [
-      { label: 'Danh sách hóa đơn', icon: 'List', route: '/bills', code: 'module:bill' },
-      { label: 'Quản lý đặt cọc', icon: 'Coins', route: '/deposits', code: 'deposit:view' },
-      { label: 'Yêu cầu hoàn hủy', icon: 'Undo2', route: '/refund-requests', code: 'module:refund' }
-    ]
+    label: 'Trang doanh nghiệp',
+    shortName: 'Doanh nghiệp',
+    icon: 'Building2',
+    route: '/companies',
+    code: 'menu:companies'
   },
   {
-    label: 'Quản lý Xét nghiệm',
-    icon: 'FlaskConical',
-    route: '/laboratory/worklist',
-    code: 'lab_execution:view'
+    label: 'Việc làm đã lưu',
+    shortName: 'Đã lưu',
+    icon: 'Heart',
+    route: '/candidate/saved-jobs',
+    code: 'menu:saved-jobs'
   },
   {
-    label: 'Thực hiện dịch vụ',
-    icon: 'Activity',
-    route: '/service-executions',
-    code: 'service_execution:view'
+    label: 'Trung tâm thông báo',
+    shortName: 'Thông báo',
+    icon: 'Bell',
+    route: '/notifications',
+    code: 'menu:notifications'
   },
   {
-    label: 'Báo cáo',
+    label: 'Báo cáo & Thống kê',
+    shortName: 'Báo cáo',
     icon: 'BarChart3',
-    code: 'menu:report',
-    children: [
-      { label: 'Danh sách báo cáo', icon: 'List', route: '/reports/revenue', code: 'menu:report' },
-      { label: 'Quyền theo vai trò', icon: 'ShieldCheck', route: '/reports/permission-by-role', code: 'report-permission-by-role:view' },
-      { label: 'Quyền theo người dùng', icon: 'UserCheck', route: '/reports/permission-by-user', code: 'report-permission-by-user:view' }
-    ]
-  },
-  {
-    label: 'Quản lý Kho',
-    icon: 'Package',
-    code: 'menu:inventory',
-    children: [
-      { label: 'Tổng quan', icon: 'LayoutDashboard', route: '/inventory', code: 'inventory:view' },
-      { label: 'Phiếu Nhập/Xuất', icon: 'FileUpDown', route: '/inventory/transactions', code: 'inventory:view' },
-      { label: 'Kiểm kê kho', icon: 'ClipboardList', route: '/inventory/stocktakes', code: 'inventory:stocktake' },
-      { label: 'Yêu cầu pha chế', icon: 'ClipboardList', route: '/inpatient-orders', code: 'inpatient_order:view' },
-      { label: 'Hệ thống Báo cáo', icon: 'BarChart4', route: '/inventory/reports', code: 'inventory:view' },
-      { label: 'Cảnh báo & Cấu hình', icon: 'Bell', route: '/inventory/alerts', code: 'inventory:view' }
-    ]
+    route: '/reports',
+    code: 'menu:reports'
   },
   {
     label: 'Cấu hình hệ thống',
+    shortName: 'Cấu hình',
     icon: 'Settings',
     code: 'menu:system',
-
     children: [
-      { label: 'Quản lý tài khoản', icon: 'UserCog', route: '/users', code: 'module:user' },
-      { label: 'Vai trò & Quyền', icon: 'ShieldCheck', route: '/user-roles/roles', code: 'module:user-role' },
-      { label: 'Gán quyền nhân viên', icon: 'UserPlus', route: '/user-roles/users', code: 'module:user-assignment' },
-      { label: 'Quản lý vị trí', icon: 'Tag', route: '/admin/positions', code: 'staff:view' },
-      { label: 'Gán vị trí NV', icon: 'UserPlus', route: '/admin/staff-positions', code: 'staff:view' }
+      { label: 'Tài khoản', shortName: 'Tài khoản', icon: 'UserCog', route: '/users', code: 'module:user' },
+      { label: 'Phân quyền', shortName: 'Phân quyền', icon: 'ShieldCheck', route: '/user-roles', code: 'module:user-role' },
+      { label: 'Cấu hình chung', shortName: 'Cấu hình', icon: 'Sliders', route: '/user-settings/system-configs', code: 'module:system-setting' }
     ]
   }
 ];

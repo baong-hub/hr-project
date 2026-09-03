@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.scss';
-import { MapPin, Bell, Menu, ChevronDown, LogOut } from 'lucide-react';
+import { MapPin, Menu, ChevronDown, LogOut } from 'lucide-react';
 import { ThemeToggle } from '../../../features/user-settings/components/ThemeToggle/ThemeToggle';
 import { LanguageSelector } from '../../../features/user-settings/components/LanguageSelector/LanguageSelector';
 import { NotificationBell } from '../../../features/notifications/components/NotificationBell/NotificationBell';
@@ -22,9 +22,6 @@ export const Header = ({ sidebarExpanded, onToggle }: HeaderProps) => {
   const [sites, setSites] = useState<any[]>([]);
   const currentSiteId = authService.getWorkingSiteId();
   const { t } = useTranslation();
-
-  // Simple notifications placeholder (static/dummy count of 0)
-  const [unreadNotifCount] = useState<number>(0);
 
   useEffect(() => {
     loadSites();

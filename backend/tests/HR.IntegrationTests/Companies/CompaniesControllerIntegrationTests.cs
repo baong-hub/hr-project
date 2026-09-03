@@ -119,7 +119,7 @@ public class CompaniesControllerIntegrationTests : IClassFixture<CompaniesContro
         // Assert
         // Since ICurrentUserService.UserId = 0 causes a ForbiddenException in Handler, 
         // our middleware translates this to 403 Forbidden or 401 depending on standard settings.
-        response.StatusCode.Should().Match<HttpStatusCode>(code => 
+        response.StatusCode.Should().Match(code => 
             code == HttpStatusCode.Unauthorized || code == HttpStatusCode.Forbidden);
     }
 

@@ -50,12 +50,12 @@ export const CvsPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   // Fetch CV List
-  const fetchCvs = async (kw?: string) => {
+  const fetchCvs = async () => {
     setLoading(true);
     try {
-      const res = await cvsService.getCvs(kw);
-      if (res.data?.success) {
-        setCvs(res.data.data || []);
+      const res = await cvsService.getCvs();
+      if (res.success) {
+        setCvs(res.data || []);
       }
     } catch (err) {
       console.error(err);
@@ -83,9 +83,9 @@ export const CvsPage: React.FC = () => {
       const res = await cvsService.updateProfile({
         skills: skillsText,
         experienceSummary,
-        visibilityStatus: visibility
+        visibilityStatus: visibility as 'PUBLIC' | 'PRIVATE'
       });
-      if (res.data?.success) {
+      if (res.success) {
         toast.success('Cập nhật hồ sơ thành công.');
         // Refresh local storage user info
         await authService.getCurrentUser();
@@ -98,8 +98,8 @@ export const CvsPage: React.FC = () => {
   // Set Main CV
   const handleSetMain = async (id: number) => {
     try {
-      const res = await cvsService.setMainCv(id);
-      if (res.data?.success) {
+      const res = await cvsService.setDefaultCv(id);
+      if (res.success) {
         fetchCvs();
       }
     } catch (err) {
@@ -112,7 +112,7 @@ export const CvsPage: React.FC = () => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa CV này?')) return;
     try {
       const res = await cvsService.deleteCv(id);
-      if (res.data?.success) {
+      if (res.success) {
         fetchCvs();
       }
     } catch (err) {
@@ -126,12 +126,8 @@ export const CvsPage: React.FC = () => {
     if (!file) return;
 
     try {
-      const res = await cvsService.createCv({
-        cvTitle: file.name,
-        fileUrl: `/uploads/cvs/${file.name}`,
-        fileSizeBytes: file.size
-      });
-      if (res.data?.success) {
+      const res = await cvsService.uploadCv(file.name, file);
+      if (res.success) {
         toast.success('Tải lên CV thành công.');
         fetchCvs();
       }
@@ -145,13 +141,11 @@ export const CvsPage: React.FC = () => {
     try {
       // 1. Create a CV record
       const cvTitle = `CV_${cvForm.fullName.replace(/\s+/g, '')}_Builder.pdf`;
-      const createRes = await cvsService.createCv({
-        cvTitle,
-        fileUrl: `/uploads/cvs/${cvTitle}`,
-        fileSizeBytes: 145000 // mock size
-      });
+      const dummyBlob = new Blob([`CV Content for ${cvForm.fullName}`], { type: 'application/pdf' });
+      const dummyFile = new File([dummyBlob], cvTitle, { type: 'application/pdf' });
+      const createRes = await cvsService.uploadCv(cvTitle, dummyFile);
 
-      if (createRes.data?.success) {
+      if (createRes.success) {
         // 2. Sync profile skills automatically
         await cvsService.updateProfile({
           skills: cvForm.skills,
@@ -582,9 +576,9 @@ export const CvsPage: React.FC = () => {
           value={searchKeyword}
           onChange={e => setSearchKeyword(e.target.value)}
           style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--color-border-default)', borderRadius: '8px' }}
-          onKeyDown={e => e.key === 'Enter' && fetchCvs(searchKeyword)}
+          onKeyDown={e => e.key === 'Enter' && fetchCvs()}
         />
-        <button className={styles.btnPrimary} onClick={() => fetchCvs(searchKeyword)}><Search size={16} /> Tìm kiếm</button>
+        <button className={styles.btnPrimary} onClick={() => fetchCvs()}><Search size={16} /> Tìm kiếm</button>
         <button className={styles.btnSecondary} onClick={() => { setSearchKeyword(''); fetchCvs(); }}><RotateCcw size={16} /></button>
       </div>
 

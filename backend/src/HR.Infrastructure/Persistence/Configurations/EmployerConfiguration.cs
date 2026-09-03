@@ -30,6 +30,7 @@ public class EmployerConfiguration : IEntityTypeConfiguration<Employer>
             .HasConversion<string>()
             .HasMaxLength(30)
             .HasDefaultValue(HR.Domain.Enums.RoleInCompany.RECRUITER)
+            .HasSentinel((HR.Domain.Enums.RoleInCompany)(-1))
             .IsRequired();
 
         // Audit columns

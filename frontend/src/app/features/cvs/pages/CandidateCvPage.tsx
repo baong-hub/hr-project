@@ -40,10 +40,10 @@ export const CandidateCvPage: React.FC = () => {
     setError(null);
     try {
       const response = await cvsService.getCvs();
-      if (response.succeeded) {
+      if (response.success && response.data) {
         setCvs(response.data);
       } else {
-        setError(response.message || 'Không thể lấy danh sách CV.');
+        setError(response.error?.message || 'Không thể lấy danh sách CV.');
       }
     } catch (err: any) {
       setError('Có lỗi xảy ra khi kết nối máy chủ.');
@@ -153,14 +153,14 @@ export const CandidateCvPage: React.FC = () => {
 
     try {
       const response = await cvsService.uploadCv(cvTitle, selectedFile);
-      if (response.succeeded) {
+      if (response.success) {
         setSuccess('Tải lên CV mới thành công!');
         setCvTitle('');
         setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
         loadCvs();
       } else {
-        setError(response.message || 'Tải lên CV thất bại.');
+        setError(response.error?.message || 'Tải lên CV thất bại.');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Có lỗi xảy ra khi tải lên tệp tin.');
@@ -176,11 +176,11 @@ export const CandidateCvPage: React.FC = () => {
     setSuccess(null);
     try {
       const response = await cvsService.setDefaultCv(id);
-      if (response.succeeded) {
+      if (response.success) {
         setSuccess('Đã đổi CV chính thành công.');
         loadCvs();
       } else {
-        setError(response.message || 'Không thể đổi CV chính.');
+        setError(response.error?.message || 'Không thể đổi CV chính.');
       }
     } catch (err: any) {
       setError('Có lỗi xảy ra khi đổi CV chính.');
@@ -200,11 +200,11 @@ export const CandidateCvPage: React.FC = () => {
 
     try {
       const response = await cvsService.deleteCv(deleteId);
-      if (response.succeeded) {
+      if (response.success) {
         setSuccess('Xóa CV thành công.');
         loadCvs();
       } else {
-        setError(response.message || 'Không thể xóa CV.');
+        setError(response.error?.message || 'Không thể xóa CV.');
       }
     } catch (err: any) {
       setError('Có lỗi xảy ra khi xóa CV.');

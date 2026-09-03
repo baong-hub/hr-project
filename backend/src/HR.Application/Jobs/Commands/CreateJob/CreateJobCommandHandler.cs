@@ -40,7 +40,7 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
         }
 
         // [BR-03] Only verified companies can create jobs or publish them
-        if (!employer.Company.IsVerified)
+        if (employer.Company == null || !employer.Company.IsVerified || !employer.CompanyId.HasValue)
         {
             throw new ForbiddenException("JOB_EMPLOYER_NOT_ACTIVE", "Tài khoản doanh nghiệp chưa được duyệt (VERIFIED).");
         }

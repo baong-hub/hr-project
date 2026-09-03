@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import type { SidebarItem } from '../../config/sidebarMenu.config';
+import { SIDEBAR_MENU, type SidebarItem } from '../../config/sidebarMenu.config';
 import { Icon } from '../../../shared/ui/Icon/Icon';
 import styles from './Sidebar.module.scss';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
@@ -23,46 +23,88 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const companyCode = user?.companyCode || 'HR';
   const permissions = (user?.permissions as string[]) || [];
   const roles = (user?.roles as string[]) || [];
-  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin';
-  const hasPermission = (perm: string) => {
+  const userRole = user?.role || user?.accountType || '';
+  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
+  const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
+  const isEmployer = userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng') || roles.includes('Employer');
+
+  const hasPermission = (code?: string, route?: string) => {
     if (isSuperAdmin) return true;
-    if (!perm) return true;
-    if (permissions.includes(perm)) return true;
-    // Menu báo cáo tổng hợp: cần check quyền logactivity:view cụ thể
-    if (perm === 'menu:logactivities') {
-      return permissions.includes('logactivity:view');
+    if (!code && !route) return true;
+
+    // Direct permission match
+    if (code && permissions.includes(code)) return true;
+
+    // Module/Menu to permission mappings for HR Portal
+    const permMap: Record<string, string[]> = {
+      'menu:jobs': ['jobs:view', 'jobs:create'],
+      'module:jobs': ['jobs:view'],
+      'menu:cvs': ['cvs:view', 'cvs:create'],
+      'module:cvs': ['cvs:view'],
+      'menu:applications': ['applications:view', 'applications:create'],
+      'module:applications': ['applications:view'],
+      'menu:interviews': ['interviews:view', 'interviews:create'],
+      'module:interviews': ['interviews:view'],
+      'menu:companies': ['companies:view', 'companies:create'],
+      'module:companies': ['companies:view'],
+      'menu:saved-jobs': ['saved-jobs:view', 'job:save'],
+      'module:saved-jobs': ['saved-jobs:view', 'job:save'],
+      'menu:notifications': ['notifications:view', 'notification:view'],
+      'module:notifications': ['notifications:view', 'notification:view'],
+      'menu:reports': ['reports:view', 'report:view'],
+      'module:reports': ['reports:view', 'report:view'],
+      'menu:system': ['user:view', 'user-role:view', 'system:view'],
+      'module:system-setting': ['system:view', 'user:view'],
+      'module:user': ['user:view', 'user:create', 'user:update'],
+      'module:user-role': ['user-role:view', 'user-role:manage', 'user-role:assign'],
+      'module:site': ['site:view']
+    };
+
+    if (code && permMap[code]) {
+      const matched = permMap[code].some(p => permissions.includes(p));
+      if (matched) return true;
     }
-    // Module giám sát cuộc gọi: cần check quyền callcenter:supervisor
-    if (perm === 'module:callcenter-monitor') {
-      return permissions.includes('callcenter:supervisor');
+
+    if (code) {
+      const cleanCode = code.replace(/^module:|^menu:/, '');
+      if (permissions.some(p => p === cleanCode || p.startsWith(cleanCode + ':') || p.startsWith(cleanCode + '_'))) {
+        return true;
+      }
     }
-    if (perm.startsWith('module:') || perm.startsWith('menu:')) return true;
-    const cleanCode = perm.replace(/^module:|^menu:/, '');
-    return permissions.some(p => p === cleanCode || p.startsWith(cleanCode + ':') || p.startsWith(cleanCode + '_'));
+
+    // Role-based route fallbacks
+    if (route) {
+      if (route.includes('/candidate/') || route === '/saved-jobs') {
+        return isCandidate || isSuperAdmin;
+      }
+      if (route.includes('/employer/')) {
+        return isEmployer || isSuperAdmin;
+      }
+      if (route.includes('/user-roles') || route.includes('/users') || route.includes('/user-settings')) {
+        return isSuperAdmin || permissions.includes('user:view') || permissions.includes('user-role:view');
+      }
+    }
+
+    // Candidate defaults
+    if (isCandidate) {
+      const candidateAllowed = ['menu:jobs', 'menu:cvs', 'menu:applications', 'menu:interviews', 'menu:companies', 'menu:saved-jobs', 'menu:notifications'];
+      if (code && candidateAllowed.includes(code)) return true;
+    }
+
+    // Employer defaults
+    if (isEmployer) {
+      const employerAllowed = ['menu:jobs', 'menu:cvs', 'menu:applications', 'menu:interviews', 'menu:companies', 'menu:notifications', 'menu:reports'];
+      if (code && employerAllowed.includes(code)) return true;
+    }
+
+    return false;
   };
 
   useEffect(() => {
     const fetchMenus = async () => {
       try {
         const response = await authService.getAuthorizedMenus();
-        if (response.success) {
-          // Map backend MenuDto to SidebarItem, filtering out removed KPI report and Chi nhánh modules
-          const filterKpi = (item: any) => 
-            item.route !== '/callcenter/kpi' && 
-            item.code !== 'module:callcenter-kpi' && 
-            item.code !== 'callcenter:kpi' && 
-            item.name !== 'Báo cáo KPI' &&
-            item.label !== 'Báo cáo KPI' &&
-            item.route !== '/sites' &&
-            item.code !== 'module:site' &&
-            item.name !== 'Chi nhánh' &&
-            item.label !== 'Chi nhánh' &&
-            item.label !== 'Sites / Branches' &&
-            item.route !== '/callcenter/settings' &&
-            item.code !== 'module:callcenter-setting' &&
-            item.name !== 'Cấu hình tổng đài' &&
-            item.label !== 'Cấu hình tổng đài';
-
+        if (response.success && response.data && response.data.length > 0) {
           const mapMenu = (m: any): SidebarItem => ({
             label: m.name || m.label,
             shortName: m.shortName,
@@ -70,16 +112,18 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
             route: m.route,
             code: m.code,
             children: m.children && m.children.length > 0 
-              ? m.children.filter(filterKpi).map(mapMenu) 
+              ? m.children.map(mapMenu) 
               : undefined
           });
-          const mapped = response.data.filter(filterKpi).map(mapMenu);
-
-
+          const mapped = response.data.map(mapMenu);
           setMenus(mapped);
+        } else {
+          // Fallback to configured SIDEBAR_MENU
+          setMenus(SIDEBAR_MENU);
         }
       } catch (error) {
-        console.error('Failed to fetch sidebar menus:', error);
+        console.error('Failed to fetch sidebar menus, using default config:', error);
+        setMenus(SIDEBAR_MENU);
       } finally {
         setLoading(false);
       }
@@ -95,13 +139,12 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
       .map((item) => {
         if (item.children && item.children.length > 0) {
           const visibleChildren = item.children.filter((child) => {
-            if (!child.code) return true;
-            return hasPermission(child.code);
+            return hasPermission(child.code, child.route);
           });
           if (visibleChildren.length === 0) return null;
           return { ...item, children: visibleChildren };
         } else {
-          if (item.code && !hasPermission(item.code)) return null;
+          if (!hasPermission(item.code, item.route)) return null;
           return item;
         }
       })
@@ -134,61 +177,23 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
       }
     }
     
-    // Fallback dịch theo tên nhãn gốc Tiếng Việt hoặc Tiếng Anh
-    if (label === 'CRM & LEADS' || label === 'CRM & Quản lý Leads' || label === 'CRM') return t('sidebar.menu_crm');
-    if (label === 'Cơ hội (Leads)' || label === 'Leads & Opportunities') return t('sidebar.module_crm_lead');
-    if (label === 'Quản lý công việc' || label === 'Task Management') return t('sidebar.module_crm_task');
-    if (label === 'Cơ cấu tổ chức' || label === 'Organization Structure') return t('sidebar.module_crm_organization');
-    if (label === 'Phân loại công việc' || label === 'Task Categories') return t('sidebar.module_crm_task_type');
-    if (label === 'Landing Page Forms') return t('sidebar.module_crm_public_form');
-    if (label === 'Báo cáo CRM' || label === 'CRM Reports') return t('sidebar.module_crm_report');
-
-    if (label === 'SYSTEM SETTINGS' || label === 'Cấu hình hệ thống') return t('sidebar.menu_system');
-    if (label === 'Accounts List' || label === 'Tài khoản') return t('sidebar.module_user');
-    if (label === 'Roles & Permissions' || label === 'Phân quyền') return t('sidebar.module_user_role');
-    if (label === 'Sites / Branches' || label === 'Chi nhánh') return t('sidebar.module_site');
-    if (label === 'Common Catalogs' || label === 'Danh mục dùng chung') return t('sidebar.module_master_data');
-    if (label === 'Tham số hệ thống' || label === 'Cài đặt hệ thống' || label === 'System Settings') return t('sidebar.system_setting_update');
-
-    if (label === 'CALL CENTER' || label === 'Call Center') return t('sidebar.menu_callcenter');
-    if (label === 'Lịch sử cuộc gọi' || label === 'Call History') return t('sidebar.callcenter_history');
-    if (label === 'Chỉ tiêu KPI' || label === 'KPI Targets') return t('sidebar.callcenter_kpi');
-    if (label === 'Giám sát cuộc gọi' || label === 'Call Supervisor') return t('sidebar.callcenter_monitor');
-    if (label === 'Cấu hình tổng đài' || label === 'CallCenter Settings') return t('sidebar.callcenter_settings');
-    if (label === 'Giả lập cuộc gọi' || label === 'Call Simulator') return t('sidebar.callcenter_simulator');
-
-    if (label === 'BÁO CÁO TỔNG HỢP' || label === 'Báo cáo Tổng hợp' || label === 'Activity Logs & Reports') return t('sidebar.menu_logactivities');
-
-    if (label === 'Quản lý khách hàng') return t('sidebar.menu_customer');
-    if (label === 'Khách hàng') return t('sidebar.module_customer');
-    if (label === 'Lịch hẹn') return t('sidebar.menu_appointment');
-    if (label === 'Quản lý hóa đơn') return t('sidebar.menu_bill');
-    if (label === 'Quản lý đặt cọc') return t('sidebar.module_deposit');
-    if (label === 'Sổ công nợ') return t('sidebar.module_ar_ledger');
-    if (label === 'Yêu cầu hoàn hủy') return t('sidebar.module_refund');
-    if (label === 'Quản lý nhân sự') return t('sidebar.menu_staff');
-    if (label === 'Danh mục vị trí') return t('sidebar.module_position');
-    if (label === 'Gán vị trí nhân viên') return t('sidebar.module_staff_position');
-    if (label === 'Báo cáo') return t('sidebar.menu_report');
-    if (label === 'Thực hiện DV') return t('sidebar.menu_service_execution');
-    if (label === 'Quản lý kho') return t('sidebar.menu_inventory');
-    if (label === 'Danh mục sản phẩm') return t('sidebar.menu_product');
-    if (label === 'Sản phẩm & Dịch vụ') return t('sidebar.module_product');
-    if (label === 'Danh mục & Nhãn') return t('sidebar.module_product_taxonomy');
-
-    if (label === 'Doanh thu & Doanh số') return t('sidebar.group_revenue');
-    if (label === 'Kho & Vật tư') return t('sidebar.group_inventory');
-    if (label === 'Công nợ & Tài chính') return t('sidebar.group_finance');
-    if (label === 'Phân quyền & Quản trị') return t('sidebar.group_admin');
-
-    if (label === 'Báo cáo Nhập-Xuất-Tồn') return t('sidebar.report_nxt');
-    if (label === 'Thẻ Kho') return t('sidebar.report_stock_card');
-    if (label === 'Nhật ký nhập xuất chi tiết') return t('sidebar.report_detailed_journal');
-    if (label === 'Sổ cái công nợ phải thu') return t('sidebar.report_ar_ledger');
-    if (label === 'Báo cáo phân tích tuổi nợ') return t('sidebar.report_aging');
+    if (label === 'Quản lý việc làm' || label === 'Việc làm') return t('sidebar.menu_jobs', 'Việc làm');
+    if (label === 'Hồ sơ & CV' || label === 'CV') return t('sidebar.menu_cvs', 'Hồ sơ & CV');
+    if (label === 'Quản lý ứng tuyển' || label === 'Ứng tuyển') return t('sidebar.menu_applications', 'Ứng tuyển');
+    if (label === 'Lịch phỏng vấn') return t('sidebar.menu_interviews', 'Lịch phỏng vấn');
+    if (label === 'Trang doanh nghiệp' || label === 'Doanh nghiệp') return t('sidebar.menu_companies', 'Doanh nghiệp');
+    if (label === 'Việc làm đã lưu' || label === 'Đã lưu') return t('sidebar.menu_saved_jobs', 'Việc làm đã lưu');
+    if (label === 'Trung tâm thông báo' || label === 'Thông báo') return t('sidebar.menu_notifications', 'Thông báo');
+    if (label === 'Báo cáo & Thống kê' || label === 'Báo cáo') return t('sidebar.menu_reports', 'Báo cáo & Thống kê');
+    if (label === 'Cấu hình hệ thống' || label === 'Cấu hình') return t('sidebar.menu_system', 'Cấu hình hệ thống');
+    if (label === 'Tài khoản') return t('sidebar.module_user', 'Tài khoản');
+    if (label === 'Phân quyền') return t('sidebar.module_user_role', 'Phân quyền');
+    if (label === 'Cấu hình chung') return t('sidebar.module_system_setting', 'Cấu hình chung');
     
     return label;
   };
+
+  const visibleMenuItems = filterMenuItems(menus);
 
   return (
     <aside className={`${styles.sidebar} ${expanded ? styles.expanded : ''}`}>
@@ -206,17 +211,17 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
 
       <nav className={styles.nav}>
         {loading ? (
-          <div className={styles.loading}>{t('sidebar.loading')}</div>
+          <div className={styles.loading}>{t('sidebar.loading', 'Đang tải...')}</div>
         ) : (
-          filterMenuItems(menus).map((item) => (
+          visibleMenuItems.map((item) => (
             <div key={item.label} className={styles.group}>
-            {item.children ? (
+            {item.children && item.children.length > 0 ? (
               <>
                 <button 
                   className={`${styles.item} ${expandedSubmenus.has(item.label) ? styles.itemExpanded : ''}`}
                   onClick={() => toggleSubmenu(item.label)}
                 >
-                  <Icon name={item.icon} size={24} className={styles.icon} />
+                  <Icon name={item.icon} size={20} className={styles.icon} />
                   {expanded ? (
                     <span className={styles.label}>{getTranslatedLabel(item.code, item.label)}</span>
                   ) : (
@@ -231,123 +236,16 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
                 
                 {expanded && expandedSubmenus.has(item.label) && (
                   <div className={styles.submenu}>
-                    {item.code === 'menu:report' ? (
-                      <>
-                        {/* Nhóm 1: Doanh thu & Doanh số */}
-                        {item.children.some(c => c.code !== 'module:report-permission-by-role' && c.code !== 'module:report-permission-by-user' && c.code !== 'module:report-consumable-by-service') && (
-                          <>
-                            <div className={styles.submenuGroupHeader}>{getTranslatedLabel(undefined, 'Doanh thu & Doanh số')}</div>
-                            {item.children
-                              .filter(c => c.code !== 'module:report-permission-by-role' && c.code !== 'module:report-permission-by-user' && c.code !== 'module:report-consumable-by-service')
-                              .map((child) => (
-                                <NavLink 
-                                  key={child.label}
-                                  to={child.route || '#'}
-                                  className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                                >
-                                  <span className={styles.submenuDot}></span>
-                                  <span className={styles.submenuLabel}>{getTranslatedLabel(child.code, child.label)}</span>
-                                </NavLink>
-                              ))}
-                          </>
-                        )}
-
-                        {/* Nhóm 2: Kho & Vật tư */}
-                        {((hasPermission('inventory:view') || hasPermission('module:inventory') || item.children.some(c => c.code === 'module:report-consumable-by-service')) && (
-                          <>
-                            <div className={styles.submenuGroupHeader} style={{ marginTop: '8px' }}>{getTranslatedLabel(undefined, 'Kho & Vật tư')}</div>
-                            {(hasPermission('inventory:view') || hasPermission('module:inventory')) && (
-                              <>
-                                <NavLink 
-                                  to="/inventory/reports?tab=NXT"
-                                  className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                                >
-                                  <span className={styles.submenuDot}></span>
-                                  <span className={styles.submenuLabel}>{getTranslatedLabel(undefined, 'Báo cáo Nhập-Xuất-Tồn')}</span>
-                                </NavLink>
-                                <NavLink 
-                                  to="/inventory/reports?tab=STOCK_CARD"
-                                  className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                                >
-                                  <span className={styles.submenuDot}></span>
-                                  <span className={styles.submenuLabel}>{getTranslatedLabel(undefined, 'Thẻ Kho')}</span>
-                                </NavLink>
-                                <NavLink 
-                                  to="/inventory/reports?tab=DETAILED"
-                                  className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                                >
-                                  <span className={styles.submenuDot}></span>
-                                  <span className={styles.submenuLabel}>{getTranslatedLabel(undefined, 'Nhật ký nhập xuất chi tiết')}</span>
-                                </NavLink>
-                              </>
-                            )}
-                            {item.children
-                              .filter(c => c.code === 'module:report-consumable-by-service')
-                              .map((child) => (
-                                <NavLink 
-                                  key={child.label}
-                                  to={child.route || '#'}
-                                  className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                                >
-                                  <span className={styles.submenuDot}></span>
-                                  <span className={styles.submenuLabel}>{getTranslatedLabel(child.code, child.label)}</span>
-                                </NavLink>
-                              ))}
-                          </>
-                        ))}
-
-                        {/* Nhóm 3: Công nợ & Tài chính */}
-                        {(hasPermission('ar:view') || hasPermission('module:ar-ledger') || hasPermission('ar_ledger:view')) && (
-                          <>
-                            <div className={styles.submenuGroupHeader} style={{ marginTop: '8px' }}>{getTranslatedLabel(undefined, 'Công nợ & Tài chính')}</div>
-                            <NavLink 
-                               to="/ar/ledger"
-                               className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                            >
-                              <span className={styles.submenuDot}></span>
-                              <span className={styles.submenuLabel}>{getTranslatedLabel(undefined, 'Sổ cái công nợ phải thu')}</span>
-                            </NavLink>
-                            <NavLink 
-                              to="/ar/aging-report"
-                              className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                            >
-                              <span className={styles.submenuDot}></span>
-                              <span className={styles.submenuLabel}>{getTranslatedLabel(undefined, 'Báo cáo phân tích tuổi nợ')}</span>
-                            </NavLink>
-                          </>
-                        )}
-
-                        {/* Nhóm 4: Phân quyền & Quản trị */}
-                        {item.children.some(c => c.code === 'module:report-permission-by-role' || c.code === 'module:report-permission-by-user') && (
-                          <>
-                            <div className={styles.submenuGroupHeader} style={{ marginTop: '8px' }}>{getTranslatedLabel(undefined, 'Phân quyền & Quản trị')}</div>
-                            {item.children
-                              .filter(c => c.code === 'module:report-permission-by-role' || c.code === 'module:report-permission-by-user')
-                              .map((child) => (
-                                <NavLink 
-                                  key={child.label}
-                                  to={child.route || '#'}
-                                  className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                                >
-                                  <span className={styles.submenuDot}></span>
-                                  <span className={styles.submenuLabel}>{getTranslatedLabel(child.code, child.label)}</span>
-                                </NavLink>
-                              ))}
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      item.children.map((child) => (
-                        <NavLink 
-                          key={child.label}
-                          to={child.route || '#'}
-                          className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
-                        >
-                          <span className={styles.submenuDot}></span>
-                          <span className={styles.submenuLabel}>{getTranslatedLabel(child.code, child.label)}</span>
-                        </NavLink>
-                      ))
-                    )}
+                    {item.children.map((child) => (
+                      <NavLink 
+                        key={child.label}
+                        to={child.route || '#'}
+                        className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
+                      >
+                        <span className={styles.submenuDot}></span>
+                        <span className={styles.submenuLabel}>{getTranslatedLabel(child.code, child.label)}</span>
+                      </NavLink>
+                    ))}
                   </div>
                 )}
               </>
@@ -356,7 +254,7 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
                 to={item.route || '#'}
                 className={({ isActive }) => `${styles.item} ${isActive ? styles.active : ''}`}
               >
-                <Icon name={item.icon} size={24} className={styles.icon} />
+                <Icon name={item.icon} size={20} className={styles.icon} />
                 {expanded ? (
                   <span className={styles.label}>{getTranslatedLabel(item.code, item.label)}</span>
                 ) : (

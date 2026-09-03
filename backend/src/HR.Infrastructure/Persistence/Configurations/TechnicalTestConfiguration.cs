@@ -40,6 +40,7 @@ public class TechnicalTestConfiguration : IEntityTypeConfiguration<TechnicalTest
             .HasConversion<string>()
             .HasMaxLength(20)
             .HasDefaultValue(TechnicalTestStatus.FAILED)
+            .HasSentinel((TechnicalTestStatus)(-1))
             .IsRequired();
 
         builder.Property(x => x.Notes)

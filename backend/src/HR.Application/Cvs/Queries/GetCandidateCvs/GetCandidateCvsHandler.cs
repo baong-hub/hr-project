@@ -30,7 +30,7 @@ public class GetCandidateCvsHandler : IRequestHandler<GetCandidateCvsQuery, List
         }
 
         var candidate = await _context.Candidates
-            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == userId, cancellationToken);
 
         if (candidate == null)
         {
