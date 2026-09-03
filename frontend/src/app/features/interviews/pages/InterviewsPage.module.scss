@@ -1,0 +1,190 @@
+.interviewsPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-2);
+}
+
+.titleArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.titleArea h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(90deg, var(--color-text-primary) 0%, var(--color-brand-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--color-brand-primary) 0%, #1e88e5 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btnPrimary:hover {
+  background: #1e88e5;
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 16px;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btnSecondary:hover {
+  background: var(--color-bg-hover);
+}
+
+/* === Layout Table Card === */
+.tableCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataTable th {
+  background: var(--color-bg-subtle);
+  padding: 14px var(--space-4);
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid var(--color-border-default);
+  text-transform: uppercase;
+}
+
+.dataTable td {
+  padding: 16px var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.dataTable tbody tr:hover {
+  background: var(--color-bg-hover);
+}
+
+.meetingLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-brand-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.meetingLink:hover {
+  text-decoration: underline;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.badgeScheduled {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+.badgeAccepted {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.badgeDeclined {
+  background: #fdf2f2;
+  color: #ec5252;
+}
+.badgeCancelled {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+.badgeCompleted {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.actionBtns {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.actionBtn:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  background: var(--color-bg-hover);
+}
+
+.btnAccept {
+  color: #2e7d32;
+  border-color: #c6f6d5;
+}
+.btnAccept:hover {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.btnDecline {
+  color: #c62828;
+  border-color: #fed7d7;
+}
+.btnDecline:hover {
+  background: #fff5f5;
+  border-color: #c62828;
+  color: #c62828;
+}

@@ -1,0 +1,4 @@
+namespace HR.Application.Auth;
+
+// DTOs dùng chung (LoginResult và UserInfo đã khai báo trong Commands.cs)
+

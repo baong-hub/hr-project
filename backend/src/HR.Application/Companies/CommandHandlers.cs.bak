@@ -1,0 +1,67 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using HR.Application.Common.Interfaces;
+using HR.Application.Common.Exceptions;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace HR.Application.Companies;
+
+public class UpdateCompanyCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    : IRequestHandler<UpdateCompanyCommand, bool>
+{
+    public async Task<bool> Handle(UpdateCompanyCommand request, CancellationToken cancellationToken)
+    {
+        var company = await context.Companies.FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
+        if (company == null)
+        {
+            throw new NotFoundException("Company", request.Id.ToString());
+        }
+
+        // Authorization check: only employers in this company or admin can edit
+        var userId = currentUserService.UserId;
+        var isAdmin = currentUserService.Username == "admin";
+        var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
+
+        if (!isAdmin && (employer == null || employer.CompanyId != company.Id))
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền cập nhật thông tin công ty này.");
+        }
+
+        company.Name = request.Name;
+        company.LogoUrl = request.LogoUrl;
+        company.BannerUrl = request.BannerUrl;
+        company.Description = request.Description;
+        company.Website = request.Website;
+        company.SizeRange = request.SizeRange;
+        company.Industry = request.Industry;
+        company.AddressList = request.AddressList;
+
+        await context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+}
+
+public class VerifyCompanyCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    : IRequestHandler<VerifyCompanyCommand, bool>
+{
+    public async Task<bool> Handle(VerifyCompanyCommand request, CancellationToken cancellationToken)
+    {
+        var isAdmin = currentUserService.Username == "admin";
+        if (!isAdmin)
+        {
+            throw new UnauthorizedAccessException("Chỉ Admin hệ thống mới có quyền phê duyệt xác minh doanh nghiệp.");
+        }
+
+        var company = await context.Companies.FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
+        if (company == null)
+        {
+            throw new NotFoundException("Company", request.Id.ToString());
+        }
+
+        company.IsVerified = request.IsVerified;
+        await context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+}

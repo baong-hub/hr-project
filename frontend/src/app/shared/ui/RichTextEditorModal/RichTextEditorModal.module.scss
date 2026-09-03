@@ -1,0 +1,270 @@
+.editorContainer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--color-bg-card);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.editorToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  background-color: var(--color-bg-hover);
+  border-bottom: 1px solid var(--color-border-default);
+  padding: var(--space-2);
+}
+
+.toolbarBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: var(--color-border-default);
+  }
+
+  &.active {
+    background-color: var(--color-border-default);
+    color: var(--color-brand-gold);
+    border-color: var(--color-brand-gold);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.toolbarSeparator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--color-border-default);
+  margin: 0 var(--space-1);
+}
+
+.toolbarSelect {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+  outline: none;
+  cursor: pointer;
+  height: 32px;
+}
+
+.colorPickerWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.colorPopover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-3);
+  margin-top: 4px;
+  min-width: 180px;
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: var(--space-3);
+}
+
+.colorCircle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.selected {
+    box-shadow: 0 0 0 2px var(--color-brand-gold);
+  }
+}
+
+.customColorBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background-color: var(--color-border-default);
+  }
+}
+
+.editorViewport {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.editorBody {
+  min-height: 350px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding: var(--space-4);
+  background-color: var(--color-bg-input);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  outline: none;
+  line-height: 1.6;
+
+  &:focus {
+    background-color: var(--color-bg-card);
+  }
+
+  /* Handle custom placeholder for contenteditable */
+  &:empty:before {
+    content: attr(data-placeholder);
+    color: var(--color-text-muted);
+    font-style: italic;
+    cursor: text;
+  }
+
+  img {
+    max-width: 100%;
+    border-radius: var(--radius-md);
+    margin: var(--space-3) 0;
+    border: 1px solid var(--color-border-default);
+    display: inline-block;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease;
+
+    &:hover {
+      box-shadow: 0 0 0 2px var(--color-brand-gold);
+    }
+  }
+
+  /* Support list styling */
+  ul {
+    list-style-type: disc;
+    padding-left: var(--space-6);
+    margin-bottom: var(--space-3);
+  }
+
+  ol {
+    list-style-type: decimal;
+    padding-left: var(--space-6);
+    margin-bottom: var(--space-3);
+  }
+}
+
+/* Image Resizer Overlay */
+.resizerOverlay {
+  position: absolute;
+  border: 2px dashed #1f3bb3;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.resizeHandle {
+  width: 10px;
+  height: 10px;
+  background-color: #1f3bb3;
+  border: 1px solid #fff;
+  border-radius: 2px;
+  position: absolute;
+  pointer-events: auto;
+
+  &.topLeft {
+    top: -5px;
+    left: -5px;
+    cursor: nwse-resize;
+  }
+
+  &.topRight {
+    top: -5px;
+    right: -5px;
+    cursor: nesw-resize;
+  }
+
+  &.bottomLeft {
+    bottom: -5px;
+    left: -5px;
+    cursor: nesw-resize;
+  }
+
+  &.bottomRight {
+    bottom: -5px;
+    right: -5px;
+    cursor: nwse-resize;
+  }
+}
+
+/* Modal Actions */
+.modalFooterActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.btnCancel {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-border-default);
+  }
+}
+
+.btnSave {
+  background-color: #1f3bb3;
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 24px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(31, 59, 179, 0.2);
+
+  &:hover {
+    background-color: #1a3297;
+  }
+}

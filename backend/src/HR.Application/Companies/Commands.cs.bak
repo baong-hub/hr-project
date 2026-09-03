@@ -1,0 +1,20 @@
+using MediatR;
+
+namespace HR.Application.Companies;
+
+public record UpdateCompanyCommand(
+    int Id,
+    string Name,
+    string? LogoUrl,
+    string? BannerUrl,
+    string? Description,
+    string? Website,
+    string SizeRange,
+    string Industry,
+    string AddressList
+) : IRequest<bool>;
+
+public record VerifyCompanyCommand(
+    int Id,
+    bool IsVerified
+) : IRequest<bool>;

@@ -1,0 +1,107 @@
+.container {
+  padding: var(--space-6);
+  max-width: var(--layout-content-max-width);
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: var(--space-6);
+
+  h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+}
+
+.content {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: var(--space-4);
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  td {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border-default);
+    font-size: var(--font-size-base);
+  }
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background-color: var(--color-brand-gold-soft);
+  color: var(--color-brand-gold-dark);
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+}
+
+.fullName {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.username {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.roleBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.roleBadge {
+  padding: 2px 8px;
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.noRole {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.loading {
+  text-align: center;
+  padding: var(--space-12);
+}

@@ -1,0 +1,55 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: hr_mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hr_portal
+      MYSQL_USER: hr_user
+      MYSQL_PASSWORD: hr_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./hr_database_seed.sql:/docker-entrypoint-initdb.d/seed.sql
+
+  adminer:
+    image: adminer:latest
+    container_name: hr_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+
+  hr-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hr_api
+    restart: always
+    ports:
+      - "5000:80"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mysql;Database=hr_portal;User=hr_user;Password=hr_password;
+      - JWT__Key=this_is_a_very_secret_key_for_jwt_256_bits_long
+      - JWT__Issuer=HRPortal
+      - JWT__Audience=HRPortal
+    depends_on:
+      - mysql
+
+  hr-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hr_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - hr-api
+
+volumes:
+  mysql_data:

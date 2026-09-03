@@ -1,0 +1,203 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--layout-sidebar-width);
+  background-color: var(--color-sidebar-bg);
+  border-right: 1px solid var(--color-sidebar-border);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-sidebar);
+  transition: width var(--transition-base);
+  overflow: hidden;
+}
+
+.expanded {
+  width: var(--layout-sidebar-width-expanded);
+
+  .item {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-left: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .label {
+    text-align: left;
+    width: 100%;
+    white-space: nowrap;
+    display: block;
+  }
+
+
+}
+
+.brand {
+  height: var(--layout-header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-sidebar-border);
+  gap: var(--space-2);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.logoImg {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-sidebar-text);
+  white-space: nowrap;
+}
+
+.toggleBtn {
+  color: var(--color-sidebar-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  margin-left: auto;
+
+  &:hover {
+    color: var(--color-sidebar-text);
+    background-color: var(--color-sidebar-bg-hover);
+  }
+}
+
+.nav {
+  flex: 1;
+  padding: var(--space-2) 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px var(--space-2);
+  color: var(--color-sidebar-text-muted);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  gap: var(--space-1);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--color-sidebar-bg-hover);
+    color: var(--color-sidebar-text);
+  }
+}
+
+.active {
+  background-color: var(--color-sidebar-bg-active);
+  color: var(--color-brand-gold);
+  border-left-color: var(--color-brand-gold);
+}
+
+.label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: none;
+}
+
+.shortName {
+  font-size: 9px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+  line-height: 1.2;
+  margin-top: 2px;
+  color: inherit;
+  word-break: break-word;
+}
+
+.icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.arrow {
+  margin-left: auto;
+  opacity: 0.5;
+}
+
+.submenu {
+  background-color: rgba(0, 0, 0, 0.15);
+  padding: var(--space-1) 0;
+}
+
+.submenuItem {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4) var(--space-2) 48px;
+  color: var(--color-sidebar-text-muted);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+  gap: var(--space-2);
+
+  &:hover {
+    color: var(--color-sidebar-text);
+    background-color: var(--color-sidebar-bg-hover);
+  }
+}
+
+.submenuActive {
+  color: var(--color-brand-gold);
+  font-weight: var(--font-weight-semibold);
+  
+  .submenuDot {
+    background-color: var(--color-brand-gold);
+    opacity: 1;
+  }
+}
+
+.submenuDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.5;
+}
+
+.submenuGroupHeader {
+  padding: 8px var(--space-4) 4px 35px;
+  color: var(--color-sidebar-text-muted);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}

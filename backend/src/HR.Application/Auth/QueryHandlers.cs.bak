@@ -1,0 +1,184 @@
+using HR.Application.Common.Exceptions;
+using HR.Application.Common.Interfaces;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using HR.Domain.Entities;
+using HR.Domain.Enums;
+
+namespace HR.Application.Auth;
+
+public class GetMeQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService, IOrganizationService organizationService)
+    : IRequestHandler<GetMeQuery, UserInfo>
+{
+    public async Task<UserInfo> Handle(GetMeQuery request, CancellationToken cancellationToken)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == 0) throw new ForbiddenException("Không tìm thấy thông tin xác thực.");
+
+        var user = await context.Users
+            .AsNoTracking()
+            .Include(u => u.Site)
+                .ThenInclude(s => s.Company)
+            .Include(u => u.UserSites)
+            .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permission)
+            .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
+
+        if (user is null) throw new NotFoundException("USER_NOT_FOUND", "Không tìm thấy người dùng hoặc tài khoản đã bị khoá.");
+
+        // Tự động gán vai trò mặc định nếu User chưa được gán vai trò trong DB (self-healing)
+        if (!user.UserRoles.Any())
+        {
+            var roleName = user.AccountType == AccountType.Admin ? "Super Admin" : "Tư vấn viên";
+            var defaultRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName, cancellationToken)
+                ?? await context.Roles.FirstAsync(cancellationToken);
+
+            context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = defaultRole.Id });
+            await context.SaveChangesAsync(cancellationToken);
+
+            user = await context.Users
+                .AsNoTracking()
+                .Include(u => u.Site)
+                    .ThenInclude(s => s.Company)
+                .Include(u => u.UserSites)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r.RolePermissions)
+                            .ThenInclude(rp => rp.Permission)
+                .FirstAsync(u => u.Id == user.Id, cancellationToken);
+        }
+
+        var roles = user.UserRoles.Select(ur => ur.Role.Name).Distinct().ToList();
+        var minRoleLevel = user.UserRoles.Any() ? user.UserRoles.Min(ur => ur.Role.Level) : 5;
+
+        // Lấy permissions từ DB
+        var userPermissions = await context.UserPermissions
+            .AsNoTracking()
+            .Include(up => up.Permission)
+            .Where(up => up.UserId == user.Id)
+            .ToListAsync(cancellationToken);
+
+        var plainPermissions = userPermissions
+            .Select(up => up.Permission.Code)
+            .ToList();
+
+        var allowedSites = user.UserSites.Select(us => us.SiteId).ToList();
+        if (user.SiteId > 0 && !allowedSites.Contains(user.SiteId))
+        {
+            allowedSites.Add(user.SiteId);
+        }
+
+        int? staffId = null;
+
+        var subordinateUserIds = await organizationService.GetAllowedUserIdsAsync(user.Id, cancellationToken);
+
+        return new UserInfo(
+            Id: user.Id,
+            Username: user.Username,
+            FullName: user.FullName,
+            Email: user.Email,
+            Phone: user.Phone,
+            AvatarUrl: user.AvatarUrl,
+            AccountType: user.AccountType.ToString(),
+            SiteId: user.SiteId,
+            SiteName: user.Site?.Name ?? "N/A",
+            AllowedSites: allowedSites,
+            MinRoleLevel: minRoleLevel,
+            Roles: roles,
+            Permissions: plainPermissions,
+            StaffId: staffId,
+            CompanyCode: user.Site?.Company?.Code,
+            CompanyLogo: user.Site?.Company?.Logo,
+            SubordinateUserIds: subordinateUserIds);
+    }
+}
+
+public class GetAuthorizedMenusQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    : IRequestHandler<GetAuthorizedMenusQuery, IEnumerable<MenuDto>>
+{
+    public async Task<IEnumerable<MenuDto>> Handle(GetAuthorizedMenusQuery request, CancellationToken cancellationToken)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == 0) return [];
+
+        // 1. Lấy danh sách PermissionId mà user có từ UserPermissions
+        var userPermissionIds = await context.UserPermissions
+            .Where(up => up.UserId == userId)
+            .Select(up => up.PermissionId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        // 2. Lấy toàn bộ Menu cùng với Permissions của nó
+        var allMenus = await context.Menus
+            .AsNoTracking()
+            .Include(m => m.Permissions)
+            .OrderBy(m => m.SortOrder)
+            .ToListAsync(cancellationToken);
+
+        // 3. Kiểm tra xem user có phải Super Admin không
+        var roles = await context.UserRoles
+            .Where(ur => ur.UserId == userId && ur.Role.IsActive)
+            .Select(ur => ur.Role.Name)
+            .ToListAsync(cancellationToken);
+        
+        bool isSuperAdmin = roles.Contains("Super Admin");
+
+        // 4. Lọc Menu
+        var menuDict = allMenus.ToDictionary(m => m.Id);
+        var authorizedMenuIds = new HashSet<int>();
+
+        if (isSuperAdmin)
+        {
+            foreach (var id in menuDict.Keys) authorizedMenuIds.Add(id);
+        }
+        else
+        {
+            foreach (var menu in allMenus)
+            {
+                if (menu.Permissions.Any(p => userPermissionIds.Contains(p.Id)))
+                {
+                    var current = menu;
+                    while (current != null)
+                    {
+                        if (!authorizedMenuIds.Add(current.Id)) break;
+                        current = current.ParentId.HasValue ? menuDict.GetValueOrDefault(current.ParentId.Value) : null;
+                    }
+                }
+            }
+        }
+
+        // 5. Xây dựng cây MenuDto
+        return allMenus
+            .Where(m => m.ParentId == null && authorizedMenuIds.Contains(m.Id))
+            .Select(m => MapToDto(m, allMenus, authorizedMenuIds))
+            .ToList();
+    }
+
+    private MenuDto MapToDto(HR.Domain.Entities.Menu menu, List<HR.Domain.Entities.Menu> allMenus, HashSet<int> authorizedIds)
+    {
+        var children = allMenus
+            .Where(m => m.ParentId == menu.Id && authorizedIds.Contains(m.Id))
+            .Select(m => MapToDto(m, allMenus, authorizedIds))
+            .ToList();
+
+        return new MenuDto(menu.Id, menu.Code, menu.Name, menu.ShortName, menu.Icon, menu.Route, menu.SortOrder, children);
+    }
+}
+
+public class GetPublicAuthConfigQueryHandler(IApplicationDbContext context)
+    : IRequestHandler<GetPublicAuthConfigQuery, PublicAuthConfigDto>
+{
+    public async Task<PublicAuthConfigDto> Handle(GetPublicAuthConfigQuery request, CancellationToken cancellationToken)
+    {
+        var domainSetting = await context.SettingConfigs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.ConfigKey == "system.company_email_domain", cancellationToken);
+
+        var domain = domainSetting?.ConfigValue?.Trim() ?? "";
+        return new PublicAuthConfigDto(domain, !string.IsNullOrEmpty(domain));
+    }
+}
+
+

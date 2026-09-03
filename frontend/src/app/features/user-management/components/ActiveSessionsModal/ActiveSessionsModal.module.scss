@@ -1,0 +1,197 @@
+.modalContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.searchHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+
+  .searchInput {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #2563eb;
+    }
+  }
+
+  .sessionCount {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    background: #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+}
+
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  max-height: 480px;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+
+    th {
+      background-color: #f1f5f9;
+      color: #334155;
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+    }
+
+    tr:hover {
+      background-color: #f8fafc;
+    }
+
+    tr.currentSessionRow {
+      background-color: #eff6ff;
+    }
+  }
+}
+
+.userInfoCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .avatarBadge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .userDetails {
+    display: flex;
+    flex-direction: column;
+
+    .fullName {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .username {
+      font-size: 12px;
+      color: #64748b;
+    }
+  }
+}
+
+.deviceInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .deviceIcon {
+    font-size: 18px;
+  }
+
+  .deviceText {
+    display: flex;
+    flex-direction: column;
+
+    .deviceName {
+      font-weight: 500;
+    }
+
+    .browser {
+      font-size: 12px;
+      color: #64748b;
+    }
+  }
+}
+
+.ipBadge {
+  font-family: monospace;
+  font-size: 13px;
+  background-color: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #334155;
+}
+
+.currentBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  background-color: #dcfce7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.actionCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.revokeBtn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #dc2626;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.emptyState {
+  padding: 32px;
+  text-align: center;
+  color: #64748b;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}

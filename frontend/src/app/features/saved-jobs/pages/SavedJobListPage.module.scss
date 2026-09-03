@@ -1,0 +1,319 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleWrapper {
+  h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 4px 0 0 0;
+  }
+}
+
+.undoBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-brand-primary-soft, rgba(201, 169, 97, 0.1));
+  border: 1px solid var(--color-brand-primary, #c9a961);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-brand-primary-dark, #8f743c);
+
+  .btnUndo {
+    background: transparent;
+    border: none;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-brand-primary-dark, #8f743c);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+.jobsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.jobCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+  &:hover:not(.jobCard_disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.jobCard_disabled {
+  opacity: 0.6;
+}
+
+.cardMain {
+  display: flex;
+  gap: var(--space-4);
+  position: relative;
+}
+
+.logoWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.companyLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logoPlaceholder {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
+.infoWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.jobTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand-primary);
+  }
+
+  .jobCard_disabled & {
+    cursor: default;
+    &:hover {
+      color: var(--color-text-primary);
+    }
+  }
+}
+
+.expiredBadge {
+  background-color: var(--color-danger-soft, rgba(235, 87, 87, 0.1));
+  color: var(--color-danger, #eb5757);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+}
+
+.companyName {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin: 0;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.savedAt {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0 0 0;
+  font-style: italic;
+}
+
+.btnBookmark {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-primary);
+  transition: transform var(--transition-fast);
+  align-self: flex-start;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+.cardFooter {
+  border-top: 1px solid var(--color-border-default);
+  padding-top: var(--space-4);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btnApply {
+  background-color: var(--color-success, #2ecc71);
+  color: #ffffff;
+  border: none;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+}
+
+.stateContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-4);
+  text-align: center;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-brand-primary);
+  border-radius: var(--radius-circle);
+  animation: spin 0.8s linear infinite;
+  margin-bottom: var(--space-4);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.stateText {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.errorIcon {
+  color: var(--color-danger);
+  margin-bottom: var(--space-2);
+}
+
+.stateText_error {
+  color: var(--color-danger);
+  font-size: var(--font-size-md);
+  margin-bottom: var(--space-4);
+}
+
+.btnRetry {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-danger);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.emptyIcon {
+  color: var(--color-brand-primary-soft, rgba(201, 169, 97, 0.3));
+  margin-bottom: var(--space-4);
+}
+
+.emptyText {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin: var(--space-2) 0 var(--space-6) 0;
+}
+
+.btnDiscover {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2.5) var(--space-5);
+  background: var(--color-brand-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

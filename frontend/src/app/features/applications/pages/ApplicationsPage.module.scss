@@ -1,0 +1,464 @@
+.applicationsPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-2);
+}
+
+.titleArea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.titleArea h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(90deg, var(--color-text-primary) 0%, var(--color-brand-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Selector for Job-specific ATS view */
+.jobSelectorBar {
+  background: var(--color-bg-card);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.jobSelectorBar select {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  min-width: 300px;
+}
+
+/* === Kanban Board Layout === */
+.kanbanBoardContainer {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding-bottom: var(--space-4);
+  align-items: flex-start;
+  height: calc(100vh - 280px);
+  min-height: 500px;
+}
+
+.kanbanBoardContainer::-webkit-scrollbar {
+  height: 8px;
+}
+.kanbanBoardContainer::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 4px;
+}
+
+.kanbanColumn {
+  width: 290px;
+  min-width: 290px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.columnHeader {
+  padding: var(--space-4);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.columnHeaderBadge {
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+/* Target color accents for columns */
+.columnApplied { border-top: 4px solid var(--color-brand-primary); }
+.columnScreening { border-top: 4px solid #f59e0b; }
+.columnShortlist { border-top: 4px solid #8b5cf6; }
+.columnInterview { border-top: 4px solid #10b981; }
+.columnOffer { border-top: 4px solid #ec4899; }
+.columnHired { border-top: 4px solid #059669; }
+.columnRejected { border-top: 4px solid #ef4444; }
+
+.cardsContainer {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cardsContainer::-webkit-scrollbar {
+  width: 4px;
+}
+.cardsContainer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+/* Kanban Cards */
+.kanbanCard {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  cursor: grab;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.kanbanCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-brand-primary);
+}
+
+.kanbanCardActive {
+  cursor: grabbing;
+  opacity: 0.5;
+  background: var(--color-bg-subtle);
+  border: 1px dashed var(--color-brand-primary);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.candidateName {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.matchScoreBadge {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.scoreHigh { background: #e8f5e9; color: #2e7d32; }
+.scoreMedium { background: #fff8e1; color: #f59e0b; }
+.scoreLow { background: #fce4ec; color: #c62828; }
+
+.cardJobTitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.cardDate {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.cardActions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.cardBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.cardBtn:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  background: var(--color-bg-hover);
+}
+
+/* === Candidate Application Progress UI === */
+.stepperContainer {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.candidateJobCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: var(--space-4);
+}
+
+.candidateJobCard h3 {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  margin: 0 0 var(--space-1) 0;
+}
+
+.candidateStepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: var(--space-2) 0;
+  padding: 0 var(--space-4);
+}
+
+.stepperLine {
+  position: absolute;
+  top: 16px;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 3px;
+  background: var(--color-border-default);
+  z-index: 1;
+}
+
+.stepperLineActive {
+  position: absolute;
+  top: 16px;
+  left: var(--space-6);
+  height: 3px;
+  background: var(--color-brand-primary);
+  z-index: 2;
+  transition: width 0.3s ease;
+}
+
+.candStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 3;
+  gap: var(--space-2);
+}
+
+.candStepCircle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-bg-card);
+  border: 2px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  transition: all 0.2s ease;
+}
+
+.candStepLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.candStepActive .candStepCircle {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  background: var(--color-bg-card);
+  box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.12);
+}
+.candStepActive .candStepLabel {
+  color: var(--color-brand-primary);
+}
+
+.candStepCompleted .candStepCircle {
+  border-color: #2e7d32;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.candStepCompleted .candStepLabel {
+  color: #2e7d32;
+}
+
+.candStepFailed .candStepCircle {
+  border-color: var(--color-error);
+  background: #fdf2f2;
+  color: var(--color-error);
+}
+.candStepFailed .candStepLabel {
+  color: var(--color-error);
+}
+
+/* === Form and Modal layouts === */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-2xl);
+  width: 500px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.modalHeader h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  margin: 0;
+}
+
+.closeBtn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.modalBody {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modalFooter {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border-default);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  background: var(--color-bg-subtle);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.formGroup label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: var(--color-brand-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--color-brand-primary) 0%, #1e88e5 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 20px;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+}

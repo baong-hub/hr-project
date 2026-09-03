@@ -1,0 +1,36 @@
+﻿Using launch settings from src\CRM.API\Properties\launchSettings.json...
+Building...
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj : warning NU1903: Package 'Newtonsoft.Json' 11.0.2 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr [D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj]
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1903: Package 'Microsoft.OpenApi' 2.4.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1903: Package 'Newtonsoft.Json' 11.0.2 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj : warning NU1902: Package 'System.Data.SqlClient' 4.4.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-8g2p-5pqh-5jmc [D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj]
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1902: Package 'System.Data.SqlClient' 4.4.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-8g2p-5pqh-5jmc
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj : warning NU1903: Package 'System.Data.SqlClient' 4.4.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7 [D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj]
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1903: Package 'System.Data.SqlClient' 4.4.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1903: Package 'Microsoft.OpenApi' 2.4.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1903: Package 'Newtonsoft.Json' 11.0.2 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1902: Package 'System.Data.SqlClient' 4.4.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-8g2p-5pqh-5jmc
+D:\CRM_Getfly\backend\src\CRM.API\CRM.API.csproj : warning NU1903: Package 'System.Data.SqlClient' 4.4.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj : warning NU1903: Package 'Newtonsoft.Json' 11.0.2 has a known high severity vulnerability, https://github.com/advisories/GHSA-5crp-9r3c-p9vr
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj : warning NU1902: Package 'System.Data.SqlClient' 4.4.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-8g2p-5pqh-5jmc
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj : warning NU1903: Package 'System.Data.SqlClient' 4.4.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\CRM_Getfly\backend\src\CRM.Infrastructure\Services\JwtService.cs(10,102): warning CS9113: Parameter 'httpContextAccessor' is unread. [D:\CRM_Getfly\backend\src\CRM.Infrastructure\CRM.Infrastructure.csproj]
+[16:29:23 INF] DB tables already exist. Exit install
+[16:29:23 INF] Starting HIS API...
+[DB_CONNECTION] Using database: 'crm'
+[16:29:26 WRN] The 'CustomerType' property 'CustomerType' on entity type 'Customer' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value '0', since this is the CLR default for the 'CustomerType' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+[16:29:26 INF] SyncSnakeCaseSchema already applied. Skipping column renaming step.
+[16:29:26 INF] Applying remaining migrations...
+[16:29:28 WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+[16:29:29 INF] Starting Hangfire Server using job storage: 'Server: 10.10.30.10@crm'
+[16:29:29 INF] Using the following options for SQL Server job storage:
+[16:29:29 INF]     Queue poll interval: 00:00:15.
+[16:29:29 INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+[16:29:29 INF] Server 3t-it-namnh:26452:99a892db successfully announced in 31.3404 ms
+[16:29:29 INF] Server 3t-it-namnh:26452:99a892db is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+[16:29:29 INF] Server 3t-it-namnh:26452:99a892db all the dispatchers started
+[16:29:29 INF] 1 servers were removed due to timeout

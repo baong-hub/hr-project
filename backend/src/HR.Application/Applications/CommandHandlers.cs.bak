@@ -1,0 +1,108 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using HR.Application.Common.Interfaces;
+using HR.Application.Common.Exceptions;
+using HR.Domain.Entities;
+using HR.Domain.Enums;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+
+namespace HR.Application.Applications;
+
+public class ApplyJobCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    : IRequestHandler<ApplyJobCommand, int>
+{
+    public async Task<int> Handle(ApplyJobCommand request, CancellationToken cancellationToken)
+    {
+        var userId = currentUserService.UserId;
+        if (userId == 0)
+        {
+            throw new UnauthorizedAccessException("Người dùng chưa đăng nhập.");
+        }
+
+        var candidate = await context.Candidates
+            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+
+        if (candidate == null)
+        {
+            candidate = new Candidate
+            {
+                UserId = userId,
+                VisibilityStatus = "PUBLIC"
+            };
+            context.Candidates.Add(candidate);
+            await context.SaveChangesAsync(cancellationToken);
+        }
+
+        // Validate CV exists
+        var cv = await context.CandidateCvs
+            .FirstOrDefaultAsync(c => c.Id == request.CandidateCvId && c.CandidateId == candidate.Id, cancellationToken);
+        if (cv == null)
+        {
+            throw new NotFoundException("CV Profile", request.CandidateCvId.ToString());
+        }
+
+        // Check if already applied
+        var alreadyApplied = await context.Applications.AnyAsync(
+            a => a.JobId == request.JobId && a.CandidateId == candidate.Id, cancellationToken);
+        if (alreadyApplied)
+        {
+            throw new InvalidOperationException("Bạn đã nộp đơn ứng tuyển cho tin tuyển dụng này rồi.");
+        }
+
+        var app = new HR.Domain.Entities.Application
+        {
+            JobId = request.JobId,
+            CandidateId = candidate.Id,
+            CandidateCvId = request.CandidateCvId,
+            CoverLetter = request.CoverLetter,
+            Status = ApplicationStatus.APPLIED, // Initial stage: APPLIED (instead of PENDING, to match Kanban stages)
+            AppliedAt = DateTime.Now
+        };
+
+        context.Applications.Add(app);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return app.Id;
+    }
+}
+
+public class UpdateApplicationStatusCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    : IRequestHandler<UpdateApplicationStatusCommand, bool>
+{
+    public async Task<bool> Handle(UpdateApplicationStatusCommand request, CancellationToken cancellationToken)
+    {
+        var app = await context.Applications
+            .Include(a => a.Job)
+            .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
+
+        if (app == null)
+        {
+            throw new NotFoundException("Application", request.Id.ToString());
+        }
+
+        var userId = currentUserService.UserId;
+        var employer = await context.Employers
+            .FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
+        var isAdmin = currentUserService.Username == "admin";
+
+        // Check if user has permission to manage this job's applications
+        if (!isAdmin && (employer == null || app.Job.CompanyId != employer.CompanyId))
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền cập nhật trạng thái đơn ứng tuyển này.");
+        }
+
+        if (Enum.TryParse<ApplicationStatus>(request.Status, true, out var newStatus))
+        {
+            app.Status = newStatus;
+        }
+        else
+        {
+            throw new ArgumentException($"Trạng thái '{request.Status}' không hợp lệ.");
+        }
+        await context.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+}

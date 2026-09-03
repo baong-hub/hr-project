@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/hr.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR</title>
+  <script type="text/javascript">
+    (function (a, b) {
+      var s = document.createElement('script');
+      s.type = 'text/javascript'; s.async = true;
+      s.onload = () => { PitelSDK.k = a; b(); };
+      s.src = `https://portal.tel4vn.com/pitelsdk/sdk-1.1.0.min.js`;
+      var x = document.getElementsByTagName('script')[0];
+      x.parentNode.insertBefore(s, x);
+    })('d1ca84ac-2d98-4faa-92d4-699a6ce14eb7', () => {
+      console.log('Pitel WebRTC SIP SDK Loaded');
+    });
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

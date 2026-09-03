@@ -1,0 +1,266 @@
+import React from 'react';
+import { Route, Routes, Navigate, Outlet } from 'react-router-dom';
+import { AppShell } from './core/layout/AppShell/AppShell';
+import { authService } from './core/services/auth.service';
+import { userRoleRoutes } from './features/user-role/routes';
+
+// Auth Module Pages (Lazy loaded)
+const LoginPage = React.lazy(() => import('./features/authentication/pages/LoginPage/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterCandidatePage = React.lazy(() => import('./features/authentication/pages/RegisterCandidatePage/RegisterCandidatePage').then(m => ({ default: m.RegisterCandidatePage })));
+const RegisterEmployerPage = React.lazy(() => import('./features/authentication/pages/RegisterEmployerPage/RegisterEmployerPage').then(m => ({ default: m.RegisterEmployerPage })));
+
+// HR Module Pages
+const JobListPage = React.lazy(() => import('./features/jobs/pages/JobListPage').then(m => ({ default: m.JobListPage })));
+const JobDetailPage = React.lazy(() => import('./features/jobs/pages/JobDetailPage').then(m => ({ default: m.JobDetailPage })));
+const EmployerJobListPage = React.lazy(() => import('./features/jobs/pages/EmployerJobListPage').then(m => ({ default: m.EmployerJobListPage })));
+const JobFormPage = React.lazy(() => import('./features/jobs/pages/JobFormPage').then(m => ({ default: m.JobFormPage })));
+const CandidateAppHistoryPage = React.lazy(() => import('./features/applications/pages/CandidateAppHistoryPage').then(m => ({ default: m.CandidateAppHistoryPage })));
+const EmployerAppManagePage = React.lazy(() => import('./features/applications/pages/EmployerAppManagePage').then(m => ({ default: m.EmployerAppManagePage })));
+const CompanyListPage = React.lazy(() => import('./features/companies/pages/CompanyListPage').then(m => ({ default: m.CompanyListPage })));
+const CompanyDetailPage = React.lazy(() => import('./features/companies/pages/CompanyDetailPage').then(m => ({ default: m.CompanyDetailPage })));
+const CompanyEditPage = React.lazy(() => import('./features/companies/pages/CompanyEditPage').then(m => ({ default: m.CompanyEditPage })));
+const CandidateProfilePage = React.lazy(() => import('./features/cvs/pages/CandidateProfilePage').then(m => ({ default: m.CandidateProfilePage })));
+const CandidateCvPage = React.lazy(() => import('./features/cvs/pages/CandidateCvPage').then(m => ({ default: m.CandidateCvPage })));
+const EmployerCandidateSearchPage = React.lazy(() => import('./features/cvs/pages/EmployerCandidateSearchPage').then(m => ({ default: m.EmployerCandidateSearchPage })));
+const NotificationsPage = React.lazy(() => import('./features/notifications/pages/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
+const EmployerDashboardPage = React.lazy(() => import('./features/reports/pages/EmployerDashboardPage').then(m => ({ default: m.EmployerDashboardPage })));
+const AdminDashboardPage = React.lazy(() => import('./features/reports/pages/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+import { CvsPage } from './features/cvs/pages/CvsPage';
+import { InterviewsPage } from './features/interviews/pages/InterviewsPage';
+
+const SavedJobListPage = React.lazy(() => import('./features/saved-jobs/pages/SavedJobListPage').then(m => ({ default: m.SavedJobListPage })));
+const ProfilePage = React.lazy(() => import('./features/profile/pages/ProfilePage/ProfilePage').then(m => ({ default: m.ProfilePage })));
+
+// Helper component for pages still in development
+const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
+  <div style={{
+    padding: '24px',
+    backgroundColor: 'var(--color-bg-card)',
+    borderRadius: 'var(--radius-lg)',
+    boxShadow: 'var(--shadow-sm)',
+    border: '1px solid var(--color-border-default)'
+  }}>
+    <h2 style={{ fontSize: 'var(--font-size-xl)', color: 'var(--color-text-primary)', marginBottom: '8px' }}>{title}</h2>
+    <p style={{ color: 'var(--color-text-secondary)' }}>Màn hình tính năng "{title}" đang được phát triển.</p>
+  </div>
+);
+
+// Route Guards
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isAuthenticated = authService.isAuthenticated();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/auth/login" replace />;
+};
+
+const GuestRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isAuthenticated = authService.isAuthenticated();
+  if (isAuthenticated) {
+    const user = authService.getUser();
+    const role = user?.role || '';
+    
+    // Redirect according to Redirect Flow
+    if (role === 'CANDIDATE') return <Navigate to="/jobs" replace />;
+    if (
+      role === 'EMPLOYER' ||
+      role === 'COMPANY_OWNER' ||
+      role === 'HR_MANAGER' ||
+      role === 'RECRUITER' ||
+      role === 'HIRING_MANAGER'
+    ) {
+      return <Navigate to="/employer/jobs" replace />;
+    }
+    if (role === 'ADMIN') return <Navigate to="/user-roles" replace />;
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
+
+const PermissionRoute: React.FC<{ code: string; children: React.ReactNode }> = ({ code, children }) => {
+  const user = authService.getUser();
+  const permissions = (user?.permissions as string[]) || [];
+  const roles = (user?.roles as string[]) || [];
+  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin';
+
+  const hasPermission = isSuperAdmin || permissions.includes(code);
+  return hasPermission ? <>{children}</> : <Navigate to="/" replace />;
+};
+
+export const AppRoutes: React.FC = () => {
+  return (
+    <Routes>
+      {/* Public Guest routes */}
+      <Route path="/auth/login" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <GuestRoute>
+            <LoginPage />
+          </GuestRoute>
+        </React.Suspense>
+      } />
+      <Route path="/auth/register/candidate" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <GuestRoute>
+            <RegisterCandidatePage />
+          </GuestRoute>
+        </React.Suspense>
+      } />
+      <Route path="/auth/register/employer" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <GuestRoute>
+            <RegisterEmployerPage />
+          </GuestRoute>
+        </React.Suspense>
+      } />
+
+      {/* Redirect old login path to new /auth/login */}
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+
+      {/* Protected dashboard routes */}
+      <Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+        <Route index element={<Navigate to="/jobs" replace />} />
+        <Route path="jobs" element={
+          <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+            <JobListPage />
+          </React.Suspense>
+        } />
+        <Route path="jobs/:id" element={
+          <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+            <JobDetailPage />
+          </React.Suspense>
+        } />
+        <Route path="employer/jobs" element={
+          <PermissionRoute code="job:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <EmployerJobListPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="employer/jobs/new" element={
+          <PermissionRoute code="job:post">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <JobFormPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="employer/jobs/:id/edit" element={
+          <PermissionRoute code="job:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <JobFormPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="cvs" element={<CvsPage />} />
+        <Route path="candidate/profile" element={
+          <PermissionRoute code="cv:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <CandidateProfilePage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="candidate/cvs" element={
+          <PermissionRoute code="cv:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <CandidateCvPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="employer/candidates" element={
+          <PermissionRoute code="cv:search">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <EmployerCandidateSearchPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="candidate/applications" element={
+          <PermissionRoute code="job:apply">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <CandidateAppHistoryPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="employer/applications" element={
+          <PermissionRoute code="job:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <EmployerAppManagePage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="interviews" element={<InterviewsPage />} />
+        <Route path="companies" element={
+          <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+            <CompanyListPage />
+          </React.Suspense>
+        } />
+        <Route path="companies/:id" element={
+          <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+            <CompanyDetailPage />
+          </React.Suspense>
+        } />
+        <Route path="employer/company/edit" element={
+          <PermissionRoute code="company:update">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <CompanyEditPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="candidate/saved-jobs" element={
+          <PermissionRoute code="job:save">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <SavedJobListPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="saved-jobs" element={<Navigate to="/candidate/saved-jobs" replace />} />
+        <Route path="notifications" element={
+          <PermissionRoute code="notification:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <NotificationsPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="reports" element={<PlaceholderPage title="BÁO CÁO & THỐNG KÊ (Reports)" />} />
+        <Route path="employer/dashboard" element={
+          <PermissionRoute code="report:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <EmployerDashboardPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="admin/dashboard" element={
+          <PermissionRoute code="report:view_all">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <AdminDashboardPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="settings" element={<PlaceholderPage title="CẤU HÌNH HỆ THỐNG (Settings)" />} />
+        <Route path="profile" element={
+          <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+            <ProfilePage />
+          </React.Suspense>
+        } />
+        
+        {/* User Roles & Permissions Administration */}
+        <Route 
+          path="user-roles" 
+          element={
+            <PermissionRoute code="user-role:view">
+              <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+                <Outlet />
+              </React.Suspense>
+            </PermissionRoute>
+          }
+        >
+          {userRoleRoutes.map((route, idx) => (
+            <Route
+              key={idx}
+              index={route.index}
+              path={route.path}
+              element={route.element}
+            />
+          ))}
+        </Route>
+
+        <Route path="*" element={<Navigate to="/jobs" replace />} />
+      </Route>
+    </Routes>
+  );
+};
