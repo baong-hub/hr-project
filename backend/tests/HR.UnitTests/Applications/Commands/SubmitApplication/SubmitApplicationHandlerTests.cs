@@ -44,7 +44,7 @@ public class SubmitApplicationHandlerTests : IDisposable
         var userId = 1;
         _currentUserService.UserId.Returns(userId);
 
-        var candidate = new Candidate { Id = 1, UserId = userId, VisibilityStatus = "PUBLIC" };
+        var candidate = new Candidate { Id = 1, UserId = userId, VisibilityStatus = CandidateVisibilityStatus.PUBLIC };
         var job = new Job { Id = 1, CompanyId = 1, EmployerId = 1, Title = "Senior .NET Dev", Status = JobStatus.PUBLISHED, ExpiredAt = DateTime.Today.AddDays(10), Description = "Long desc...", Requirements = "Long reqs..." };
         var cv = new CandidateCv { Id = 1, CandidateId = 1, CvTitle = "My CV", FileUrl = "http://..." };
         var application = new HR.Domain.Entities.Application { Id = 1, JobId = 1, CandidateId = 1, CandidateCvId = 1, Status = ApplicationStatus.APPLIED };
@@ -72,7 +72,7 @@ public class SubmitApplicationHandlerTests : IDisposable
         var userId = 1;
         _currentUserService.UserId.Returns(userId);
 
-        var candidate = new Candidate { Id = 1, UserId = userId, VisibilityStatus = "PUBLIC" };
+        var candidate = new Candidate { Id = 1, UserId = userId, VisibilityStatus = CandidateVisibilityStatus.PUBLIC };
         var expiredJob = new Job { Id = 2, CompanyId = 1, EmployerId = 1, Title = "Expired Job", Status = JobStatus.PUBLISHED, ExpiredAt = DateTime.Today.AddDays(-1), Description = "Long desc...", Requirements = "Long reqs..." };
         var cv = new CandidateCv { Id = 1, CandidateId = 1, CvTitle = "My CV", FileUrl = "http://..." };
 
@@ -98,7 +98,7 @@ public class SubmitApplicationHandlerTests : IDisposable
         var userId = 1;
         _currentUserService.UserId.Returns(userId);
 
-        var candidate = new Candidate { Id = 1, UserId = userId, VisibilityStatus = "PUBLIC", Skills = "C#, React", ExperienceSummary = "5 years" };
+        var candidate = new Candidate { Id = 1, UserId = userId, VisibilityStatus = CandidateVisibilityStatus.PUBLIC, Skills = "C#, React", ExperienceSummary = "5 years" };
         var job = new Job { Id = 3, CompanyId = 1, EmployerId = 1, Title = "Senior .NET Dev", Status = JobStatus.PUBLISHED, ExpiredAt = DateTime.Today.AddDays(10), Description = "Long desc...", Requirements = "Long reqs..." };
         var cv = new CandidateCv { Id = 1, CandidateId = 1, CvTitle = "My CV", FileUrl = "http://..." };
 

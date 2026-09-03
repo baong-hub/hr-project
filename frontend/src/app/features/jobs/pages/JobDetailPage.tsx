@@ -55,8 +55,8 @@ export const JobDetailPage: React.FC = () => {
     if (!isCandidate) return;
     try {
       const res = await cvsService.getCvs();
-      if (res.data?.success) {
-        const list = res.data.data || [];
+      if (res.success && res.data) {
+        const list = res.data || [];
         setCvs(list);
         const main = list.find((c: any) => c.isMain);
         if (main) {
@@ -77,9 +77,9 @@ export const JobDetailPage: React.FC = () => {
     }
     setSubmittingApply(true);
     try {
-      const res = await applicationsService.applyJob({
+      const res = await applicationsService.submitApplication({
         jobId: job!.id,
-        cvProfileId: Number(selectedCvId),
+        candidateCvId: Number(selectedCvId),
         coverLetter
       });
       if (res.data?.success) {

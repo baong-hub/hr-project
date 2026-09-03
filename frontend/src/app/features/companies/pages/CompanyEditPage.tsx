@@ -21,10 +21,6 @@ export const CompanyEditPage: React.FC = () => {
   const [sizeRange, setSizeRange] = useState<string>('');
   const [industry, setIndustry] = useState<string>('');
   const [addresses, setAddresses] = useState<string[]>(['']);
-  
-  // Non-spec custom extensions for better UX
-  const [benefits, setBenefits] = useState<string>('');
-  const [contact, setContact] = useState<string>('');
 
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -62,8 +58,6 @@ export const CompanyEditPage: React.FC = () => {
           setWebsite(companyData.website || '');
           setSizeRange(companyData.sizeRange);
           setIndustry(companyData.industry);
-          setBenefits(companyData.benefits || '');
-          setContact(companyData.contact || '');
           
           if (companyData.address) {
             setAddresses(companyData.address.split('\n'));

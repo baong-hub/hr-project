@@ -32,7 +32,7 @@ public class UpdateProfileHandler : IRequestHandler<UpdateProfileCommand, bool>
         }
 
         var candidate = await _context.Candidates
-            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == userId, cancellationToken);
 
         var isNewCandidate = false;
         if (candidate == null)

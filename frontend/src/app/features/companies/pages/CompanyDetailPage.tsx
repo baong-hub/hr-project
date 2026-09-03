@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { companiesService } from '../../../core/services/companies.service';
 import { jobsService } from '../../../core/services/jobs.service';
 import { authService } from '../../../core/services/auth.service';
-import { CompanyDto } from '../../../core/models/company.model';
-import { JobDto } from '../../../core/models/job.model';
+import type { CompanyDto } from '../../../core/models/company.model';
+import type { JobDto } from '../../../core/models/job.model';
 
 export const CompanyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

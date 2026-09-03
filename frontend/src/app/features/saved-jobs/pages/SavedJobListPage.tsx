@@ -114,7 +114,8 @@ export const SavedJobListPage: React.FC = () => {
     if (from === undefined && to === undefined) return 'Thỏa thuận';
     if (from !== undefined && to !== undefined) return `${(from / 1000000).toFixed(0)} - ${(to / 1000000).toFixed(0)} tr`;
     if (from !== undefined) return `Từ ${(from / 1000000).toFixed(0)} tr`;
-    return `Đến ${(to / 1000000).toFixed(0)} tr`;
+    if (to !== undefined) return `Đến ${(to / 1000000).toFixed(0)} tr`;
+    return 'Thỏa thuận';
   };
 
   const isExpiredOrClosed = (status: string) => {

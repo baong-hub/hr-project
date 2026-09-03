@@ -41,7 +41,8 @@ public class CandidateConfiguration : IEntityTypeConfiguration<Candidate>
             .HasConversion<string>()
             .HasMaxLength(30)
             .IsRequired()
-            .HasDefaultValue(CandidateVisibilityStatus.PRIVATE);
+            .HasDefaultValue(CandidateVisibilityStatus.PRIVATE)
+            .HasSentinel((CandidateVisibilityStatus)(-1));
 
         builder.Property(x => x.ExperienceSummary)
             .HasColumnName("experience_summary")

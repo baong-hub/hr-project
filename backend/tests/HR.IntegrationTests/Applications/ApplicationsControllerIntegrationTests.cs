@@ -5,9 +5,9 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using HR.Application.Common.Models;
+using HR.Application.Applications;
 using HR.Application.Applications.Commands.SubmitApplication;
 using HR.Application.Applications.Commands.ChangeApplicationStatus;
-using HR.Application.Applications.Dtos;
 using HR.Domain.Entities;
 using HR.Domain.Enums;
 using HR.Infrastructure.Persistence;
@@ -62,7 +62,7 @@ public class ApplicationsControllerIntegrationTests : IClassFixture<Applications
             };
 
             // Seed Candidate & CandidateCv (Matches test user UserId = 1)
-            var candidate = new Candidate { Id = 1, UserId = 1, VisibilityStatus = "PUBLIC" };
+            var candidate = new Candidate { Id = 1, UserId = 1, VisibilityStatus = CandidateVisibilityStatus.PUBLIC };
             var cv = new CandidateCv { Id = 100, CandidateId = 1, CvTitle = "Test CV", FileUrl = "http://localhost/test.pdf" };
 
             db.Companies.Add(company);
@@ -122,7 +122,7 @@ public class ApplicationsControllerIntegrationTests : IClassFixture<Applications
             };
 
             // Seed Candidate & Application
-            var candidate = new Candidate { Id = 2, UserId = 2, VisibilityStatus = "PUBLIC" };
+            var candidate = new Candidate { Id = 2, UserId = 2, VisibilityStatus = CandidateVisibilityStatus.PUBLIC };
             var app = new HR.Domain.Entities.Application
             {
                 Id = 50,
@@ -191,7 +191,7 @@ public class ApplicationsControllerIntegrationTests : IClassFixture<Applications
             };
 
             // Seed Candidate & Application
-            var candidate = new Candidate { Id = 2, UserId = 2, VisibilityStatus = "PUBLIC" };
+            var candidate = new Candidate { Id = 2, UserId = 2, VisibilityStatus = CandidateVisibilityStatus.PUBLIC };
             var app = new HR.Domain.Entities.Application
             {
                 Id = 60,

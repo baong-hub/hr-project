@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { companiesService } from '../../../core/services/companies.service';
-import { CompanyDto } from '../../../core/models/company.model';
+import type { CompanyDto } from '../../../core/models/company.model';
 
 export const CompanyListPage: React.FC = () => {
   const navigate = useNavigate();

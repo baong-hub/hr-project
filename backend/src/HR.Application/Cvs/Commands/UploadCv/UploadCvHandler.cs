@@ -45,7 +45,7 @@ public class UploadCvHandler : IRequestHandler<UploadCvCommand, CandidateCvDto>
 
         // Lấy hoặc tạo Candidate cho User hiện tại
         var candidate = await _context.Candidates
-            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == userId, cancellationToken);
 
         if (candidate == null)
         {

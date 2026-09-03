@@ -23,7 +23,7 @@ public class SubmitApplicationHandler(IApplicationDbContext context, ICurrentUse
         }
 
         var candidate = await context.Candidates
-            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == userId, cancellationToken);
 
         if (candidate == null)
         {
@@ -93,25 +93,25 @@ public class SubmitApplicationHandler(IApplicationDbContext context, ICurrentUse
 
         // Tính toán match score bằng logic có sẵn của dự án
         var score = GetApplicationsQueryHandler.CalculateMatchScore(
-            createdApp!.Job.Title,
-            createdApp.Job.Requirements,
-            createdApp.Candidate.Skills,
-            createdApp.Candidate.ExperienceSummary);
+            createdApp?.Job?.Title ?? job.Title,
+            createdApp?.Job?.Requirements ?? job.Requirements,
+            createdApp?.Candidate?.Skills ?? candidate.Skills,
+            createdApp?.Candidate?.ExperienceSummary ?? candidate.ExperienceSummary);
 
         var dto = new ApplicationDto(
-            createdApp.Id,
-            createdApp.JobId,
-            createdApp.Job.Title,
-            createdApp.Job.Company?.Name ?? "Hệ thống HR",
-            createdApp.CandidateId,
-            createdApp.Candidate.User.FullName ?? "Ứng viên",
-            createdApp.Candidate.User.Email ?? string.Empty,
-            createdApp.CandidateCvId,
-            createdApp.CandidateCv.CvTitle,
-            createdApp.CandidateCv.FileUrl,
-            createdApp.CoverLetter,
-            createdApp.Status.ToString(),
-            createdApp.AppliedAt,
+            createdApp?.Id ?? application.Id,
+            createdApp?.JobId ?? application.JobId,
+            createdApp?.Job?.Title ?? job.Title,
+            createdApp?.Job?.Company?.Name ?? "Hệ thống HR",
+            createdApp?.CandidateId ?? application.CandidateId,
+            createdApp?.Candidate?.User?.FullName ?? createdApp?.Candidate?.FullName ?? candidate.FullName ?? "Ứng viên",
+            createdApp?.Candidate?.User?.Email ?? string.Empty,
+            createdApp?.CandidateCvId ?? application.CandidateCvId,
+            createdApp?.CandidateCv?.CvTitle ?? cv.CvTitle,
+            createdApp?.CandidateCv?.FileUrl ?? cv.FileUrl ?? string.Empty,
+            createdApp?.CoverLetter ?? application.CoverLetter,
+            (createdApp?.Status ?? application.Status).ToString(),
+            createdApp?.AppliedAt ?? application.AppliedAt,
             score
         );
 

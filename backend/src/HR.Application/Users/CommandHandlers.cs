@@ -24,7 +24,7 @@ public class CreateUserCommandHandler(IApplicationDbContext context, IPasswordHa
             Username = request.Username,
             PasswordHash = passwordHasher.Hash(request.Password),
             FullName = request.FullName,
-            Email = request.Email,
+            Email = request.Email ?? string.Empty,
             Phone = request.Phone,
             Address = request.Address,
             AccountType = request.AccountType,
@@ -104,7 +104,7 @@ public class UpdateUserCommandHandler(IApplicationDbContext context)
             throw new ConflictException("EMAIL_EXISTS", "Email đã tồn tại.");
 
         user.FullName = request.FullName;
-        user.Email = request.Email;
+        user.Email = request.Email ?? user.Email;
         user.Phone = request.Phone;
         user.Address = request.Address;
         user.AccountType = request.AccountType;

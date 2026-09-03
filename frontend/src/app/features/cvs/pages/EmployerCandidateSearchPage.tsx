@@ -41,10 +41,10 @@ export const EmployerCandidateSearchPage: React.FC = () => {
           search: search.trim() || undefined
         });
 
-        if (response.succeeded) {
+        if (response.success && response.data) {
           setCandidates(response.data);
         } else {
-          setError(response.message || 'Không thể tìm kiếm hồ sơ.');
+          setError(response.error?.message || 'Không thể tìm kiếm hồ sơ.');
         }
       } catch (err: any) {
         setError('Có lỗi xảy ra khi kết nối máy chủ.');

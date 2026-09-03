@@ -45,12 +45,12 @@ export const CandidateProfilePage: React.FC = () => {
       try {
         // Lấy danh sách CV để xác định xem Candidate đã có profile chưa
         const cvsResponse = await cvsService.getCvs();
-        if (cvsResponse.succeeded && cvsResponse.data.length > 0) {
+        if (cvsResponse.success && cvsResponse.data && cvsResponse.data.length > 0) {
           // Lấy thông tin ứng viên từ CV đầu tiên hoặc gọi search để tự lấy
           const candidateId = cvsResponse.data[0].candidateId;
           // Gọi API tìm kiếm ứng viên của chính mình
           const searchResponse = await cvsService.searchCandidates({ search: personalInfo.fullName });
-          if (searchResponse.succeeded) {
+          if (searchResponse.success && searchResponse.data) {
             const myProfile = searchResponse.data.find((p: CandidateProfileDto) => p.id === candidateId);
             if (myProfile) {
               setSkills(myProfile.skills || []);
@@ -105,12 +105,12 @@ export const CandidateProfilePage: React.FC = () => {
 
     try {
       const response = await cvsService.updateProfile(payload);
-      if (response.succeeded) {
+      if (response.success) {
         setSuccess(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => setSuccess(false), 4000);
       } else {
-        setError(response.message || 'Cập nhật hồ sơ không thành công.');
+        setError(response.error?.message || 'Cập nhật hồ sơ không thành công.');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Có lỗi xảy ra khi kết nối máy chủ.');

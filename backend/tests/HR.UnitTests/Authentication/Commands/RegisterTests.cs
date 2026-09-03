@@ -105,7 +105,7 @@ public class RegisterTests : IDisposable
         createdUser!.PasswordHash.Should().Be("hashed_password");
         createdUser.Status.Should().Be(UserStatus.ACTIVE);
 
-        var createdCandidate = await _context.Candidates.FirstOrDefaultAsync(c => c.UserId == createdUser.Id);
+        var createdCandidate = await _context.Candidates.FirstOrDefaultAsync(c => c.Id == createdUser.Id);
         createdCandidate.Should().NotBeNull();
         createdCandidate!.FullName.Should().Be("New Candidate");
     }

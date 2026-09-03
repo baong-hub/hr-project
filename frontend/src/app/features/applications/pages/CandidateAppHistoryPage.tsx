@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, RefreshCw, Calendar, CheckCircle } from 'lucide-react';
+import { FileText, RefreshCw, CheckCircle } from 'lucide-react';
 import { applicationsService } from '../../../core/services/applications.service';
 import { toast } from '../../../core/services/toast.service';
-import { ApplicationDto } from '../../../core/models/application.model';
+import type { ApplicationDto } from '../../../core/models/application.model';
 import styles from './ApplicationsPage.module.scss'; // Reusing shared styles
 
 export const CandidateAppHistoryPage: React.FC = () => {
@@ -16,8 +16,8 @@ export const CandidateAppHistoryPage: React.FC = () => {
     try {
       const res = await applicationsService.getApplications();
       if (res.data?.success) {
-        // Flat array of applications is returned from getApplications in backend
-        setApplications((res.data.data as any) || []);
+        const items = res.data.data?.items || (res.data.data as any) || [];
+        setApplications(items);
       } else {
         setError(res.data?.error?.message || 'Có lỗi xảy ra khi tải dữ liệu.');
       }

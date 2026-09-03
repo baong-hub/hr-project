@@ -66,7 +66,8 @@ export const ApplicationsPage: React.FC = () => {
       if (jobId) params.jobId = jobId;
       const res = await applicationsService.getApplications(params);
       if (res.data?.success) {
-        setApplications(res.data.data || []);
+        const items = res.data.data?.items || (res.data.data as any) || [];
+        setApplications(items);
       }
     } catch (err) {
       console.error(err);

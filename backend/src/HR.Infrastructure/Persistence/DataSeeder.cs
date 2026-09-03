@@ -38,6 +38,7 @@ public static class DataSeeder
     {
         if (await context.Sites.AnyAsync()) return;
         context.Sites.Add(new Site { Code = "HQ", Name = "Trụ sở chính", IsActive = true, CompanyId = 1 });
+        await context.SaveChangesAsync();
     }
 
     private static async Task SeedRoleLevelsAsync(ApplicationDbContext context)
@@ -370,15 +371,15 @@ public static class DataSeeder
 
     private static async Task SeedAdminUserAsync(ApplicationDbContext context)
     {
+        // Clean up any legacy id=0 user/relations if present in database to avoid EF Core key tracking conflict
+        await context.Database.ExecuteSqlRawAsync("DELETE FROM `user_permissions` WHERE `user_id` = 0;");
+        await context.Database.ExecuteSqlRawAsync("DELETE FROM `user_roles` WHERE `user_id` = 0;");
+        await context.Database.ExecuteSqlRawAsync("DELETE FROM `user_sites` WHERE `user_id` = 0;");
+        await context.Database.ExecuteSqlRawAsync("DELETE FROM `users` WHERE `id` = 0;");
+
         var site = await context.Sites.FirstAsync();
         var adminRole = await context.Roles.FirstAsync(r => r.Name == "Super Admin");
         var candidateRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Ứng viên") ?? adminRole;
-
-        var hasSystemUser = await context.Users.AnyAsync(u => u.Id == 0 || u.Username == "hethong");
-        if (!hasSystemUser)
-        {
-            await context.Database.ExecuteSqlRawAsync($"SET SESSION sql_mode = 'NO_AUTO_VALUE_ON_ZERO'; INSERT INTO `users` (`id`, `username`, `password_hash`, `email`, `full_name`, `site_id`, `is_active`, `role_id`, `created_at`, `updated_at`, `account_type`, `address`, `avatar_url`, `phone`) VALUES (0, 'hethong', 'null', 'hethong@hr.local', 'Hệ thống', 1, 1, {adminRole.Id}, '2026-06-02 13:37:06.000000', '2026-06-02 13:37:10.000000', 0, NULL, NULL, NULL);");
-        }
 
         if (!await context.Users.AnyAsync(u => u.Username == "admin"))
         {
@@ -424,7 +425,7 @@ public static class DataSeeder
 
         // Ensure all users have their user_roles populated based on users.role_id
         var usersWithoutRoles = await context.Users
-            .Where(u => !context.UserRoles.Any(ur => ur.UserId == u.Id))
+            .Where(u => u.Id > 0 && !context.UserRoles.Any(ur => ur.UserId == u.Id))
             .ToListAsync();
             
         foreach (var u in usersWithoutRoles)

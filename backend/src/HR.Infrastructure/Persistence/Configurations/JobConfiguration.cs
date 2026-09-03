@@ -155,7 +155,7 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
 
         // Relationships
         builder.HasOne(x => x.Company)
-            .WithMany()
+            .WithMany(c => c.Jobs)
             .HasForeignKey(x => x.CompanyId)
             .OnDelete(DeleteBehavior.Cascade);
 
