@@ -14,5 +14,9 @@ public class UserInfoDto
     public int Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
+    public string? CompanyName { get; set; }
+    public string? CompanyLogoUrl { get; set; }
     public List<string> Permissions { get; set; } = [];
 }

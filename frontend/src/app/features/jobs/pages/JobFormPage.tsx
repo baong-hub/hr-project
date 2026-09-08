@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Send } from 'lucide-react';
+import { ArrowLeft, Save, Send, Sparkles, Wand2, X } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
+import { aiService } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobStatus } from '../../../core/models/job.model';
 import styles from './JobsPage.module.scss';
@@ -10,6 +11,11 @@ export const JobFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditMode = !!id;
+
+  // AI JD Generator State
+  const [showAiJdModal, setShowAiJdModal] = useState(false);
+  const [aiKeywords, setAiKeywords] = useState('');
+  const [generatingJd, setGeneratingJd] = useState(false);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -62,7 +68,7 @@ export const JobFormPage: React.FC = () => {
               setSalaryTo(job.salaryTo ? job.salaryTo.toString() : '');
             }
             
-            setExpiredAt(job.expiredAt.split('T')[0]);
+            setExpiredAt(job.expiredAt ? job.expiredAt.split('T')[0] : '');
           } else {
             toast.error(res.data?.error?.message || 'Không thể tải tin tuyển dụng.');
             navigate('/employer/jobs');
@@ -180,6 +186,35 @@ export const JobFormPage: React.FC = () => {
     }
   };
 
+  const handleGenerateAiJd = async () => {
+    if (!title.trim()) {
+      toast.error('Vui lòng nhập Tiêu đề tuyển dụng trước khi tạo bằng AI.');
+      return;
+    }
+    setGeneratingJd(true);
+    try {
+      const res = await aiService.generateJd({
+        title: title.trim(),
+        keywords: [category, aiKeywords].filter(Boolean).join(', ')
+      });
+      if (res.data?.success && res.data.data) {
+        const gen = res.data.data;
+        if (gen.description) setDescription(gen.description);
+        if (gen.requirements) setRequirements(gen.requirements);
+        if (gen.benefits) setBenefits(gen.benefits);
+        toast.success('AI đã tạo xong mô tả công việc thành công!');
+        setShowAiJdModal(false);
+      } else {
+        toast.error(res.data?.error?.message || 'Không thể tạo JD tự động.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi khi gọi trợ lý AI tạo JD.');
+    } finally {
+      setGeneratingJd(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
@@ -293,7 +328,29 @@ export const JobFormPage: React.FC = () => {
 
         {/* Card 2: Nội dung chi tiết */}
         <div className={styles.tableCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ borderBottom: '1px solid var(--color-border-default)', paddingBottom: '8px', fontWeight: 700 }}>Card 2: Nội dung chi tiết</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-default)', paddingBottom: '8px' }}>
+            <h3 style={{ margin: 0, fontWeight: 700 }}>Card 2: Nội dung chi tiết</h3>
+            <button
+              type="button"
+              onClick={() => setShowAiJdModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                color: '#ffffff',
+                border: 'none',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
+              }}
+            >
+              <Sparkles size={15} /> AI Viết JD Tự Động
+            </button>
+          </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Mô tả công việc <span style={{ color: 'var(--color-error)' }}>*</span> (Tối thiểu 50 ký tự)</label>
@@ -400,6 +457,87 @@ export const JobFormPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* AI JD Generator Modal */}
+      {showAiJdModal && (
+        <div className={styles.modalOverlay} style={{ backdropFilter: 'blur(4px)', background: 'rgba(15, 23, 42, 0.65)' }}>
+          <div className={styles.modalContent} style={{ maxWidth: '560px', width: '92%', padding: '24px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                  <Wand2 size={20} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: '#1e293b' }}>Trợ Lý AI Soạn Thảo JD Tuyển Dụng</h2>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Tự động sinh Mô tả, Yêu cầu và Quyền lợi chuẩn chuyên nghiệp</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowAiJdModal(false)} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '8px', color: '#64748b' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', fontSize: '0.85rem', color: '#475569', borderLeft: '3px solid #6366f1' }}>
+                <strong>Vị trí đang tạo:</strong> {title || '(Chưa có tiêu đề - Vui lòng nhập tiêu đề trước)'}
+                <br />
+                <strong>Ngành nghề:</strong> {category || 'Công nghệ thông tin'}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                  Từ khóa bổ sung & Điểm nhấn mong muốn (Tùy chọn)
+                </label>
+                <textarea
+                  rows={3}
+                  value={aiKeywords}
+                  onChange={(e) => setAiKeywords(e.target.value)}
+                  placeholder="Ví dụ: ReactJS, TypeScript, 2 năm kinh nghiệm, làm việc hybrid, phụ cấp ăn trưa, thưởng dự án quý..."
+                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                />
+                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>AI sẽ kết hợp tiêu đề tuyển dụng và các từ khóa này để sinh bộ JD hoàn chỉnh nhất.</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button 
+                  type="button"
+                  onClick={() => setShowAiJdModal(false)} 
+                  className={styles.btnSecondary}
+                  disabled={generatingJd}
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleGenerateAiJd} 
+                  disabled={generatingJd || !title.trim()}
+                  className={styles.btnPrimary}
+                  style={{
+                    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  {generatingJd ? (
+                    <>
+                      <div style={{ width: '14px', height: '14px', border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                      Đang sinh nội dung...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} /> Bắt đầu tạo bằng AI
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

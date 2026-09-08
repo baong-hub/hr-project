@@ -124,19 +124,23 @@ export const authService = {
   },
 
   logout: async () => {
-    try {
-      const token = localStorage.getItem('refreshToken') || '';
-      await api.post('/auth/logout', { refreshToken: token }, { headers: { 'X-Skip-Success-Toast': 'true' } as any });
-    } catch {
-      // Ignore network errors on logout
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      localStorage.removeItem('workingSiteId');
-      localStorage.removeItem('systemConfigs');
-      localStorage.removeItem('subordinate_user_ids');
-      window.dispatchEvent(new CustomEvent('app-auth-changed'));
+    const token = localStorage.getItem('refreshToken') || '';
+    
+    // Clear auth credentials immediately to prevent race condition in route guards
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('workingSiteId');
+    localStorage.removeItem('systemConfigs');
+    localStorage.removeItem('subordinate_user_ids');
+    window.dispatchEvent(new CustomEvent('app-auth-changed'));
+
+    if (token) {
+      try {
+        await api.post('/auth/logout', { refreshToken: token }, { headers: { 'X-Skip-Success-Toast': 'true' } as any });
+      } catch {
+        // Ignore network errors on logout
+      }
     }
   },
 

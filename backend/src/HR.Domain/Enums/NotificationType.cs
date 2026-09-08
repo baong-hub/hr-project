@@ -4,5 +4,6 @@ public enum NotificationType
 {
     APPLICATION_STATUS,
     INTERVIEW_INVITE,
-    JOB_ALERT
+    JOB_ALERT,
+    CHAT_MESSAGE
 }

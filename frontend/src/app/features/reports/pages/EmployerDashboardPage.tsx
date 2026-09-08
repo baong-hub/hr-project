@@ -93,10 +93,11 @@ export const EmployerDashboardPage: React.FC = () => {
     );
   }
 
-  const submittedCount = funnel?.stages.find(s => s.stage === 'SUBMITTED')?.count || 0;
-  const reviewingCount = funnel?.stages.find(s => s.stage === 'REVIEWING')?.count || 0;
-  const shortlistedCount = funnel?.stages.find(s => s.stage === 'SHORTLISTED')?.count || 0;
-  const acceptedCount = funnel?.stages.find(s => s.stage === 'ACCEPTED')?.count || 0;
+  const stages = funnel?.stages || [];
+  const submittedCount = stages.find(s => s.stage === 'SUBMITTED')?.count || 0;
+  const reviewingCount = stages.find(s => s.stage === 'REVIEWING')?.count || 0;
+  const shortlistedCount = stages.find(s => s.stage === 'SHORTLISTED')?.count || 0;
+  const acceptedCount = stages.find(s => s.stage === 'ACCEPTED')?.count || 0;
 
   const funnelData = [
     { label: 'Hồ sơ nộp (Submitted)', count: submittedCount, percent: 100, color: 'var(--color-brand-primary)' },

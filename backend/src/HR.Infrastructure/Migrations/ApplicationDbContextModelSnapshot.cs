@@ -580,6 +580,72 @@ namespace HR.Infrastructure.Migrations
                     b.ToTable("candidate_skills", (string)null);
                 });
 
+            modelBuilder.Entity("HR.Domain.Entities.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("content");
+
+                    b.Property<int>("ConversationId")
+                        .HasColumnType("int")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_read");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int")
+                        .HasColumnName("sender_id");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("sent_at");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chat_messages");
+
+                    b.HasIndex("ConversationId")
+                        .HasDatabaseName("ix_chat_messages_conversation_id");
+
+                    b.HasIndex("SenderId")
+                        .HasDatabaseName("ix_chat_messages_sender_id");
+
+                    b.ToTable("chat_messages");
+                });
+
             modelBuilder.Entity("HR.Domain.Entities.Company", b =>
                 {
                     b.Property<int>("Id")
@@ -799,6 +865,177 @@ namespace HR.Infrastructure.Migrations
                         .HasDatabaseName("ix_company_subscriptions_company_id");
 
                     b.ToTable("company_subscriptions", (string)null);
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Conversation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ApplicationId")
+                        .HasColumnType("int")
+                        .HasColumnName("application_id");
+
+                    b.Property<int>("CandidateUnreadCount")
+                        .HasColumnType("int")
+                        .HasColumnName("candidate_unread_count");
+
+                    b.Property<int>("CandidateUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("candidate_user_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<int>("EmployerUnreadCount")
+                        .HasColumnType("int")
+                        .HasColumnName("employer_unread_count");
+
+                    b.Property<int>("EmployerUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("employer_user_id");
+
+                    b.Property<int?>("JobId")
+                        .HasColumnType("int")
+                        .HasColumnName("job_id");
+
+                    b.Property<DateTime>("LastMessageAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("last_message_at");
+
+                    b.Property<string>("LastMessageContent")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("last_message_content");
+
+                    b.Property<int?>("LastSenderId")
+                        .HasColumnType("int")
+                        .HasColumnName("last_sender_id");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("longtext")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_conversations");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_conversations_application_id");
+
+                    b.HasIndex("CandidateUserId")
+                        .HasDatabaseName("ix_conversations_candidate_user_id");
+
+                    b.HasIndex("EmployerUserId")
+                        .HasDatabaseName("ix_conversations_employer_user_id");
+
+                    b.HasIndex("JobId")
+                        .HasDatabaseName("ix_conversations_job_id");
+
+                    b.ToTable("conversations");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Department", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_active");
+
+                    b.Property<int?>("ManagerId")
+                        .HasColumnType("int")
+                        .HasColumnName("manager_id");
+
+                    b.Property<int?>("ManagerUserId")
+                        .HasColumnType("int")
+                        .HasColumnName("manager_user_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int")
+                        .HasColumnName("parent_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_departments");
+
+                    b.HasIndex("ManagerId")
+                        .HasDatabaseName("ix_departments_manager_id");
+
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("ix_departments_parent_id");
+
+                    b.ToTable("departments");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.Employer", b =>
@@ -1433,6 +1670,72 @@ namespace HR.Infrastructure.Migrations
                         .HasDatabaseName("ix_log_activities_user_id");
 
                     b.ToTable("log_activities");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.MasterDataCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_master_data_categories");
+
+                    b.ToTable("master_data_categories");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.Menu", b =>
@@ -3017,6 +3320,27 @@ namespace HR.Infrastructure.Migrations
                     b.Navigation("Skill");
                 });
 
+            modelBuilder.Entity("HR.Domain.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("HR.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_messages_conversations_conversation_id");
+
+                    b.HasOne("HR.Domain.Entities.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_chat_messages_users_sender_id");
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("HR.Domain.Entities.CompanySubscription", b =>
                 {
                     b.HasOne("HR.Domain.Entities.Company", "Company")
@@ -3027,6 +3351,58 @@ namespace HR.Infrastructure.Migrations
                         .HasConstraintName("fk_company_subscriptions_companies_company_id");
 
                     b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Conversation", b =>
+                {
+                    b.HasOne("HR.Domain.Entities.Application", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .HasConstraintName("fk_conversations_applications_application_id");
+
+                    b.HasOne("HR.Domain.Entities.User", "CandidateUser")
+                        .WithMany()
+                        .HasForeignKey("CandidateUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_conversations_users_candidate_user_id");
+
+                    b.HasOne("HR.Domain.Entities.User", "EmployerUser")
+                        .WithMany()
+                        .HasForeignKey("EmployerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_conversations_users_employer_user_id");
+
+                    b.HasOne("HR.Domain.Entities.Job", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .HasConstraintName("fk_conversations_jobs_job_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("CandidateUser");
+
+                    b.Navigation("EmployerUser");
+
+                    b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Department", b =>
+                {
+                    b.HasOne("HR.Domain.Entities.User", "Manager")
+                        .WithMany()
+                        .HasForeignKey("ManagerId")
+                        .HasConstraintName("fk_departments_users_manager_id");
+
+                    b.HasOne("HR.Domain.Entities.Department", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .HasConstraintName("fk_departments_departments_parent_id");
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.Employer", b =>
@@ -3474,6 +3850,16 @@ namespace HR.Infrastructure.Migrations
                     b.Navigation("Employers");
 
                     b.Navigation("Jobs");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Department", b =>
+                {
+                    b.Navigation("Children");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.Interview", b =>

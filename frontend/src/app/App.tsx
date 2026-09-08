@@ -4,15 +4,19 @@ import { ThemeProvider } from './features/user-settings/contexts/ThemeContext';
 import { ToastContainer } from './shared/ui/Toast/ToastContainer';
 import { TopProgressBar } from './shared/ui/TopProgressBar/TopProgressBar';
 
+import { ErrorBoundary } from './shared/ui/ErrorBoundary/ErrorBoundary';
+
 function App() {
   return (
-    <ThemeProvider>
-      <TopProgressBar />
-      <ToastContainer />
-      <Router>
-        <AppRoutes />
-      </Router>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <TopProgressBar />
+        <ToastContainer />
+        <Router>
+          <AppRoutes />
+        </Router>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

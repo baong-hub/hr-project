@@ -47,9 +47,9 @@ export const Header = ({ sidebarExpanded, onToggle }: HeaderProps) => {
     window.location.reload();
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await authService.logout();
+    window.location.href = '/auth/login';
   };
 
   // Close menus when clicking outside

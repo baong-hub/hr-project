@@ -18,8 +18,9 @@ const STATUS_MAP: Record<string, { label: string; className: string }> = {
 export const InterviewsPage: React.FC = () => {
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
-  const isCandidate = roles.includes('Ứng viên');
-  const isEmployer = roles.includes('Nhà tuyển dụng');
+  const userRole = user?.role || user?.accountType || '';
+  const isCandidate = roles.includes('Ứng viên') || userRole === 'CANDIDATE' || userRole === 'User';
+  const isEmployer = roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN';
 
   const [interviews, setInterviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +31,13 @@ export const InterviewsPage: React.FC = () => {
     try {
       const res = await interviewsService.getInterviews();
       if (res.data?.success) {
-        setInterviews(res.data.data || []);
+        const raw = res.data.data;
+        const items = Array.isArray(raw?.items)
+          ? raw.items
+          : Array.isArray(raw)
+            ? raw
+            : [];
+        setInterviews(items);
       }
     } catch (err) {
       console.error(err);
@@ -107,15 +114,16 @@ export const InterviewsPage: React.FC = () => {
             <tbody>
               {loading ? (
                 <tr><td colSpan={8} style={{ textAlign: 'center', padding: '24px' }}>Đang tải lịch hẹn...</td></tr>
-              ) : interviews.length === 0 ? (
+              ) : (!Array.isArray(interviews) || interviews.length === 0) ? (
                 <tr>
                   <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
                     Bạn chưa có lịch hẹn phỏng vấn nào.
                   </td>
                 </tr>
               ) : (
-                interviews.map(i => {
-                  const st = STATUS_MAP[i.status.toUpperCase()] || { label: i.status, className: '' };
+                (Array.isArray(interviews) ? interviews : []).map(i => {
+                  const statusUpper = (i.status || '').toUpperCase();
+                  const st = STATUS_MAP[statusUpper] || { label: i.status || '—', className: '' };
                   return (
                     <tr key={i.id}>
                       <td style={{ fontWeight: 600 }}>{i.jobTitle}</td>
@@ -144,7 +152,7 @@ export const InterviewsPage: React.FC = () => {
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div className={styles.actionBtns} style={{ justifyContent: 'flex-end' }}>
-                          {isCandidate && i.status.toUpperCase() === 'SCHEDULED' && (
+                          {isCandidate && statusUpper === 'SCHEDULED' && (
                             <>
                               <button 
                                 className={`${styles.actionBtn} ${styles.btnAccept}`} 
@@ -162,7 +170,7 @@ export const InterviewsPage: React.FC = () => {
                               </button>
                             </>
                           )}
-                          {isEmployer && i.status.toUpperCase() !== 'CANCELLED' && i.status.toUpperCase() !== 'COMPLETED' && (
+                          {isEmployer && statusUpper !== 'CANCELLED' && statusUpper !== 'COMPLETED' && (
                             <>
                               <button 
                                 className={styles.actionBtn} 

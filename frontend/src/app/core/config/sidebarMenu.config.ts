@@ -51,6 +51,13 @@ export const SIDEBAR_MENU: SidebarItem[] = [
     code: 'menu:saved-jobs'
   },
   {
+    label: 'Tin nhắn & Trò chuyện',
+    shortName: 'Tin nhắn',
+    icon: 'MessageSquare',
+    route: '/messages',
+    code: 'menu:messages'
+  },
+  {
     label: 'Trung tâm thông báo',
     shortName: 'Thông báo',
     icon: 'Bell',
@@ -70,9 +77,11 @@ export const SIDEBAR_MENU: SidebarItem[] = [
     icon: 'Settings',
     code: 'menu:system',
     children: [
+      { label: 'Cấu hình hệ thống', shortName: 'Cấu hình', icon: 'Sliders', route: '/user-settings/system-configs', code: 'module:system-setting' },
       { label: 'Tài khoản', shortName: 'Tài khoản', icon: 'UserCog', route: '/users', code: 'module:user' },
       { label: 'Phân quyền', shortName: 'Phân quyền', icon: 'ShieldCheck', route: '/user-roles', code: 'module:user-role' },
-      { label: 'Cấu hình chung', shortName: 'Cấu hình', icon: 'Sliders', route: '/user-settings/system-configs', code: 'module:system-setting' }
+      { label: 'Danh mục dùng chung', shortName: 'Danh mục', icon: 'Database', route: '/master-data', code: 'module:master-data' },
+      { label: 'Cơ cấu tổ chức', shortName: 'Tổ chức', icon: 'Network', route: '/organization', code: 'module:organization' }
     ]
   }
 ];

@@ -158,7 +158,15 @@ export const EmployerJobListPage: React.FC = () => {
             Đăng tin tuyển dụng và quản lý hồ sơ ứng viên của doanh nghiệp
           </p>
         </div>
-        <div className={styles.titleActions}>
+        <div className={styles.titleActions} style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            type="button" 
+            onClick={() => navigate('/jobs?view=public')} 
+            className={styles.btnSecondary}
+            title="Xem danh sách việc làm hiển thị cho ứng viên"
+          >
+            Xem việc làm trên sàn
+          </button>
           <button onClick={() => navigate('/employer/jobs/new')} className={styles.btnPrimary}>
             <Plus size={16} /> Đăng tin mới
           </button>

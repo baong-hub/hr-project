@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Calendar, FileText, Send, X, RotateCcw, Building 
+  Calendar, FileText, Send, X, RotateCcw, Building, MessageSquare, Sparkles 
 } from 'lucide-react';
 import { applicationsService } from '../../../core/services/applications.service';
 import { jobsService } from '../../../core/services/jobs.service';
 import { interviewsService } from '../../../core/services/interviews.service';
 import { authService } from '../../../core/services/auth.service';
+import { messagesService } from '../../messages/services/messages.service';
 import { toast } from '../../../core/services/toast.service';
 import styles from './ApplicationsPage.module.scss';
 
@@ -20,9 +22,11 @@ const KANBAN_STAGES = [
 ];
 
 export const ApplicationsPage: React.FC = () => {
+  const navigate = useNavigate();
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
-  const isCandidate = roles.includes('Ứng viên');
+  const userRole = user?.role || user?.accountType || '';
+  const isCandidate = roles.includes('Ứng viên') || userRole === 'CANDIDATE' || userRole === 'User';
 
   // Applications lists
   const [applications, setApplications] = useState<any[]>([]);
@@ -74,6 +78,43 @@ export const ApplicationsPage: React.FC = () => {
       toast.error('Lỗi khi tải danh sách ứng viên.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [shortlistingAppId, setShortlistingAppId] = useState<number | null>(null);
+
+  const handleShortlistAndChat = async (app: any) => {
+    setShortlistingAppId(app.id);
+    try {
+      const res = await messagesService.shortlistAndChat({ applicationId: app.id });
+      if (res.data?.success) {
+        toast.success(`Đã duyệt ứng viên ${app.candidateName} phù hợp, gửi email thông báo và kích hoạt kênh chat!`);
+        fetchApplications(selectedJobId ? Number(selectedJobId) : undefined);
+        const convoId = res.data.data?.conversationId;
+        if (convoId) {
+          navigate(`/messages?conversationId=${convoId}`);
+        }
+      } else {
+        toast.error(res.data?.error?.message || 'Có lỗi xảy ra khi duyệt phù hợp.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi hệ thống khi duyệt hồ sơ.');
+    } finally {
+      setShortlistingAppId(null);
+    }
+  };
+
+  const handleOpenChat = async (app: any) => {
+    try {
+      const res = await messagesService.getByApplicationId(app.id);
+      if (res.data?.success && res.data.data?.conversationId) {
+        navigate(`/messages?conversationId=${res.data.data.conversationId}`);
+      } else {
+        navigate('/messages');
+      }
+    } catch (err) {
+      navigate('/messages');
     }
   };
 
@@ -207,7 +248,7 @@ export const ApplicationsPage: React.FC = () => {
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                      <span>Ngày nộp: {app.appliedAt.split('T')[0]}</span>
+                      <span>Ngày nộp: {app.appliedAt ? app.appliedAt.split('T')[0] : '—'}</span>
                       {app.coverLetter && (
                         <span style={{ background: 'var(--color-bg-subtle)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px' }}>
                           Có Thư giới thiệu
@@ -339,7 +380,7 @@ export const ApplicationsPage: React.FC = () => {
                       )}
 
                       <div className={styles.cardFooter}>
-                        <span className={styles.cardDate}>{app.appliedAt.split('T')[0]}</span>
+                        <span className={styles.cardDate}>{app.appliedAt ? app.appliedAt.split('T')[0] : '—'}</span>
                         <div className={styles.cardActions}>
                           <a 
                             href={app.cvFileUrl} 
@@ -350,6 +391,29 @@ export const ApplicationsPage: React.FC = () => {
                             <FileText size={12} />
                           </a>
                           
+                          {/* Shortlist & Chat Action */}
+                          {stage.key !== 'SHORTLISTED' && stage.key !== 'HIRED' && stage.key !== 'REJECTED' && (
+                            <button 
+                              className={styles.cardBtn} 
+                              onClick={() => handleShortlistAndChat(app)}
+                              disabled={shortlistingAppId === app.id}
+                              title="Duyệt phù hợp, gửi Email & Mở chat ngay"
+                              style={{ color: '#0284c7' }}
+                            >
+                              <Sparkles size={12} />
+                            </button>
+                          )}
+
+                          {/* Direct Chat Action */}
+                          <button 
+                            className={styles.cardBtn} 
+                            onClick={() => handleOpenChat(app)}
+                            title="Nhắn tin với ứng viên"
+                            style={{ color: '#2563eb' }}
+                          >
+                            <MessageSquare size={12} />
+                          </button>
+
                           {/* Schedule Interview Quick Action */}
                           {stage.key !== 'INTERVIEW' && stage.key !== 'HIRED' && stage.key !== 'REJECTED' && (
                             <button 
