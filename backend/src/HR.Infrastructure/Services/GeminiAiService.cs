@@ -54,7 +54,7 @@ public class GeminiAiService : IAiService
             var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromSeconds(15);
 
-            var model = _configuration["Gemini:Model"] ?? "gemini-1.5-flash";
+            var model = _configuration["Gemini:Model"] ?? "gemini-flash-latest";
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
 
             var requestBody = new

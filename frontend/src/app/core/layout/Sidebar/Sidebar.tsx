@@ -29,10 +29,25 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const isEmployer = userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng') || roles.includes('Employer');
 
   const hasPermission = (code?: string, route?: string) => {
+    // 1. Ẩn hoàn toàn "Việc làm đã lưu" đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho Ứng viên)
+    if (isSuperAdmin || isEmployer || !isCandidate) {
+      if (
+        code === 'menu:saved-jobs' || 
+        code === 'module:saved-jobs' || 
+        code === 'job:save' ||
+        code === 'saved-jobs:view' ||
+        route === '/candidate/saved-jobs' || 
+        route === '/saved-jobs' || 
+        route?.includes('/saved-jobs')
+      ) {
+        return false;
+      }
+    }
+
     if (isSuperAdmin) return true;
     if (!code && !route) return true;
 
-    // Ẩn trang/menu Quản lý ứng tuyển đối với ứng viên (chỉ dành cho Nhà tuyển dụng/Admin)
+    // 2. Ẩn trang/menu Quản lý ứng tuyển đối với ứng viên (chỉ dành cho Nhà tuyển dụng/Admin)
     if (isCandidate && (
       code === 'menu:applications' || 
       code === 'module:applications' || 
@@ -149,6 +164,20 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const filterMenuItems = (items: SidebarItem[]): SidebarItem[] => {
     return items
       .map((item) => {
+        // Ẩn menu việc làm đã lưu đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho ứng viên)
+        if (isSuperAdmin || isEmployer || !isCandidate) {
+          if (
+            item.code === 'menu:saved-jobs' ||
+            item.code === 'module:saved-jobs' ||
+            item.route === '/candidate/saved-jobs' ||
+            item.route === '/saved-jobs' ||
+            item.label?.toLowerCase().includes('đã lưu') ||
+            item.shortName?.toLowerCase().includes('đã lưu')
+          ) {
+            return null;
+          }
+        }
+
         // Ẩn menu ứng tuyển hoàn toàn đối với tài khoản ứng viên
         if (isCandidate && (
           item.code === 'menu:applications' ||
@@ -162,6 +191,17 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
 
         if (item.children && item.children.length > 0) {
           const visibleChildren = item.children.filter((child) => {
+            if (isSuperAdmin || isEmployer || !isCandidate) {
+              if (
+                child.code === 'menu:saved-jobs' ||
+                child.code === 'module:saved-jobs' ||
+                child.route === '/candidate/saved-jobs' ||
+                child.route === '/saved-jobs' ||
+                child.label?.toLowerCase().includes('đã lưu') ||
+                child.shortName?.toLowerCase().includes('đã lưu')
+              ) return false;
+            }
+
             if (isCandidate && (child.code === 'menu:applications' || child.route === '/applications')) return false;
             return hasPermission(child.code, child.route);
           });
