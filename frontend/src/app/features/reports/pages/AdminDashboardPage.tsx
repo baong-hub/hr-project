@@ -97,7 +97,7 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Ứng viên mới đăng ký</span>
-                <span className={styles.kpiVal}>{summary.totalCandidates.toLocaleString()}</span>
+                <span className={styles.kpiVal}>{(summary.totalCandidates || 0).toLocaleString()}</span>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Doanh nghiệp mới đăng ký</span>
-                <span className={styles.kpiVal}>{summary.totalCompanies.toLocaleString()}</span>
+                <span className={styles.kpiVal}>{(summary.totalCompanies || 0).toLocaleString()}</span>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Tin tuyển dụng mới</span>
-                <span className={styles.kpiVal}>{summary.totalJobs.toLocaleString()}</span>
+                <span className={styles.kpiVal}>{(summary.totalJobs || 0).toLocaleString()}</span>
               </div>
             </div>
 
@@ -127,7 +127,7 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Tổng số đơn ứng tuyển</span>
-                <span className={styles.kpiVal}>{summary.totalApplications.toLocaleString()}</span>
+                <span className={styles.kpiVal}>{(summary.totalApplications || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>

@@ -10,7 +10,6 @@ const RegisterCandidatePage = React.lazy(() => import('./features/authentication
 const RegisterEmployerPage = React.lazy(() => import('./features/authentication/pages/RegisterEmployerPage/RegisterEmployerPage').then(m => ({ default: m.RegisterEmployerPage })));
 
 // HR Module Pages
-const JobListPage = React.lazy(() => import('./features/jobs/pages/JobListPage').then(m => ({ default: m.JobListPage })));
 const JobDetailPage = React.lazy(() => import('./features/jobs/pages/JobDetailPage').then(m => ({ default: m.JobDetailPage })));
 const EmployerJobListPage = React.lazy(() => import('./features/jobs/pages/EmployerJobListPage').then(m => ({ default: m.EmployerJobListPage })));
 const JobFormPage = React.lazy(() => import('./features/jobs/pages/JobFormPage').then(m => ({ default: m.JobFormPage })));
@@ -28,22 +27,41 @@ const AdminDashboardPage = React.lazy(() => import('./features/reports/pages/Adm
 import { CvsPage } from './features/cvs/pages/CvsPage';
 import { InterviewsPage } from './features/interviews/pages/InterviewsPage';
 
+const ApplicationsPage = React.lazy(() => import('./features/applications/pages/ApplicationsPage').then(m => ({ default: m.ApplicationsPage })));
+const UserManagementPage = React.lazy(() => import('./features/user-management/pages/UserManagementPage/UserManagementPage').then(m => ({ default: m.UserManagementPage })));
+const SystemSettingsPage = React.lazy(() => import('./features/user-settings/pages/SystemSettingsPage/SystemSettingsPage').then(m => ({ default: m.SystemSettingsPage })));
+
 const SavedJobListPage = React.lazy(() => import('./features/saved-jobs/pages/SavedJobListPage').then(m => ({ default: m.SavedJobListPage })));
 const ProfilePage = React.lazy(() => import('./features/profile/pages/ProfilePage/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const MasterDataPage = React.lazy(() => import('./features/master-data/pages/MasterDataPage/MasterDataPage').then(m => ({ default: m.MasterDataPage })));
+const OrganizationPage = React.lazy(() => import('./features/organization/pages/OrganizationPage/OrganizationPage').then(m => ({ default: m.OrganizationPage })));
+const JobsDispatcherPage = React.lazy(() => import('./features/jobs/pages/JobsDispatcherPage').then(m => ({ default: m.JobsDispatcherPage })));
+const MessagesPage = React.lazy(() => import('./features/messages/pages/MessagesPage').then(m => ({ default: m.MessagesPage })));
 
-// Helper component for pages still in development
-const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
-  <div style={{
-    padding: '24px',
-    backgroundColor: 'var(--color-bg-card)',
-    borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-sm)',
-    border: '1px solid var(--color-border-default)'
-  }}>
-    <h2 style={{ fontSize: 'var(--font-size-xl)', color: 'var(--color-text-primary)', marginBottom: '8px' }}>{title}</h2>
-    <p style={{ color: 'var(--color-text-secondary)' }}>Màn hình tính năng "{title}" đang được phát triển.</p>
-  </div>
-);
+// Dynamic dispatcher for /reports route based on user roles
+const ReportsDispatcherPage: React.FC = () => {
+  const user = authService.getUser();
+  const userRole = user?.role || user?.accountType || '';
+  const roles = (user?.roles as string[]) || [];
+  const permissions = (user?.permissions as string[]) || [];
+  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
+
+  if (isSuperAdmin || permissions.includes('reports:view_all') || permissions.includes('report:view_all')) {
+    return (
+      <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải báo cáo quản trị...</div>}>
+        <AdminDashboardPage />
+      </React.Suspense>
+    );
+  }
+
+  return (
+    <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải báo cáo tuyển dụng...</div>}>
+      <EmployerDashboardPage />
+    </React.Suspense>
+  );
+};
+
+
 
 // Route Guards
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -99,17 +117,22 @@ const PermissionRoute: React.FC<{ code: string; children: React.ReactNode }> = (
     'report:view': ['reports:view', 'report:view'],
     'reports:view': ['reports:view', 'report:view'],
     'report:view_all': ['reports:view', 'report:view_all'],
-    'user-role:view': ['user-role:view', 'user-role:manage']
+    'user-role:view': ['user-role:view', 'user-role:manage'],
+    'user:view': ['user:view', 'user:manage', 'module:user'],
+    'system:view': ['system:view', 'system:manage', 'module:system-setting', 'system-setting:view'],
+    'master-data:view': ['master-data:view', 'master-data:create', 'master-data:update'],
+    'organization:view': ['organization:view', 'organization:create', 'organization:update'],
+    'messages:view': ['messages:view', 'messages:send']
   };
 
   const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
   const isEmployer = userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng');
 
-  if (isCandidate && (code === 'job:save' || code === 'saved-jobs:view' || code === 'cv:manage' || code === 'job:apply' || code === 'notification:view')) {
+  if (isCandidate && (code === 'job:save' || code === 'saved-jobs:view' || code === 'cv:manage' || code === 'job:apply' || code === 'notification:view' || code === 'messages:view')) {
     return <>{children}</>;
   }
 
-  if (isEmployer && (code === 'job:manage' || code === 'job:post' || code === 'cv:search' || code === 'company:update' || code === 'report:view')) {
+  if (isEmployer && (code === 'job:manage' || code === 'job:post' || code === 'cv:search' || code === 'company:update' || code === 'report:view' || code === 'messages:view')) {
     return <>{children}</>;
   }
 
@@ -152,7 +175,7 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<Navigate to="/jobs" replace />} />
         <Route path="jobs" element={
           <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
-            <JobListPage />
+            <JobsDispatcherPage />
           </React.Suspense>
         } />
         <Route path="jobs/:id" element={
@@ -210,6 +233,13 @@ export const AppRoutes: React.FC = () => {
             </React.Suspense>
           </PermissionRoute>
         } />
+        <Route path="applications" element={
+          <PermissionRoute code="job:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <ApplicationsPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
         <Route path="employer/applications" element={
           <PermissionRoute code="job:manage">
             <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
@@ -218,6 +248,18 @@ export const AppRoutes: React.FC = () => {
           </PermissionRoute>
         } />
         <Route path="interviews" element={<InterviewsPage />} />
+        <Route path="notifications" element={
+          <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+            <NotificationsPage />
+          </React.Suspense>
+        } />
+        <Route path="messages" element={
+          <PermissionRoute code="messages:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <MessagesPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
         <Route path="companies" element={
           <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
             <CompanyListPage />
@@ -250,7 +292,7 @@ export const AppRoutes: React.FC = () => {
             </React.Suspense>
           </PermissionRoute>
         } />
-        <Route path="reports" element={<PlaceholderPage title="BÁO CÁO & THỐNG KÊ (Reports)" />} />
+        <Route path="reports" element={<ReportsDispatcherPage />} />
         <Route path="employer/dashboard" element={
           <PermissionRoute code="report:view">
             <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
@@ -265,7 +307,35 @@ export const AppRoutes: React.FC = () => {
             </React.Suspense>
           </PermissionRoute>
         } />
-        <Route path="settings" element={<PlaceholderPage title="CẤU HÌNH HỆ THỐNG (Settings)" />} />
+        <Route path="users" element={
+          <PermissionRoute code="user:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <UserManagementPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="user-settings/system-configs" element={
+          <PermissionRoute code="system:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <SystemSettingsPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="settings" element={<Navigate to="/user-settings/system-configs" replace />} />
+        <Route path="master-data" element={
+          <PermissionRoute code="master-data:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <MasterDataPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="organization" element={
+          <PermissionRoute code="organization:view">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+              <OrganizationPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
         <Route path="profile" element={
           <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
             <ProfilePage />

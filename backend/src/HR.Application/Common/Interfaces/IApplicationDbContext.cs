@@ -49,6 +49,10 @@ public interface IApplicationDbContext
     DbSet<CandidateCertificate> CandidateCertificates { get; }
     DbSet<Skill> Skills { get; }
     DbSet<CandidateSkill> CandidateSkills { get; }
+    DbSet<MasterDataCategory> MasterDataCategories { get; }
+    DbSet<Department> Departments { get; }
+    DbSet<Conversation> Conversations { get; }
+    DbSet<ChatMessage> ChatMessages { get; }
 
     Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade Database { get; }
 

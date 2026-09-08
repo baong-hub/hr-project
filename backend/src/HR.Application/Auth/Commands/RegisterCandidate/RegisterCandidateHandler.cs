@@ -45,6 +45,7 @@ public class RegisterCandidateHandler : IRequestHandler<RegisterCandidateCommand
             Email = email,
             PasswordHash = _passwordHasher.Hash(request.Password),
             PhoneNumber = request.PhoneNumber.Trim(),
+            FullName = request.FullName.Trim(),
             RoleId = role.Id,
             SiteId = siteId,
             Status = UserStatus.ACTIVE

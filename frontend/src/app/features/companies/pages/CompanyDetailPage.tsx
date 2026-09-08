@@ -43,7 +43,7 @@ export const CompanyDetailPage: React.FC = () => {
           if (jobsResponse.data.success && jobsResponse.data.data) {
             // Filter jobs belonging to this company
             const filteredJobs = jobsResponse.data.data.items.filter(
-              (j) => j.companyName.toLowerCase() === companyData.name.toLowerCase()
+              (j) => (j.companyName || '').toLowerCase() === (companyData?.name || '').toLowerCase()
             );
             setJobs(filteredJobs);
           }

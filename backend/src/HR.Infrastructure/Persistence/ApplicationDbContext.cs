@@ -57,6 +57,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<EncryptedData> EncryptedData => Set<EncryptedData>();
     public DbSet<SettingConfig> SettingConfigs => Set<SettingConfig>();
+    public DbSet<MasterDataCategory> MasterDataCategories => Set<MasterDataCategory>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

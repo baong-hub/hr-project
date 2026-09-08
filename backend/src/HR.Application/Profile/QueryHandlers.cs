@@ -19,6 +19,9 @@ public class GetMyProfileQueryHandler(
         var user = await context.Users
             .AsNoTracking()
             .Include(u => u.Site)
+            .Include(u => u.Candidate)
+            .Include(u => u.Employer)
+                .ThenInclude(e => e!.Company)
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive, cancellationToken);
@@ -32,12 +35,14 @@ public class GetMyProfileQueryHandler(
             .Distinct()
             .ToList();
 
-        var deptName = !string.IsNullOrWhiteSpace(user.Site?.Name) ? user.Site.Name : "Trụ sở chính";
+        var deptName = !string.IsNullOrWhiteSpace(user.Site?.Name) ? user.Site.Name : (user.Employer?.Company?.Name ?? "Trụ sở chính");
         var email = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : $"{user.Username}@hr.local";
-        var phone = !string.IsNullOrWhiteSpace(user.Phone) ? user.Phone : "Chưa cập nhật";
-        var fullName = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName : user.Username;
+        var phone = !string.IsNullOrWhiteSpace(user.PhoneNumber) ? user.PhoneNumber : (!string.IsNullOrWhiteSpace(user.Phone) ? user.Phone : "Chưa cập nhật");
+        var fullName = !string.IsNullOrWhiteSpace(user.FullName) 
+            ? user.FullName 
+            : (user.Candidate?.FullName ?? user.Employer?.Company?.Name ?? user.Username);
         var staffCode = user.Username;
-        var avatarUrl = user.AvatarUrl;
+        var avatarUrl = user.AvatarUrl ?? user.Candidate?.AvatarUrl ?? user.Employer?.Company?.LogoUrl;
 
         return new UserProfileDto(
             Id: user.Id,

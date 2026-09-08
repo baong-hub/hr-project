@@ -155,6 +155,26 @@ export const JobListPage: React.FC = () => {
             Tìm kiếm và ứng tuyển trực tiếp nhanh chóng
           </p>
         </div>
+        {!isCandidate && (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              type="button" 
+              onClick={() => navigate('/employer/jobs')}
+              className={styles.btnSecondary}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              Quản lý tin của tôi
+            </button>
+            <button 
+              type="button" 
+              onClick={() => navigate('/employer/jobs/new')}
+              className={styles.btnPrimary}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              + Đăng tin mới
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter Panel */}

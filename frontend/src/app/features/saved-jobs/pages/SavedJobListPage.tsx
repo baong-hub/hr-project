@@ -196,7 +196,7 @@ export const SavedJobListPage: React.FC = () => {
                     <img src={job.companyLogoUrl} alt={job.companyName} className={styles.companyLogo} />
                   ) : (
                     <div className={styles.logoPlaceholder}>
-                      {job.companyName.substring(0, 2).toUpperCase()}
+                      {(job.companyName || 'CO').substring(0, 2).toUpperCase()}
                     </div>
                   )}
                 </div>

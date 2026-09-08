@@ -57,6 +57,9 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationService, HR.Infrastructure.Services.OrganizationService>();
         services.AddScoped<IActivityLogService, HR.Infrastructure.Services.ActivityLogService>();
         services.AddScoped<ISettingService, HR.Infrastructure.Services.SettingService>();
+        services.AddScoped<IEmailService, HR.Infrastructure.Services.EmailService>();
+        services.AddScoped<IAiService, HR.Infrastructure.Services.GeminiAiService>();
+        services.AddHttpClient();
         services.AddMemoryCache();
 
         // Identity & JWT

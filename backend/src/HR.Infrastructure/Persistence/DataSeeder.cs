@@ -16,6 +16,8 @@ public static class DataSeeder
         await SeedAdminUserAsync(context);
         await SeedSettingConfigsAsync(context);
         await SeedJobsAsync(context);
+        await SeedMasterDataAsync(context);
+        await SeedDepartmentsAsync(context);
         await context.SaveChangesAsync();
     }
 
@@ -60,10 +62,11 @@ public static class DataSeeder
         var allowedMenuCodes = new List<string>
         {
             "menu:jobs", "menu:cvs", "menu:applications", "menu:interviews", "menu:companies", "menu:system",
-            "menu:saved-jobs", "menu:notifications", "menu:reports",
+            "menu:saved-jobs", "menu:notifications", "menu:reports", "menu:messages",
             "module:jobs", "module:cvs", "module:applications", "module:interviews", "module:companies",
-            "module:saved-jobs", "module:notifications", "module:reports",
-            "module:system-setting", "module:user", "module:user-role", "module:site"
+            "module:saved-jobs", "module:notifications", "module:reports", "module:messages",
+            "module:system-setting", "module:user", "module:user-role", "module:site",
+            "module:master-data", "module:organization"
         };
 
         // Define allowed permission codes
@@ -75,9 +78,12 @@ public static class DataSeeder
             "interviews:view", "interviews:create", "interviews:update", "interviews:delete",
             "companies:view", "companies:create", "companies:update", "companies:delete",
             "saved-jobs:view", "notifications:view", "reports:view",
+            "messages:view", "messages:send",
             "user:view", "user:create", "user:update", "user:delete", "user:reset_password",
             "user-role:view", "user-role:manage", "user-role:assign",
-            "site:view", "site:manage"
+            "site:view", "site:manage",
+            "master-data:view", "master-data:create", "master-data:update", "master-data:delete",
+            "organization:view", "organization:create", "organization:update", "organization:delete"
         };
 
         // Clean up old menus, permissions, and role associations from DB
@@ -118,8 +124,9 @@ public static class DataSeeder
             new() { Code = "menu:interviews", Name = "Lịch phỏng vấn", ShortName = "Lịch phỏng vấn", SortOrder = 4, Icon = "Calendar", Route = "/interviews", IsActive = true },
             new() { Code = "menu:companies", Name = "Trang doanh nghiệp", ShortName = "Doanh nghiệp", SortOrder = 5, Icon = "Home", Route = "/companies", IsActive = true },
             new() { Code = "menu:saved-jobs", Name = "Việc làm đã lưu", ShortName = "Đã lưu", SortOrder = 6, Icon = "Heart", Route = "/saved-jobs", IsActive = true },
-            new() { Code = "menu:notifications", Name = "Trung tâm thông báo", ShortName = "Thông báo", SortOrder = 7, Icon = "Bell", Route = "/notifications", IsActive = true },
-            new() { Code = "menu:reports", Name = "Báo cáo & Thống kê", ShortName = "Báo cáo", SortOrder = 8, Icon = "BarChart3", Route = "/reports", IsActive = true },
+            new() { Code = "menu:messages", Name = "Tin nhắn & Trò chuyện", ShortName = "Tin nhắn", SortOrder = 7, Icon = "MessageSquare", Route = "/messages", IsActive = true },
+            new() { Code = "menu:notifications", Name = "Trung tâm thông báo", ShortName = "Thông báo", SortOrder = 8, Icon = "Bell", Route = "/notifications", IsActive = true },
+            new() { Code = "menu:reports", Name = "Báo cáo & Thống kê", ShortName = "Báo cáo", SortOrder = 9, Icon = "BarChart3", Route = "/reports", IsActive = true },
             new() { Code = "menu:system", Name = "Cấu hình hệ thống", ShortName = "Cấu hình", SortOrder = 99, Icon = "Settings", IsActive = true }
         };
 
@@ -148,12 +155,15 @@ public static class DataSeeder
             ("module:interviews", "Lịch phỏng vấn", "Lịch phỏng vấn", "menu:interviews", 1, "/interviews"),
             ("module:companies", "Doanh nghiệp", "Doanh nghiệp", "menu:companies", 1, "/companies"),
             ("module:saved-jobs", "Việc làm đã lưu", "Đã lưu", "menu:saved-jobs", 1, "/saved-jobs"),
+            ("module:messages", "Tin nhắn", "Tin nhắn", "menu:messages", 1, "/messages"),
             ("module:notifications", "Thông báo", "Thông báo", "menu:notifications", 1, "/notifications"),
             ("module:reports", "Báo cáo & Thống kê", "Báo cáo", "menu:reports", 1, "/reports"),
             ("module:system-setting", "Cấu hình hệ thống", "Cấu hình", "menu:system", 1, "/user-settings/system-configs"),
             ("module:user", "Tài khoản", "Tài khoản", "menu:system", 2, "/users"),
             ("module:user-role", "Phân quyền", "Phân quyền", "menu:system", 3, "/user-roles"),
-            ("module:site", "Chi nhánh", "Chi nhánh", "menu:system", 4, "/sites")
+            ("module:master-data", "Danh mục dùng chung", "Danh mục", "menu:system", 4, "/master-data"),
+            ("module:organization", "Cơ cấu tổ chức", "Tổ chức", "menu:system", 5, "/organization"),
+            ("module:site", "Chi nhánh", "Chi nhánh", "menu:system", 6, "/sites")
         };
 
         var allMenusDict = await context.Menus.ToDictionaryAsync(x => x.Code);
@@ -209,6 +219,8 @@ public static class DataSeeder
             ("module:companies", "companies:delete", "Xóa thông tin doanh nghiệp"),
 
             ("module:saved-jobs", "saved-jobs:view", "Xem việc làm đã lưu"),
+            ("module:messages", "messages:view", "Xem tin nhắn"),
+            ("module:messages", "messages:send", "Gửi tin nhắn"),
             ("module:notifications", "notifications:view", "Xem thông báo"),
             ("module:reports", "reports:view", "Xem báo cáo thống kê"),
 
@@ -223,7 +235,17 @@ public static class DataSeeder
             ("module:user-role", "user-role:assign", "Gán vai trò"),
 
             ("module:site", "site:view", "Xem chi nhánh"),
-            ("module:site", "site:manage", "Quản lý chi nhánh")
+            ("module:site", "site:manage", "Quản lý chi nhánh"),
+
+            ("module:master-data", "master-data:view", "Xem danh mục dùng chung"),
+            ("module:master-data", "master-data:create", "Thêm danh mục"),
+            ("module:master-data", "master-data:update", "Sửa danh mục"),
+            ("module:master-data", "master-data:delete", "Xóa danh mục"),
+
+            ("module:organization", "organization:view", "Xem cơ cấu tổ chức"),
+            ("module:organization", "organization:create", "Thêm phòng ban"),
+            ("module:organization", "organization:update", "Sửa phòng ban"),
+            ("module:organization", "organization:delete", "Xóa phòng ban")
         };
 
         allMenusDict = await context.Menus.ToDictionaryAsync(x => x.Code);
@@ -310,6 +332,7 @@ public static class DataSeeder
             "interviews:view",
             "companies:view",
             "saved-jobs:view",
+            "messages:view", "messages:send",
             "notifications:view"
         };
         var dbCandidatePerms = await context.Permissions.Where(p => candidatePermCodes.Contains(p.Code)).ToListAsync();
@@ -350,6 +373,7 @@ public static class DataSeeder
             "applications:view", "applications:update",
             "interviews:view", "interviews:create", "interviews:update", "interviews:delete",
             "companies:view", "companies:update",
+            "messages:view", "messages:send",
             "notifications:view"
         };
         var dbEmployerPerms = await context.Permissions.Where(p => employerPermCodes.Contains(p.Code)).ToListAsync();
@@ -541,6 +565,86 @@ public static class DataSeeder
                 ExpiredAt = DateTime.UtcNow.AddDays(30)
             }
         );
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedMasterDataAsync(ApplicationDbContext context)
+    {
+        if (await context.MasterDataCategories.AnyAsync()) return;
+
+        var categories = new List<MasterDataCategory>
+        {
+            // Ngành nghề
+            new() { Type = "Industry", Code = "IT", Name = "Công nghệ thông tin", SortOrder = 1 },
+            new() { Type = "Industry", Code = "FINANCE", Name = "Tài chính - Ngân hàng", SortOrder = 2 },
+            new() { Type = "Industry", Code = "MARKETING", Name = "Marketing - Truyền thông", SortOrder = 3 },
+            new() { Type = "Industry", Code = "HR", Name = "Nhân sự", SortOrder = 4 },
+            new() { Type = "Industry", Code = "SALES", Name = "Kinh doanh", SortOrder = 5 },
+            new() { Type = "Industry", Code = "EDUCATION", Name = "Giáo dục - Đào tạo", SortOrder = 6 },
+            new() { Type = "Industry", Code = "HEALTHCARE", Name = "Y tế - Sức khỏe", SortOrder = 7 },
+            new() { Type = "Industry", Code = "CONSTRUCTION", Name = "Xây dựng - Kiến trúc", SortOrder = 8 },
+
+            // Cấp bậc
+            new() { Type = "Level", Code = "INTERN", Name = "Thực tập sinh", SortOrder = 1 },
+            new() { Type = "Level", Code = "FRESHER", Name = "Fresher", SortOrder = 2 },
+            new() { Type = "Level", Code = "JUNIOR", Name = "Junior", SortOrder = 3 },
+            new() { Type = "Level", Code = "MIDDLE", Name = "Middle", SortOrder = 4 },
+            new() { Type = "Level", Code = "SENIOR", Name = "Senior", SortOrder = 5 },
+            new() { Type = "Level", Code = "LEAD", Name = "Team Lead", SortOrder = 6 },
+            new() { Type = "Level", Code = "MANAGER", Name = "Manager", SortOrder = 7 },
+            new() { Type = "Level", Code = "DIRECTOR", Name = "Director", SortOrder = 8 },
+
+            // Loại hình công việc
+            new() { Type = "JobType", Code = "FULLTIME", Name = "Toàn thời gian", SortOrder = 1 },
+            new() { Type = "JobType", Code = "PARTTIME", Name = "Bán thời gian", SortOrder = 2 },
+            new() { Type = "JobType", Code = "CONTRACT", Name = "Hợp đồng", SortOrder = 3 },
+            new() { Type = "JobType", Code = "FREELANCE", Name = "Freelance", SortOrder = 4 },
+            new() { Type = "JobType", Code = "INTERNSHIP", Name = "Thực tập", SortOrder = 5 },
+
+            // Hình thức làm việc
+            new() { Type = "WorkForm", Code = "ONSITE", Name = "Tại văn phòng", SortOrder = 1 },
+            new() { Type = "WorkForm", Code = "REMOTE", Name = "Từ xa", SortOrder = 2 },
+            new() { Type = "WorkForm", Code = "HYBRID", Name = "Kết hợp", SortOrder = 3 },
+
+            // Mức lương
+            new() { Type = "SalaryRange", Code = "UNDER5M", Name = "Dưới 5 triệu", SortOrder = 1 },
+            new() { Type = "SalaryRange", Code = "5M_10M", Name = "5 - 10 triệu", SortOrder = 2 },
+            new() { Type = "SalaryRange", Code = "10M_15M", Name = "10 - 15 triệu", SortOrder = 3 },
+            new() { Type = "SalaryRange", Code = "15M_20M", Name = "15 - 20 triệu", SortOrder = 4 },
+            new() { Type = "SalaryRange", Code = "20M_30M", Name = "20 - 30 triệu", SortOrder = 5 },
+            new() { Type = "SalaryRange", Code = "30M_50M", Name = "30 - 50 triệu", SortOrder = 6 },
+            new() { Type = "SalaryRange", Code = "ABOVE50M", Name = "Trên 50 triệu", SortOrder = 7 },
+            new() { Type = "SalaryRange", Code = "NEGOTIABLE", Name = "Thỏa thuận", SortOrder = 8 },
+
+            // Địa điểm
+            new() { Type = "Location", Code = "HN", Name = "Hà Nội", SortOrder = 1 },
+            new() { Type = "Location", Code = "HCM", Name = "TP. Hồ Chí Minh", SortOrder = 2 },
+            new() { Type = "Location", Code = "DN", Name = "Đà Nẵng", SortOrder = 3 },
+            new() { Type = "Location", Code = "HP", Name = "Hải Phòng", SortOrder = 4 },
+            new() { Type = "Location", Code = "CT", Name = "Cần Thơ", SortOrder = 5 },
+            new() { Type = "Location", Code = "OTHER", Name = "Khác", SortOrder = 99 }
+        };
+
+        context.MasterDataCategories.AddRange(categories);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedDepartmentsAsync(ApplicationDbContext context)
+    {
+        if (await context.Departments.AnyAsync()) return;
+
+        var departments = new List<Department>
+        {
+            new() { Code = "BOD", Name = "Ban Giám đốc", SortOrder = 1 },
+            new() { Code = "HR", Name = "Phòng Nhân sự", SortOrder = 2 },
+            new() { Code = "IT", Name = "Phòng Công nghệ", SortOrder = 3 },
+            new() { Code = "SALES", Name = "Phòng Kinh doanh", SortOrder = 4 },
+            new() { Code = "MARKETING", Name = "Phòng Marketing", SortOrder = 5 },
+            new() { Code = "FINANCE", Name = "Phòng Tài chính - Kế toán", SortOrder = 6 },
+            new() { Code = "ADMIN", Name = "Phòng Hành chính", SortOrder = 7 }
+        };
+
+        context.Departments.AddRange(departments);
         await context.SaveChangesAsync();
     }
 }

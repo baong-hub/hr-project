@@ -30,6 +30,9 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResultDto>
         var email = request.Email.Trim().ToLower();
         var user = await _context.Users
             .Include(u => u.Role)
+            .Include(u => u.Candidate)
+            .Include(u => u.Employer)
+                .ThenInclude(e => e!.Company)
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
         if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
@@ -76,6 +79,16 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResultDto>
 
         await _context.SaveChangesAsync(cancellationToken);
 
+        var displayName = !string.IsNullOrWhiteSpace(user.FullName)
+            ? user.FullName
+            : user.Candidate?.FullName 
+              ?? user.Employer?.Company?.Name 
+              ?? user.Email.Split('@')[0];
+
+        var avatarUrl = user.AvatarUrl ?? user.Candidate?.AvatarUrl ?? user.Employer?.Company?.LogoUrl;
+        var companyName = user.Employer?.Company?.Name;
+        var companyLogo = user.Employer?.Company?.LogoUrl ?? user.Employer?.Company?.Logo;
+
         return new LoginResultDto
         {
             AccessToken = accessToken,
@@ -85,6 +98,10 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResultDto>
                 Id = user.Id,
                 Email = user.Email,
                 Role = user.Role.Name,
+                FullName = displayName,
+                AvatarUrl = avatarUrl,
+                CompanyName = companyName,
+                CompanyLogoUrl = companyLogo,
                 Permissions = permissions
             }
         };

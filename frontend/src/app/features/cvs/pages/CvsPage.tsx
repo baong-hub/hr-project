@@ -11,7 +11,8 @@ import styles from './CvsPage.module.scss';
 export const CvsPage: React.FC = () => {
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
-  const isCandidate = roles.includes('Ứng viên');
+  const userRole = user?.role || user?.accountType || '';
+  const isCandidate = roles.includes('Ứng viên') || userRole === 'CANDIDATE' || userRole === 'User';
 
   // Candidate states
   const [cvs, setCvs] = useState<any[]>([]);
@@ -53,13 +54,19 @@ export const CvsPage: React.FC = () => {
   const fetchCvs = async () => {
     setLoading(true);
     try {
-      const res = await cvsService.getCvs();
-      if (res.success) {
-        setCvs(res.data || []);
+      if (isCandidate) {
+        const res = await cvsService.getCvs();
+        if (res.success) {
+          setCvs(res.data || []);
+        }
+      } else {
+        const res = await cvsService.searchCandidates({ search: searchKeyword });
+        if (res.success) {
+          setCvs((res.data as any) || []);
+        }
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi tải danh sách CV.');
     } finally {
       setLoading(false);
     }
@@ -468,8 +475,8 @@ export const CvsPage: React.FC = () => {
                           <FileText size={16} style={{ marginRight: 8, verticalAlign: 'middle', color: 'var(--color-brand-primary)' }} />
                           {cv.cvTitle}
                         </td>
-                        <td>{(cv.fileSizeBytes / 1024).toFixed(0)} KB</td>
-                        <td>{cv.createdAt.split('T')[0]}</td>
+                        <td>{cv.fileSizeBytes ? `${(cv.fileSizeBytes / 1024).toFixed(0)} KB` : '—'}</td>
+                        <td>{cv.createdAt ? cv.createdAt.split('T')[0] : '—'}</td>
                         <td>
                           {cv.isMain ? (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#2e7d32', fontWeight: 600, fontSize: '12px' }}>

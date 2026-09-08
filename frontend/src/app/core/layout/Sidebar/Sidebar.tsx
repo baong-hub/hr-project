@@ -32,6 +32,16 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
     if (isSuperAdmin) return true;
     if (!code && !route) return true;
 
+    // Ẩn trang/menu Quản lý ứng tuyển đối với ứng viên (chỉ dành cho Nhà tuyển dụng/Admin)
+    if (isCandidate && (
+      code === 'menu:applications' || 
+      code === 'module:applications' || 
+      route === '/applications' || 
+      route?.includes('/applications')
+    )) {
+      return false;
+    }
+
     // Direct permission match
     if (code && permissions.includes(code)) return true;
 
@@ -49,6 +59,8 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
       'module:companies': ['companies:view'],
       'menu:saved-jobs': ['saved-jobs:view', 'job:save'],
       'module:saved-jobs': ['saved-jobs:view', 'job:save'],
+      'menu:messages': ['messages:view', 'messages:send'],
+      'module:messages': ['messages:view', 'messages:send'],
       'menu:notifications': ['notifications:view', 'notification:view'],
       'module:notifications': ['notifications:view', 'notification:view'],
       'menu:reports': ['reports:view', 'report:view'],
@@ -57,7 +69,9 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
       'module:system-setting': ['system:view', 'user:view'],
       'module:user': ['user:view', 'user:create', 'user:update'],
       'module:user-role': ['user-role:view', 'user-role:manage', 'user-role:assign'],
-      'module:site': ['site:view']
+      'module:site': ['site:view'],
+      'module:master-data': ['master-data:view', 'master-data:create', 'master-data:update'],
+      'module:organization': ['organization:view', 'organization:create', 'organization:update']
     };
 
     if (code && permMap[code]) {
@@ -87,13 +101,13 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
 
     // Candidate defaults
     if (isCandidate) {
-      const candidateAllowed = ['menu:jobs', 'menu:cvs', 'menu:applications', 'menu:interviews', 'menu:companies', 'menu:saved-jobs', 'menu:notifications'];
+      const candidateAllowed = ['menu:jobs', 'menu:cvs', 'menu:interviews', 'menu:companies', 'menu:saved-jobs', 'menu:messages', 'menu:notifications'];
       if (code && candidateAllowed.includes(code)) return true;
     }
 
     // Employer defaults
     if (isEmployer) {
-      const employerAllowed = ['menu:jobs', 'menu:cvs', 'menu:applications', 'menu:interviews', 'menu:companies', 'menu:notifications', 'menu:reports'];
+      const employerAllowed = ['menu:jobs', 'menu:cvs', 'menu:applications', 'menu:interviews', 'menu:companies', 'menu:messages', 'menu:notifications'];
       if (code && employerAllowed.includes(code)) return true;
     }
 
@@ -133,12 +147,22 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   }, []);
 
   const filterMenuItems = (items: SidebarItem[]): SidebarItem[] => {
-    if (isSuperAdmin) return items;
-
     return items
       .map((item) => {
+        // Ẩn menu ứng tuyển hoàn toàn đối với tài khoản ứng viên
+        if (isCandidate && (
+          item.code === 'menu:applications' ||
+          item.code === 'module:applications' ||
+          item.route === '/applications' ||
+          item.label === 'Quản lý ứng tuyển' ||
+          item.shortName === 'Ứng tuyển'
+        )) {
+          return null;
+        }
+
         if (item.children && item.children.length > 0) {
           const visibleChildren = item.children.filter((child) => {
+            if (isCandidate && (child.code === 'menu:applications' || child.route === '/applications')) return false;
             return hasPermission(child.code, child.route);
           });
           if (visibleChildren.length === 0) return null;
@@ -183,12 +207,15 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
     if (label === 'Lịch phỏng vấn') return t('sidebar.menu_interviews', 'Lịch phỏng vấn');
     if (label === 'Trang doanh nghiệp' || label === 'Doanh nghiệp') return t('sidebar.menu_companies', 'Doanh nghiệp');
     if (label === 'Việc làm đã lưu' || label === 'Đã lưu') return t('sidebar.menu_saved_jobs', 'Việc làm đã lưu');
+    if (label === 'Tin nhắn & Trò chuyện' || label === 'Tin nhắn') return t('sidebar.menu_messages', 'Tin nhắn');
     if (label === 'Trung tâm thông báo' || label === 'Thông báo') return t('sidebar.menu_notifications', 'Thông báo');
     if (label === 'Báo cáo & Thống kê' || label === 'Báo cáo') return t('sidebar.menu_reports', 'Báo cáo & Thống kê');
     if (label === 'Cấu hình hệ thống' || label === 'Cấu hình') return t('sidebar.menu_system', 'Cấu hình hệ thống');
     if (label === 'Tài khoản') return t('sidebar.module_user', 'Tài khoản');
     if (label === 'Phân quyền') return t('sidebar.module_user_role', 'Phân quyền');
-    if (label === 'Cấu hình chung') return t('sidebar.module_system_setting', 'Cấu hình chung');
+    if (label === 'Cấu hình chung' || label === 'Cấu hình hệ thống') return t('sidebar.module_system_setting', 'Cấu hình hệ thống');
+    if (label === 'Danh mục dùng chung' || label === 'Danh mục') return t('sidebar.module_master_data', 'Danh mục dùng chung');
+    if (label === 'Cơ cấu tổ chức' || label === 'Tổ chức') return t('sidebar.module_crm_organization', 'Cơ cấu tổ chức');
     
     return label;
   };

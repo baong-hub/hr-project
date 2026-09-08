@@ -266,10 +266,14 @@
     "module_report_consumable_by_service": "Consumable by Service Reports",
     
     "menu_system": "System Settings",
+    "module_system_setting": "System Settings",
     "module_user": "User Accounts",
     "module_user_role": "Roles & Permissions",
     "module_site": "Sites & Branches",
     "module_master_data": "Common Catalogs",
+    "module_organization": "Organization Structure",
+    "menu_messages": "Messages & Chat",
+    "module_messages": "Messages",
     "module_cogs": "Standard Cogs Configuration",
     "system_setting_update": "System Settings",
 

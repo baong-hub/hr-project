@@ -258,10 +258,14 @@
     "module_report_consumable_by_service": "Báo cáo vật tư tiêu hao theo dịch vụ khách hàng",
     
     "menu_system": "Cấu hình hệ thống",
+    "module_system_setting": "Cấu hình hệ thống",
     "module_user": "Tài khoản",
     "module_user_role": "Phân quyền",
     "module_site": "Chi nhánh",
     "module_master_data": "Danh mục dùng chung",
+    "module_organization": "Cơ cấu tổ chức",
+    "menu_messages": "Tin nhắn & Trò chuyện",
+    "module_messages": "Tin nhắn",
     "module_cogs": "Cấu hình Cogs chuẩn",
     "system_setting_update": "Tham số hệ thống",
 

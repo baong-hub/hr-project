@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { cvsService } from '../../../core/services/cvs.service';
+import { authService } from '../../../core/services/auth.service';
 import type { UpdateProfileDto, CandidateProfileDto } from '../../../core/models/cv.model';
 import { 
   User, 
@@ -21,14 +22,16 @@ export const CandidateProfilePage: React.FC = () => {
   const [experienceSummary, setExperienceSummary] = useState('');
   const [visibilityStatus, setVisibilityStatus] = useState<'PUBLIC' | 'PRIVATE'>('PRIVATE');
 
-  // Basic Personal Info states (Read-only / Simulated for Card 1)
+  const user = authService.getUser();
+
+  // Basic Personal Info states (Dynamic from current user)
   const [personalInfo] = useState({
-    fullName: 'Nguyễn Văn A',
-    email: 'candidate.a@example.com',
-    birthDate: '1998-05-15',
-    gender: 'Nam',
-    phone: '0987654321',
-    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+    fullName: user?.fullName || 'Ứng viên',
+    email: user?.email || 'candidate@example.com',
+    birthDate: user?.birthDate || 'Chưa cập nhật',
+    gender: user?.gender || 'Chưa cập nhật',
+    phone: user?.phoneNumber || user?.phone || 'Chưa cập nhật',
+    avatarUrl: user?.avatarUrl || ''
   });
 
   // UI Status

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
   Menu,
@@ -8,22 +8,57 @@ import {
   Bell,
   FileText,
   Package,
-  User,
   MapPin,
   ChevronRight
 } from 'lucide-react';
 import { Sidebar } from '../Sidebar/Sidebar';
 import { authService } from '../../services/auth.service';
+import { profileService } from '../../services/profile.service';
+import { AiChatWidget } from '../../../shared/ui/AiChatWidget/AiChatWidget';
 import styles from './AppShell.module.scss';
 
 export const AppShell: React.FC = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(() => authService.getUser());
 
-  const handleLogout = () => {
-    authService.logout();
-    navigate('/login');
+  useEffect(() => {
+    const syncUser = () => setCurrentUser(authService.getUser());
+    window.addEventListener('app-auth-changed', syncUser);
+
+    // Fetch latest profile from API to guarantee full name and avatar are synced
+    profileService.getProfile().then(res => {
+      if (res.success && res.data) {
+        const stored = authService.getUser() || {};
+        const updated = {
+          ...stored,
+          fullName: res.data.fullName,
+          avatarUrl: res.data.avatarUrl,
+          email: res.data.email || stored.email
+        };
+        localStorage.setItem('user', JSON.stringify(updated));
+        setCurrentUser(updated);
+      }
+    }).catch(() => {});
+
+    return () => window.removeEventListener('app-auth-changed', syncUser);
+  }, []);
+
+  const displayName = currentUser?.fullName || currentUser?.companyName || currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Người dùng');
+  const avatarUrl = currentUser?.avatarUrl || currentUser?.companyLogoUrl || currentUser?.logo;
+  const roleName = currentUser?.companyName || (currentUser?.roles?.includes('Ứng viên') ? 'Ứng viên' : (currentUser?.roles?.includes('Nhà tuyển dụng') ? 'Nhà tuyển dụng' : currentUser?.role));
+
+  const initials = displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase())
+    .join('') || 'U';
+
+  const handleLogout = async () => {
+    await authService.logout();
+    window.location.href = '/auth/login';
   };
 
   return (
@@ -90,9 +125,16 @@ export const AppShell: React.FC = () => {
                 className={styles.profileBtn}
               >
                 <div className={styles.avatar}>
-                  <User size={16} />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={displayName} className={styles.avatarImg} />
+                  ) : (
+                    <span className={styles.avatarInitials}>{initials}</span>
+                  )}
                 </div>
-                <span>{authService.getUser()?.fullName || 'Người dùng'}</span>
+                <div className={styles.userInfo}>
+                  <span className={styles.userName}>{displayName}</span>
+                  {roleName && <span className={styles.userRole}>{roleName}</span>}
+                </div>
                 <ChevronRight size={12} className={styles.dropdownArrow} />
               </button>
               {showProfileDropdown && (
@@ -110,6 +152,9 @@ export const AppShell: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Floating AI Chat Assistant */}
+      <AiChatWidget />
     </div>
   );
 };
