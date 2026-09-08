@@ -38,7 +38,7 @@ services:
       - JWT__Issuer=HRPortal
       - JWT__Audience=HRPortal
       - Gemini__ApiKey=AQ.Ab8RN6K7mtXnIRJvL8eWVeWWZco5lqonLn2VjehgNze_2AyW4A
-      - Gemini__Model=gemini-1.5-flash
+      - Gemini__Model=gemini-flash-latest
     depends_on:
       - mysql
 

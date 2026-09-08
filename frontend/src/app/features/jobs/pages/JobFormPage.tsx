@@ -187,14 +187,19 @@ export const JobFormPage: React.FC = () => {
   };
 
   const handleGenerateAiJd = async () => {
-    if (!title.trim()) {
-      toast.error('Vui lòng nhập Tiêu đề tuyển dụng trước khi tạo bằng AI.');
+    let targetTitle = title.trim();
+    if (!targetTitle && aiKeywords.trim()) {
+      targetTitle = aiKeywords.trim();
+      setTitle(targetTitle);
+    }
+    if (!targetTitle) {
+      toast.error('Vui lòng nhập Tiêu đề / Vị trí tuyển dụng trước khi tạo bằng AI.');
       return;
     }
     setGeneratingJd(true);
     try {
       const res = await aiService.generateJd({
-        title: title.trim(),
+        title: targetTitle,
         keywords: [category, aiKeywords].filter(Boolean).join(', ')
       });
       if (res.data?.success && res.data.data) {
@@ -481,10 +486,42 @@ export const JobFormPage: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '8px', fontSize: '0.85rem', color: '#475569', borderLeft: '3px solid #6366f1' }}>
-                <strong>Vị trí đang tạo:</strong> {title || '(Chưa có tiêu đề - Vui lòng nhập tiêu đề trước)'}
-                <br />
-                <strong>Ngành nghề:</strong> {category || 'Công nghệ thông tin'}
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                  Vị trí / Tiêu đề tuyển dụng <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ví dụ: Backend Developer, Senior .NET Engineer, UI/UX Designer..."
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    border: (!title.trim() && !aiKeywords.trim()) ? '1px solid #f87171' : '1px solid #cbd5e1',
+                    fontSize: '0.9rem',
+                    outline: 'none'
+                  }}
+                />
+                {!title.trim() && !aiKeywords.trim() && (
+                  <span style={{ fontSize: '0.75rem', color: '#ef4444', display: 'block', marginTop: '4px' }}>
+                    * Vui lòng nhập tiêu đề vị trí cần tuyển dụng
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                  Ngành nghề / Lĩnh vực (Tùy chọn)
+                </label>
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Ví dụ: Công nghệ thông tin / IT"
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                />
               </div>
 
               <div>
@@ -495,7 +532,7 @@ export const JobFormPage: React.FC = () => {
                   rows={3}
                   value={aiKeywords}
                   onChange={(e) => setAiKeywords(e.target.value)}
-                  placeholder="Ví dụ: ReactJS, TypeScript, 2 năm kinh nghiệm, làm việc hybrid, phụ cấp ăn trưa, thưởng dự án quý..."
+                  placeholder="Ví dụ: C#, .NET Core, Microservices, SQL Server, 2 năm kinh nghiệm, làm việc hybrid, phụ cấp ăn trưa, thưởng dự án..."
                   style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
                 />
                 <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>AI sẽ kết hợp tiêu đề tuyển dụng và các từ khóa này để sinh bộ JD hoàn chỉnh nhất.</span>
@@ -513,10 +550,13 @@ export const JobFormPage: React.FC = () => {
                 <button 
                   type="button"
                   onClick={handleGenerateAiJd} 
-                  disabled={generatingJd || !title.trim()}
+                  disabled={generatingJd || (!title.trim() && !aiKeywords.trim())}
                   className={styles.btnPrimary}
                   style={{
-                    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                    background: (!title.trim() && !aiKeywords.trim())
+                      ? '#94a3b8'
+                      : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                    cursor: (!title.trim() && !aiKeywords.trim()) ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'

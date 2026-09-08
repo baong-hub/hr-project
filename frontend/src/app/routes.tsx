@@ -98,6 +98,12 @@ const PermissionRoute: React.FC<{ code: string; children: React.ReactNode }> = (
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
   const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
+  const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
+
+  // Chặn Admin / Nhà tuyển dụng vào trang việc làm đã lưu (vì chỉ dành riêng cho Ứng viên)
+  if ((code === 'job:save' || code === 'saved-jobs:view') && (isSuperAdmin || !isCandidate)) {
+    return <Navigate to="/" replace />;
+  }
 
   if (isSuperAdmin) return <>{children}</>;
 
@@ -125,7 +131,6 @@ const PermissionRoute: React.FC<{ code: string; children: React.ReactNode }> = (
     'messages:view': ['messages:view', 'messages:send']
   };
 
-  const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
   const isEmployer = userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng');
 
   if (isCandidate && (code === 'job:save' || code === 'saved-jobs:view' || code === 'cv:manage' || code === 'job:apply' || code === 'notification:view' || code === 'messages:view')) {

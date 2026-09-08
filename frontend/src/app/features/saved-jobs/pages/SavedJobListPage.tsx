@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, MapPin, DollarSign, Calendar, Heart, AlertCircle, Search } from 'lucide-react';
 import { savedJobService } from '../../../core/services/saved-job.service';
+import { authService } from '../../../core/services/auth.service';
 import type { SavedJobDto } from '../../../core/models/saved-job.model';
 import styles from './SavedJobListPage.module.scss';
 
@@ -32,6 +33,17 @@ export const SavedJobListPage: React.FC = () => {
   };
 
   useEffect(() => {
+    const user = authService.getUser();
+    const userRole = user?.role || user?.accountType || '';
+    const roles = (user?.roles as string[]) || [];
+    const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
+    const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
+
+    if (user && (isSuperAdmin || !isCandidate)) {
+      navigate('/', { replace: true });
+      return;
+    }
+
     fetchSavedJobs();
     return () => {
       if (undoTimeoutId) {
