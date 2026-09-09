@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Plus, Download, Search, RotateCcw, Trash2, 
-  FileText, Upload, ChevronLeft, ChevronRight, Check, Star, Settings, X 
+  Download, RotateCcw, Trash2, 
+  FileText, Upload, Star 
 } from 'lucide-react';
 import { cvsService } from '../../../core/services/cvs.service';
 import { authService } from '../../../core/services/auth.service';
@@ -185,7 +185,7 @@ export const CvsPage: React.FC = () => {
               <h2>Trình tạo CV thông minh (CV Builder)</h2>
               <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>Nhập thông tin cá nhân và xem trực tiếp CV mẫu chuẩn A4</p>
             </div>
-            <button className={styles.btnSecondary} onClick={() => setIsBuilderMode(false)}><X size={16} /> Thoát</button>
+            <button className={styles.btnSecondary} onClick={() => setIsBuilderMode(false)}>Thoát</button>
           </div>
 
           {/* Stepper Progress */}
@@ -318,10 +318,10 @@ export const CvsPage: React.FC = () => {
                   </div>
                   <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <button className={styles.btnPrimary} style={{ width: '100%', justifyContent: 'center' }} onClick={handlePrintPdf}>
-                      <Download size={16} /> Tải xuống bản PDF A4
+                      Tải xuống bản PDF A4
                     </button>
                     <button className={styles.btnSecondary} style={{ width: '100%', justifyContent: 'center', background: '#e8f5e9', color: '#2e7d32', borderColor: '#c6f6d5' }} onClick={handleSaveBuilderCv}>
-                      <Check size={16} /> Lưu vào hồ sơ ứng tuyển
+                      Lưu vào hồ sơ ứng tuyển
                     </button>
                   </div>
                 </>
@@ -334,14 +334,14 @@ export const CvsPage: React.FC = () => {
                   disabled={currentStep === 1} 
                   onClick={() => setCurrentStep(prev => prev - 1)}
                 >
-                  <ChevronLeft size={16} /> Quay lại
+                  Quay lại
                 </button>
                 {currentStep < 4 ? (
                   <button 
                     className={styles.btnPrimary} 
                     onClick={() => setCurrentStep(prev => prev + 1)}
                   >
-                    Tiếp tục <ChevronRight size={16} />
+                    Tiếp tục
                   </button>
                 ) : (
                   <span style={{ color: 'var(--color-text-muted)' }}>Bước cuối cùng</span>
@@ -437,7 +437,7 @@ export const CvsPage: React.FC = () => {
             <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>Tải lên các file CV hoặc khởi chạy trình tạo CV Builder chuẩn chuyên nghiệp</p>
           </div>
           <button className={styles.btnPrimary} onClick={() => { setIsBuilderMode(true); setCurrentStep(1); }}>
-            <Plus size={16} /> Tạo CV bằng Builder
+            Tạo CV bằng Builder
           </button>
         </div>
 
@@ -538,7 +538,7 @@ export const CvsPage: React.FC = () => {
             </div>
 
             <button className={styles.btnPrimary} style={{ justifyContent: 'center' }} onClick={handleUpdateProfileSettings}>
-              <Settings size={16} /> Lưu thông tin hồ sơ
+              Lưu thông tin hồ sơ
             </button>
 
             <div style={{ borderTop: '1px solid var(--color-border-default)', paddingTop: '16px', marginTop: '8px' }}>
@@ -585,7 +585,7 @@ export const CvsPage: React.FC = () => {
           style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--color-border-default)', borderRadius: '8px' }}
           onKeyDown={e => e.key === 'Enter' && fetchCvs()}
         />
-        <button className={styles.btnPrimary} onClick={() => fetchCvs()}><Search size={16} /> Tìm kiếm</button>
+        <button className={styles.btnPrimary} onClick={() => fetchCvs()}>Tìm kiếm</button>
         <button className={styles.btnSecondary} onClick={() => { setSearchKeyword(''); fetchCvs(); }}><RotateCcw size={16} /></button>
       </div>
 
@@ -631,7 +631,7 @@ export const CvsPage: React.FC = () => {
               <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '12px', display: 'flex', justifySelf: 'flex-end', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                 <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>File: {cv.cvTitle}</span>
                 <a href={cv.fileUrl} download className={styles.btnPrimary} style={{ padding: '6px 12px', fontSize: '12px', gap: '4px' }}>
-                  <Download size={12} /> Tải CV
+                  Tải CV
                 </a>
               </div>
             </div>

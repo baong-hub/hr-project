@@ -31,6 +31,10 @@ builder.Services.AddAuthorization();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Add SignalR
+builder.Services.AddSignalR();
+builder.Services.AddScoped<HR.Application.Common.Interfaces.INotificationSender, HR.API.Services.NotificationSender>();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -78,6 +82,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR Hubs
+app.MapHub<HR.API.Hubs.NotificationHub>("/hubs/notifications");
+app.MapHub<HR.API.Hubs.UserPresenceHub>("/hubs/userpresence");
+app.MapHub<HR.API.Hubs.ChatHub>("/hubs/chat");
 
 try
 {

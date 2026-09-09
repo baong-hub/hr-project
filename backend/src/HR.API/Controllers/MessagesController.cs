@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.AspNetCore.SignalR;
+using HR.API.Hubs;
+
 namespace HR.API.Controllers;
 
 [ApiController]
@@ -18,7 +21,9 @@ namespace HR.API.Controllers;
 public class MessagesController(
     ApplicationDbContext context,
     ICurrentUserService currentUserService,
-    IEmailService emailService) : ControllerBase
+    IEmailService emailService,
+    IHubContext<ChatHub> chatHub,
+    IHubContext<NotificationHub> notificationHub) : ControllerBase
 {
     public class SendMessageDto
     {
@@ -298,6 +303,28 @@ public class MessagesController(
 
         await context.SaveChangesAsync();
 
+        // Push real-time event qua SignalR
+        try
+        {
+            await chatHub.Clients.Group($"Conversation_{convo.Id}").SendAsync("ReceiveMessage", new
+            {
+                message.Id,
+                message.ConversationId,
+                message.SenderId,
+                SenderName = senderName,
+                message.Content,
+                message.SentAt
+            });
+
+            await notificationHub.Clients.Group($"User_{recipientUserId}").SendAsync("ReceiveNotification", new
+            {
+                title = $"Tin nhắn mới từ {senderName}",
+                content = dto.Content.Length > 100 ? dto.Content.Substring(0, 100) + "..." : dto.Content,
+                redirectUrl = "/messages"
+            });
+        }
+        catch { }
+
         return Ok(ApiResponse<object>.Ok(new
         {
             message.Id,
@@ -441,6 +468,31 @@ public class MessagesController(
 
         await context.SaveChangesAsync();
 
+        // Push real-time event qua SignalR
+        try
+        {
+            if (candidateUser != null)
+            {
+                await notificationHub.Clients.Group($"User_{candidateUser.Id}").SendAsync("ReceiveNotification", new
+                {
+                    title = $"Hồ sơ phù hợp: {jobTitle}",
+                    content = $"Công ty {companyName} đã đánh giá hồ sơ của bạn phù hợp và mở kênh nhắn tin trao đổi.",
+                    redirectUrl = "/messages"
+                });
+            }
+
+            await chatHub.Clients.Group($"Conversation_{convo.Id}").SendAsync("ReceiveMessage", new
+            {
+                chatMessage.Id,
+                chatMessage.ConversationId,
+                chatMessage.SenderId,
+                SenderName = companyName,
+                chatMessage.Content,
+                chatMessage.SentAt
+            });
+        }
+        catch { }
+
         return Ok(ApiResponse<object>.Ok(new
         {
             conversationId = convo.Id,
@@ -448,4 +500,80 @@ public class MessagesController(
             message = "Đã đánh giá hồ sơ phù hợp, kích hoạt tin nhắn và gửi email thành công!"
         }));
     }
+
+    public class DirectChatRequestDto
+    {
+        public int CandidateUserId { get; set; }
+        public int? JobId { get; set; }
+    }
+
+    /// <summary>
+    /// Lấy hoặc tạo phòng hội thoại chat trực tiếp giữa Nhà tuyển dụng và Ứng viên (Săn ứng viên chủ động)
+    /// </summary>
+    [HttpPost("get-or-create-direct")]
+    public async Task<IActionResult> GetOrCreateDirectConversation([FromBody] DirectChatRequestDto dto)
+    {
+        var employerUserId = currentUserService.UserId;
+
+        var candidate = await context.Candidates
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.Id == dto.CandidateUserId && c.DeletedAt == null);
+
+        var candidateUser = candidate?.User ?? await context.Users.FirstOrDefaultAsync(u => u.Id == dto.CandidateUserId);
+        if (candidateUser == null)
+        {
+            return NotFound(ApiResponse<object>.Fail("CANDIDATE_NOT_FOUND", "Không tìm thấy thông tin ứng viên."));
+        }
+
+        // Tìm conversation hiện có giữa 2 người này
+        var convo = await context.Conversations
+            .Where(c => c.DeletedAt == null && 
+                        c.CandidateUserId == candidateUser.Id && 
+                        c.EmployerUserId == employerUserId)
+            .OrderByDescending(c => c.LastMessageAt)
+            .FirstOrDefaultAsync();
+
+        if (convo == null)
+        {
+            var employer = await context.Employers
+                .Include(e => e.Company)
+                .FirstOrDefaultAsync(e => e.UserId == employerUserId && e.DeletedAt == null);
+            var companyName = employer?.Company?.Name ?? "Nhà tuyển dụng";
+            var candidateName = candidateUser.FullName ?? "Ứng viên";
+
+            convo = new Conversation
+            {
+                JobId = dto.JobId,
+                CandidateUserId = candidateUser.Id,
+                EmployerUserId = employerUserId,
+                Title = $"Trao đổi tuyển dụng: {candidateName}",
+                LastMessageAt = DateTime.Now,
+                LastMessageContent = "Bắt đầu cuộc trò chuyện...",
+                LastSenderId = employerUserId,
+                CandidateUnreadCount = 0,
+                EmployerUnreadCount = 0
+            };
+
+            context.Conversations.Add(convo);
+            await context.SaveChangesAsync();
+
+            // Thêm tin nhắn khởi đầu
+            var welcomeMsg = new ChatMessage
+            {
+                ConversationId = convo.Id,
+                SenderId = employerUserId,
+                Content = $"Chào bạn {candidateName}, chúng tôi từ {companyName} rất quan tâm đến hồ sơ năng lực của bạn và muốn trao đổi trực tiếp về cơ hội nghề nghiệp.",
+                IsRead = false,
+                SentAt = DateTime.Now
+            };
+            context.ChatMessages.Add(welcomeMsg);
+            convo.LastMessageContent = welcomeMsg.Content;
+            convo.CandidateUnreadCount = 1;
+
+            await context.SaveChangesAsync();
+        }
+
+        return Ok(ApiResponse<object>.Ok(new { conversationId = convo.Id }));
+    }
 }
+

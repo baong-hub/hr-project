@@ -22,6 +22,19 @@ namespace HR.Api.Controllers;
 [Authorize]
 public class CandidatesController(IMediator mediator) : ControllerBase
 {
+    // EP-00: Lấy hồ sơ năng lực của ứng viên hiện tại
+    [HttpGet("profile")]
+    [RequirePermission("cv:manage")]
+    public async Task<IActionResult> GetProfile()
+    {
+        var result = await mediator.Send(new HR.Application.Cvs.Queries.GetCandidateProfile.GetMyCandidateProfileQuery());
+        if (result == null)
+        {
+            throw new NotFoundException("CANDIDATE_NOT_FOUND", "Không tìm thấy thông tin hồ sơ ứng viên.");
+        }
+        return Ok(ApiResponse<CandidateProfileDto>.Ok(result));
+    }
+
     // EP-01: Cập nhật hồ sơ năng lực
     [HttpPut("profile")]
     [RequirePermission("cv:manage")]
@@ -82,10 +95,21 @@ public class CandidatesController(IMediator mediator) : ControllerBase
 
     // EP-06: Tìm kiếm hồ sơ ứng viên (Dành cho Employer)
     [HttpGet]
-    [RequirePermission("cv:search")]
+    [RequirePermission("cv:search", "cvs:view", "job:manage", "jobs:view")]
     public async Task<IActionResult> Search([FromQuery] SearchCandidatesQuery query)
     {
         var result = await mediator.Send(query);
         return Ok(ApiResponse<List<CandidateProfileDto>>.Ok(result));
+    }
+
+    public record InviteCandidateRequest(int JobId, string? Message);
+
+    // EP-07: Mời ứng viên ứng tuyển vào Job (Active Talent Sourcing)
+    [HttpPost("{id:int}/invite-job")]
+    [RequirePermission("job:manage", "jobs:create", "cv:search", "cvs:view")]
+    public async Task<IActionResult> InviteJob(int id, [FromBody] InviteCandidateRequest request)
+    {
+        var result = await mediator.Send(new HR.Application.Cvs.Commands.InviteCandidateToJob.InviteCandidateToJobCommand(id, request.JobId, request.Message));
+        return Ok(ApiResponse<bool>.Ok(result));
     }
 }

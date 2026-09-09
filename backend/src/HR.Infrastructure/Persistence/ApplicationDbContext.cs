@@ -38,6 +38,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Interview> Interviews => Set<Interview>();
     public DbSet<InterviewEvaluation> InterviewEvaluations => Set<InterviewEvaluation>();
     public DbSet<TechnicalTest> TechnicalTests => Set<TechnicalTest>();
+    public DbSet<JobAssessmentTemplate> JobAssessmentTemplates => Set<JobAssessmentTemplate>();
+    public DbSet<JobOffer> JobOffers => Set<JobOffer>();
     public DbSet<SavedJob> SavedJobs => Set<SavedJob>();
     public DbSet<CandidateFollow> CandidateFollows => Set<CandidateFollow>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

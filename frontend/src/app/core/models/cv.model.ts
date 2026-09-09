@@ -17,12 +17,37 @@ export interface CandidateProfileDto {
   gender?: string;
   birthDate?: string;
   objective?: string;
+  experienceSummary?: string;
   skills: string[];
   visibilityStatus: string;
+  currentPosition?: string;
+  currentCompany?: string;
+  totalYearsExperience?: number;
+  location?: string;
+  defaultCvUrl?: string;
+  defaultCvTitle?: string;
+  email?: string;
+  phoneNumber?: string;
 }
 
 export interface UpdateProfileDto {
   skills?: string;
   experienceSummary?: string;
   visibilityStatus: 'PUBLIC' | 'PRIVATE';
+}
+
+export interface SearchCandidatesParams {
+  page?: number;
+  pageSize?: number;
+  skill?: string;
+  search?: string;
+  location?: string;
+  level?: string;
+  minYearsExp?: number;
+  maxYearsExp?: number;
+}
+
+export interface InviteCandidateRequest {
+  jobId: number;
+  message?: string;
 }

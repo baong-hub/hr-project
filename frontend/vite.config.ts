@@ -16,20 +16,20 @@ export default defineConfig({
     port: 5175,
     proxy: {
       '/api': {
-        target: 'http://localhost:5082',
+        target: 'http://127.0.0.1:5082',
         changeOrigin: true,
       },
       '/hubs': {
-        target: 'http://localhost:5082',
+        target: 'http://127.0.0.1:5082',
         ws: true,
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'http://localhost:5082',
+        target: 'http://127.0.0.1:5082',
         changeOrigin: true,
       },
       '/recordings': {
-        target: 'http://localhost:5082',
+        target: 'http://127.0.0.1:5082',
         changeOrigin: true,
       }
     }

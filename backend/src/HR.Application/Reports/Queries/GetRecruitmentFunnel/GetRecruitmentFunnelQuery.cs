@@ -3,4 +3,7 @@ using MediatR;
 
 namespace HR.Application.Reports.Queries.GetRecruitmentFunnel;
 
-public record GetRecruitmentFunnelQuery : IRequest<RecruitmentFunnelDto>;
+public record GetRecruitmentFunnelQuery(
+    string? From = null,
+    string? To = null
+) : IRequest<RecruitmentFunnelDto>;

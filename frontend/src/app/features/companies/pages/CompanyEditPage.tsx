@@ -21,6 +21,13 @@ export const CompanyEditPage: React.FC = () => {
   const [sizeRange, setSizeRange] = useState<string>('');
   const [industry, setIndustry] = useState<string>('');
   const [addresses, setAddresses] = useState<string[]>(['']);
+  
+  // Employer Branding States
+  const [videoUrl, setVideoUrl] = useState<string>('');
+  const [officeGallery, setOfficeGallery] = useState<string>('');
+  const [benefits, setBenefits] = useState<string>('');
+  const [cultureHighlights, setCultureHighlights] = useState<string>('');
+  const [companyFaqs, setCompanyFaqs] = useState<string>('');
 
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -34,6 +41,7 @@ export const CompanyEditPage: React.FC = () => {
     'Y tế / Sức khỏe',
     'Giáo dục / Đào tạo',
     'Bán lẻ / Tiêu dùng',
+    'Khác',
   ];
 
   useEffect(() => {
@@ -58,6 +66,18 @@ export const CompanyEditPage: React.FC = () => {
           setWebsite(companyData.website || '');
           setSizeRange(companyData.sizeRange);
           setIndustry(companyData.industry);
+          setVideoUrl(companyData.videoUrl || '');
+          if (companyData.officeGallery) {
+            try {
+              const parsed = JSON.parse(companyData.officeGallery);
+              setOfficeGallery(Array.isArray(parsed) ? parsed.join('\n') : companyData.officeGallery);
+            } catch {
+              setOfficeGallery(companyData.officeGallery);
+            }
+          }
+          setBenefits(companyData.benefits || '');
+          setCultureHighlights(companyData.cultureHighlights || '');
+          setCompanyFaqs(companyData.companyFaqs || '');
           
           if (companyData.address) {
             setAddresses(companyData.address.split('\n'));
@@ -131,6 +151,13 @@ export const CompanyEditPage: React.FC = () => {
         sizeRange,
         industry,
         addressList: validAddresses.join('\n'), // joining list back for API
+        benefits: benefits.trim() || undefined,
+        videoUrl: videoUrl.trim() || undefined,
+        officeGallery: officeGallery.trim() 
+          ? JSON.stringify(officeGallery.split('\n').map(s => s.trim()).filter(Boolean)) 
+          : undefined,
+        cultureHighlights: cultureHighlights.trim() || undefined,
+        companyFaqs: companyFaqs.trim() || undefined
       };
 
       const response = await companiesService.updateCompany(companyId, updateData);
@@ -464,6 +491,101 @@ export const CompanyEditPage: React.FC = () => {
               >
                 + Thêm địa điểm
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* CARD 4: EMPLOYER BRANDING & CAREERS PORTAL */}
+        <div style={{
+          backgroundColor: 'var(--color-bg-card)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-border-default)',
+          boxShadow: 'var(--shadow-sm)',
+          padding: 'var(--space-6)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+            <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+              🌟 Thương hiệu & Cổng Tuyển Dụng (Employer Branding & Careers Portal)
+            </h3>
+            {companyId && (
+              <a 
+                href={`/companies/${companyId}/careers`} 
+                target="_blank" 
+                rel="noreferrer"
+                style={{ fontSize: '13px', color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }}
+              >
+                🚀 Xem Cổng Tuyển Dụng Thực Tế ↗
+              </a>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+            <div>
+              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
+                🎥 Video giới thiệu văn hóa công ty (YouTube / MP4 URL)
+              </label>
+              <input
+                type="text"
+                placeholder="Ví dụ: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid var(--color-border-strong)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 'var(--font-size-base)',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'block' }}>
+                Video xuất hiện trang trọng ở mục Tiêu điểm văn hóa giúp tăng 40-60% tỷ lệ nộp đơn.
+              </span>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
+                🖼️ Hình ảnh văn phòng & Môi trường làm việc (Mỗi dòng một link URL ảnh)
+              </label>
+              <textarea
+                placeholder="https://example.com/office-1.jpg&#10;https://example.com/pantry-2.jpg&#10;https://example.com/teambuilding.jpg"
+                value={officeGallery}
+                onChange={(e) => setOfficeGallery(e.target.value)}
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid var(--color-border-strong)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 'var(--font-size-base)',
+                  boxSizing: 'border-box',
+                  resize: 'vertical'
+                }}
+              />
+              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'block' }}>
+                Hình ảnh không gian làm việc thực tế, góc pantry, phòng họp sáng tạo và hoạt động teambuilding.
+              </span>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
+                🎁 Lợi ích & Chế độ đãi ngộ bổ sung (Benefits)
+              </label>
+              <textarea
+                placeholder="Ví dụ: Thưởng tháng 13, Gói bảo hiểm sức khỏe Bảo Việt, Khám sức khỏe định kỳ, Du lịch 5 sao..."
+                value={benefits}
+                onChange={(e) => setBenefits(e.target.value)}
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid var(--color-border-strong)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 'var(--font-size-base)',
+                  boxSizing: 'border-box',
+                  resize: 'vertical'
+                }}
+              />
             </div>
           </div>
         </div>

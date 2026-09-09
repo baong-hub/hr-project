@@ -19,5 +19,10 @@ public record CompanyDto(
     string? SocialLinks,
     string VerificationStatus,
     int FollowersCount,
-    bool? IsFollowing = null
+    bool? IsFollowing = null,
+    string? VideoUrl = null,
+    string? OfficeGallery = null,
+    string? CultureHighlights = null,
+    string? CompanyFaqs = null,
+    string? Testimonials = null
 );

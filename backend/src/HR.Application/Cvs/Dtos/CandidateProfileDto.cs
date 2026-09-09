@@ -11,5 +11,14 @@ public record CandidateProfileDto(
     DateTime? BirthDate,
     string? Objective,
     List<string> Skills,
-    string VisibilityStatus
+    string VisibilityStatus,
+    string? ExperienceSummary = null,
+    string? CurrentPosition = null,
+    string? CurrentCompany = null,
+    int TotalYearsExperience = 0,
+    string? Location = null,
+    string? DefaultCvUrl = null,
+    string? DefaultCvTitle = null,
+    string? Email = null,
+    string? PhoneNumber = null
 );

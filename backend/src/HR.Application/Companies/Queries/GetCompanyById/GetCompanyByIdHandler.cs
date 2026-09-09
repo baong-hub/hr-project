@@ -57,7 +57,12 @@ public class GetCompanyByIdHandler : IRequestHandler<GetCompanyByIdQuery, Compan
             company.SocialLinks,
             company.VerificationStatus.ToString(),
             followersCount,
-            isFollowing
+            isFollowing,
+            company.VideoUrl,
+            company.OfficeGallery,
+            company.CultureHighlights,
+            company.CompanyFaqs,
+            company.Testimonials
         );
     }
 }

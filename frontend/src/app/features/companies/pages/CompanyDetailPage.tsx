@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { companiesService } from '../../../core/services/companies.service';
 import { jobsService } from '../../../core/services/jobs.service';
 import { authService } from '../../../core/services/auth.service';
@@ -139,6 +140,31 @@ export const CompanyDetailPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: 'var(--space-12)', textAlign: 'left' }}>
+      {/* Back Button */}
+      <div style={{ marginBottom: '12px' }}>
+        <button
+          onClick={() => navigate('/companies')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '8px 16px',
+            background: 'var(--color-bg-default, #fff)',
+            border: '1px solid var(--color-border-default, #e2e8f0)',
+            borderRadius: 'var(--radius-md, 8px)',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'var(--color-text-secondary, #64748b)',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-subtle, #f8fafc)'; e.currentTarget.style.color = 'var(--color-text-primary, #1e293b)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-default, #fff)'; e.currentTarget.style.color = 'var(--color-text-secondary, #64748b)'; }}
+        >
+          <ArrowLeft size={16} /> Quay lại danh sách doanh nghiệp
+        </button>
+      </div>
+
       {/* Banner & Logo Cover Container */}
       <div style={{ position: 'relative', marginBottom: 'var(--space-12)' }}>
         {/* Large Banner */}
@@ -243,6 +269,27 @@ export const CompanyDetailPage: React.FC = () => {
             }}
           >
             {followLoading ? 'Đang xử lý...' : isFollowing ? '✓ Đang theo dõi' : '+ Theo dõi công ty'}
+          </button>
+
+          <button
+            onClick={() => navigate(`/companies/${companyId}/careers`)}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#4f46e5',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 'var(--font-weight-semibold)',
+              fontSize: 'var(--font-size-sm)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)',
+              transition: 'transform 0.15s ease'
+            }}
+          >
+            🌟 Khám phá Cổng tuyển dụng & Thương hiệu ↗
           </button>
         </div>
       </div>

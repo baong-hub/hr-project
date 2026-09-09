@@ -91,6 +91,26 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
             .HasColumnName("social_links")
             .HasColumnType("json");
 
+        builder.Property(x => x.VideoUrl)
+            .HasColumnName("video_url")
+            .HasMaxLength(255);
+
+        builder.Property(x => x.OfficeGallery)
+            .HasColumnName("office_gallery")
+            .HasColumnType("json");
+
+        builder.Property(x => x.CultureHighlights)
+            .HasColumnName("culture_highlights")
+            .HasColumnType("json");
+
+        builder.Property(x => x.CompanyFaqs)
+            .HasColumnName("company_faqs")
+            .HasColumnType("json");
+
+        builder.Property(x => x.Testimonials)
+            .HasColumnName("testimonials")
+            .HasColumnType("json");
+
         builder.Property(x => x.VerificationStatus)
             .HasColumnName("verification_status")
             .HasConversion<string>()

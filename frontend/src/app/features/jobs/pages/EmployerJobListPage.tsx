@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, Trash2, Plus, Search, RotateCcw, X, Check } from 'lucide-react';
+import { Pencil, Trash2, X, Check, Sparkles, ExternalLink } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobDto, JobStatus } from '../../../core/models/job.model';
@@ -23,16 +23,19 @@ export const EmployerJobListPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (overrideParams?: { keyword?: string; status?: string }) => {
     setLoading(true);
     setError(null);
     try {
+      const kw = overrideParams?.keyword !== undefined ? overrideParams.keyword : keyword;
+      const st = overrideParams?.status !== undefined ? overrideParams.status : status;
+
       const params: any = {
         page,
         pageSize,
       };
-      if (keyword) params.search = keyword;
-      if (status) params.status = status;
+      if (kw) params.search = kw.trim();
+      if (st) params.status = st;
 
       const res = await jobsService.getJobs(params);
       if (res.data?.success && res.data.data) {
@@ -51,7 +54,7 @@ export const EmployerJobListPage: React.FC = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [page, pageSize]);
+  }, [page, pageSize, status]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +66,7 @@ export const EmployerJobListPage: React.FC = () => {
     setKeyword('');
     setStatus('');
     setPage(1);
-    setTimeout(() => fetchJobs(), 50);
+    fetchJobs({ keyword: '', status: '' });
   };
 
   const handleDelete = async (id: number, title: string) => {
@@ -158,7 +161,37 @@ export const EmployerJobListPage: React.FC = () => {
             Đăng tin tuyển dụng và quản lý hồ sơ ứng viên của doanh nghiệp
           </p>
         </div>
-        <div className={styles.titleActions} style={{ display: 'flex', gap: '8px' }}>
+        <div className={styles.titleActions} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button 
+            type="button" 
+            onClick={() => navigate('/employer/candidates')} 
+            className={styles.btnSecondary}
+            style={{ display: 'inline-flex', alignItems: 'center', color: '#4f46e5', borderColor: '#c7d2fe', background: '#f5f3ff', fontWeight: 600 }}
+            title="Tìm kiếm ứng viên IT chủ động với bộ lọc nâng cao"
+          >
+            Săn ứng viên (Talent Pool)
+          </button>
+          <button 
+            type="button" 
+            onClick={() => navigate('/employer/assessments')} 
+            className={styles.btnSecondary}
+            style={{ display: 'inline-flex', alignItems: 'center', color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff', fontWeight: 600 }}
+            title="Ngân hàng đề thi trắc nghiệm & đánh giá năng lực online"
+          >
+            Đề thi năng lực
+          </button>
+          <button 
+            type="button" 
+            onClick={() => {
+              const compId = jobs[0]?.companyId || 1;
+              navigate(`/companies/${compId}/careers`);
+            }} 
+            className={styles.btnSecondary}
+            style={{ display: 'inline-flex', alignItems: 'center', color: '#d97706', borderColor: '#fde68a', background: '#fffbeb', fontWeight: 600 }}
+            title="Xem Cổng tuyển dụng thương hiệu cao cấp của công ty"
+          >
+            Cổng Careers Portal
+          </button>
           <button 
             type="button" 
             onClick={() => navigate('/jobs?view=public')} 
@@ -168,7 +201,60 @@ export const EmployerJobListPage: React.FC = () => {
             Xem việc làm trên sàn
           </button>
           <button onClick={() => navigate('/employer/jobs/new')} className={styles.btnPrimary}>
-            <Plus size={16} /> Đăng tin mới
+            Đăng tin mới
+          </button>
+        </div>
+      </div>
+
+      {/* Modern Ecosystem Highlights Banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
+        borderRadius: '12px',
+        padding: '16px 20px',
+        color: '#ffffff',
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+        boxShadow: '0 4px 20px rgba(67, 56, 202, 0.25)'
+      }}>
+        <div style={{ maxWidth: '650px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.5px' }}>
+            HỆ SINH THÁI TUYỂN DỤNG THÔNG MINH MỚI
+          </div>
+          <h3 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', fontWeight: 700, color: '#ffffff' }}>
+            AI Copilot • Săn Ứng Viên Chủ Động • Đánh Giá Năng Lực • Cổng Thương Hiệu Doanh Nghiệp
+          </h3>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#c7d2fe', lineHeight: 1.4 }}>
+            Tự động sinh JD bằng AI, sàng lọc ứng viên thông minh, tạo bài thi trắc nghiệm online và phát hành Thư mời nhận việc (Offer Letter) ngay trên hệ thống.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/employer/candidates')}
+            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '8px', background: '#ffffff', color: '#312e81', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+          >
+            Săn ứng viên Talent Pool
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/employer/assessments')}
+            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+          >
+            Ngân hàng đề thi
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const compId = jobs[0]?.companyId || 1;
+              navigate(`/companies/${compId}/careers`);
+            }}
+            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+          >
+            Cổng Careers Portal
           </button>
         </div>
       </div>
@@ -182,7 +268,7 @@ export const EmployerJobListPage: React.FC = () => {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">Tất cả trạng thái</option>
             <option value="DRAFT">Nháp</option>
             <option value="PENDING_REVIEW">Chờ duyệt</option>
@@ -195,10 +281,10 @@ export const EmployerJobListPage: React.FC = () => {
         </div>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
           <button type="submit" className={styles.btnPrimary}>
-            <Search size={16} /> Tìm kiếm
+            Tìm kiếm
           </button>
           <button type="button" onClick={handleClearFilters} className={styles.btnSecondary}>
-            <RotateCcw size={16} /> Xóa bộ lọc
+            Xóa bộ lọc
           </button>
         </div>
       </form>
@@ -222,7 +308,7 @@ export const EmployerJobListPage: React.FC = () => {
             <table className={styles.dataTable}>
               <thead>
                 <tr>
-                  <th style={{ position: 'sticky', left: 0, background: 'var(--color-bg-subtle)', width: '112px', zIndex: 10 }}>⚙ Hành động</th>
+                  <th style={{ position: 'sticky', left: 0, background: 'var(--color-bg-subtle)', width: '160px', zIndex: 10 }}>Hành động</th>
                   <th>Mã tin</th>
                   <th>Tiêu đề tin tuyển dụng</th>
                   <th style={{ textAlign: 'right' }}>Mức lương</th>
@@ -237,6 +323,22 @@ export const EmployerJobListPage: React.FC = () => {
                     {/* Sticky Action Column */}
                     <td style={{ position: 'sticky', left: 0, background: 'var(--color-bg-card)', zIndex: 5, borderRight: '1px solid var(--color-border-light)' }}>
                       <div className={styles.actionBtns}>
+                        <button
+                          onClick={() => navigate(`/employer/applications?jobId=${job.id}`)}
+                          className={styles.actionBtn}
+                          style={{ color: '#4f46e5', borderColor: '#c7d2fe', background: '#f5f3ff' }}
+                          title="Xem hồ sơ ứng viên & Phân tích AI Match Score"
+                        >
+                          <Sparkles size={14} />
+                        </button>
+                        <button
+                          onClick={() => navigate(`/companies/${job.companyId || 1}/careers`)}
+                          className={styles.actionBtn}
+                          style={{ color: '#d97706', borderColor: '#fde68a', background: '#fffbeb' }}
+                          title="Xem Cổng tuyển dụng thương hiệu (Careers Portal)"
+                        >
+                          <ExternalLink size={14} />
+                        </button>
                         <button
                           onClick={() => navigate(`/employer/jobs/${job.id}/edit`)}
                           className={styles.actionBtn}

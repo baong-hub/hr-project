@@ -680,6 +680,10 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("varchar(50)")
                         .HasColumnName("code");
 
+                    b.Property<string>("CompanyFaqs")
+                        .HasColumnType("json")
+                        .HasColumnName("company_faqs");
+
                     b.Property<string>("Contact")
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)")
@@ -692,6 +696,10 @@ namespace HR.Infrastructure.Migrations
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("int")
                         .HasColumnName("created_by");
+
+                    b.Property<string>("CultureHighlights")
+                        .HasColumnType("json")
+                        .HasColumnName("culture_highlights");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime(6)")
@@ -739,6 +747,10 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("varchar(150)")
                         .HasColumnName("name");
 
+                    b.Property<string>("OfficeGallery")
+                        .HasColumnType("json")
+                        .HasColumnName("office_gallery");
+
                     b.Property<string>("SizeRange")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -753,6 +765,10 @@ namespace HR.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
                         .HasColumnName("tax_code");
+
+                    b.Property<string>("Testimonials")
+                        .HasColumnType("json")
+                        .HasColumnName("testimonials");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)")
@@ -769,6 +785,11 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("varchar(30)")
                         .HasDefaultValue("DRAFT")
                         .HasColumnName("verification_status");
+
+                    b.Property<string>("VideoUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("video_url");
 
                     b.Property<string>("Website")
                         .HasMaxLength(100)
@@ -1542,6 +1563,290 @@ namespace HR.Infrastructure.Migrations
                         .HasDatabaseName("idx_jobs_status_expired");
 
                     b.ToTable("jobs", (string)null);
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.JobAssessmentTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AutoInviteOnApply")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("auto_invite_on_apply");
+
+                    b.Property<bool>("AutoInviteOnScreening")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("auto_invite_on_screening");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<int>("DurationMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(30)
+                        .HasColumnName("duration_minutes");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int")
+                        .HasColumnName("job_id");
+
+                    b.Property<int>("PassingScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(70)
+                        .HasColumnName("passing_score");
+
+                    b.Property<string>("QuestionsData")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("questions_data");
+
+                    b.Property<string>("TestType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("test_type");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("title");
+
+                    b.Property<int>("TotalQuestions")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(10)
+                        .HasColumnName("total_questions");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_job_assessment_templates");
+
+                    b.HasIndex("JobId")
+                        .HasDatabaseName("idx_job_assessment_templates_job_id");
+
+                    b.ToTable("job_assessment_templates", (string)null);
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.JobOffer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Allowance")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("allowance");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int")
+                        .HasColumnName("application_id");
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("basic_salary");
+
+                    b.Property<string>("Benefits")
+                        .HasColumnType("text")
+                        .HasColumnName("benefits");
+
+                    b.Property<decimal?>("CandidateDesiredSalary")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("candidate_desired_salary");
+
+                    b.Property<int>("CandidateId")
+                        .HasColumnType("int")
+                        .HasColumnName("candidate_id");
+
+                    b.Property<string>("CandidateResponseNote")
+                        .HasColumnType("text")
+                        .HasColumnName("candidate_response_note");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("CreatedByEmployerId")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by_employer_id");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasDefaultValue("VND")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("DeclineReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("decline_reason");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<string>("DepartmentName")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("department_name");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("expiry_date");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("issued_at");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int")
+                        .HasColumnName("job_id");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("OfferLetterFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("offer_letter_file_name");
+
+                    b.Property<string>("OfferLetterFileUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("offer_letter_file_url");
+
+                    b.Property<string>("PositionTitle")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("position_title");
+
+                    b.Property<int>("ProbationPeriodMonths")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(2)
+                        .HasColumnName("probation_period_months");
+
+                    b.Property<decimal>("ProbationSalaryPercentage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(85m)
+                        .HasColumnName("probation_salary_percentage");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("responded_at");
+
+                    b.Property<string>("SalaryType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)")
+                        .HasColumnName("salary_type");
+
+                    b.Property<string>("SpecialTerms")
+                        .HasColumnType("text")
+                        .HasColumnName("special_terms");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("WorkLocation")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("work_location");
+
+                    b.Property<string>("WorkingHours")
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("working_hours");
+
+                    b.HasKey("Id")
+                        .HasName("pk_job_offers");
+
+                    b.HasIndex("ApplicationId")
+                        .HasDatabaseName("ix_job_offers_application_id");
+
+                    b.HasIndex("CandidateId")
+                        .HasDatabaseName("ix_job_offers_candidate_id");
+
+                    b.HasIndex("CreatedByEmployerId")
+                        .HasDatabaseName("ix_job_offers_created_by_employer_id");
+
+                    b.HasIndex("JobId")
+                        .HasDatabaseName("ix_job_offers_job_id");
+
+                    b.ToTable("job_offers", (string)null);
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.JobViewLog", b =>
@@ -2527,9 +2832,19 @@ namespace HR.Infrastructure.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AnswersData")
+                        .HasColumnType("longtext")
+                        .HasColumnName("answers_data");
+
                     b.Property<int>("ApplicationId")
                         .HasColumnType("int")
                         .HasColumnName("application_id");
+
+                    b.Property<int>("CorrectAnswersCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("correct_answers_count");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)")
@@ -2555,25 +2870,57 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("notes");
 
+                    b.Property<int>("PassingScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(70)
+                        .HasColumnName("passing_score");
+
+                    b.Property<string>("QuestionsData")
+                        .HasColumnType("longtext")
+                        .HasColumnName("questions_data");
+
                     b.Property<int>("Score")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("score");
 
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("start_time");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
-                        .HasDefaultValue("FAILED")
+                        .HasDefaultValue("PENDING")
                         .HasColumnName("status");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("submitted_at");
 
                     b.Property<string>("TestType")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
                         .HasColumnName("test_type");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasDefaultValue("")
+                        .HasColumnName("title");
+
+                    b.Property<int>("TotalQuestions")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("total_questions");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)")
@@ -3477,6 +3824,57 @@ namespace HR.Infrastructure.Migrations
                     b.Navigation("Company");
 
                     b.Navigation("Employer");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.JobAssessmentTemplate", b =>
+                {
+                    b.HasOne("HR.Domain.Entities.Job", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_job_assessment_templates_jobs_job_id");
+
+                    b.Navigation("Job");
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.JobOffer", b =>
+                {
+                    b.HasOne("HR.Domain.Entities.Application", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_job_offers_applications_application_id");
+
+                    b.HasOne("HR.Domain.Entities.Candidate", "Candidate")
+                        .WithMany()
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_job_offers_candidates_candidate_id");
+
+                    b.HasOne("HR.Domain.Entities.Employer", "CreatedByEmployer")
+                        .WithMany()
+                        .HasForeignKey("CreatedByEmployerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_job_offers_employers_created_by_employer_id");
+
+                    b.HasOne("HR.Domain.Entities.Job", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_job_offers_jobs_job_id");
+
+                    b.Navigation("Application");
+
+                    b.Navigation("Candidate");
+
+                    b.Navigation("CreatedByEmployer");
+
+                    b.Navigation("Job");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.JobViewLog", b =>

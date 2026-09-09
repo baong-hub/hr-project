@@ -23,17 +23,32 @@ public static class DataSeeder
 
     private static async Task SeedCompaniesAsync(ApplicationDbContext context)
     {
-        if (await context.Companies.AnyAsync()) return;
-        
-        context.Companies.Add(new Company
+        if (!await context.Companies.AnyAsync())
         {
-            Id = 1,
-            Code = "HR",
-            Name = "HỆ THỐNG TÌM VIỆC & TUYỂN DỤNG HR",
-            Description = "Cổng thông tin việc làm và quản lý tuyển dụng doanh nghiệp",
-            IsActive = true
-        });
-        await context.SaveChangesAsync();
+            context.Companies.Add(new Company
+            {
+                Id = 1,
+                Code = "HR",
+                Name = "HỆ THỐNG TÌM VIỆC & TUYỂN DỤNG HR",
+                Description = "Cổng thông tin việc làm và quản lý tuyển dụng doanh nghiệp",
+                VerificationStatus = CompanyVerificationStatus.VERIFIED,
+                IsActive = true
+            });
+            await context.SaveChangesAsync();
+        }
+
+        // Đảm bảo tất cả các doanh nghiệp đã đăng ký đều được bật VERIFIED để ứng viên xem được
+        var unverifiedCompanies = await context.Companies
+            .Where(c => c.VerificationStatus == CompanyVerificationStatus.DRAFT)
+            .ToListAsync();
+        if (unverifiedCompanies.Any())
+        {
+            foreach (var c in unverifiedCompanies)
+            {
+                c.VerificationStatus = CompanyVerificationStatus.VERIFIED;
+            }
+            await context.SaveChangesAsync();
+        }
     }
 
     private static async Task SeedSitesAsync(ApplicationDbContext context)
@@ -62,9 +77,11 @@ public static class DataSeeder
         var allowedMenuCodes = new List<string>
         {
             "menu:jobs", "menu:cvs", "menu:applications", "menu:interviews", "menu:companies", "menu:system",
-            "menu:saved-jobs", "menu:notifications", "menu:reports", "menu:messages",
+            "menu:candidate", "menu:notifications", "menu:reports", "menu:messages",
+            "menu:talent-pool", "menu:assessments",
             "module:jobs", "module:cvs", "module:applications", "module:interviews", "module:companies",
             "module:saved-jobs", "module:notifications", "module:reports", "module:messages",
+            "module:talent-pool", "module:assessments", "module:candidate-offers", "module:candidate-applications",
             "module:system-setting", "module:user", "module:user-role", "module:site",
             "module:master-data", "module:organization"
         };
@@ -73,8 +90,10 @@ public static class DataSeeder
         var allowedPermissionCodes = new List<string>
         {
             "jobs:view", "jobs:create", "jobs:update", "jobs:delete",
-            "cvs:view", "cvs:create", "cvs:update", "cvs:delete",
+            "cvs:view", "cvs:create", "cvs:update", "cvs:delete", "cv:search",
             "applications:view", "applications:create", "applications:update", "applications:delete",
+            "assessment:manage", "assessment:take",
+            "offer:view", "offer:manage",
             "interviews:view", "interviews:create", "interviews:update", "interviews:delete",
             "companies:view", "companies:create", "companies:update", "companies:delete",
             "saved-jobs:view", "notifications:view", "reports:view",
@@ -111,22 +130,47 @@ public static class DataSeeder
             .ToListAsync();
         if (menusToRemove.Any())
         {
-            context.Menus.RemoveRange(menusToRemove);
-            await context.SaveChangesAsync();
+            var menuIdsToRemove = menusToRemove.Select(m => m.Id).ToList();
+            var dependentChildren = await context.Menus
+                .Where(m => m.ParentId.HasValue && menuIdsToRemove.Contains(m.ParentId.Value))
+                .ToListAsync();
+            foreach (var child in dependentChildren)
+            {
+                child.ParentId = null;
+            }
+            if (dependentChildren.Any())
+            {
+                await context.SaveChangesAsync();
+            }
+
+            var childMenus = menusToRemove.Where(m => m.ParentId != null).ToList();
+            var parentMenus = menusToRemove.Where(m => m.ParentId == null).ToList();
+            if (childMenus.Any())
+            {
+                context.Menus.RemoveRange(childMenus);
+                await context.SaveChangesAsync();
+            }
+            if (parentMenus.Any())
+            {
+                context.Menus.RemoveRange(parentMenus);
+                await context.SaveChangesAsync();
+            }
         }
 
         // --- 1. MENUS ---
         var topMenus = new List<Menu>
         {
             new() { Code = "menu:jobs", Name = "Quản lý việc làm", ShortName = "Việc làm", SortOrder = 1, Icon = "Briefcase", Route = "/jobs", IsActive = true },
-            new() { Code = "menu:cvs", Name = "Hồ sơ & CV", ShortName = "CV", SortOrder = 2, Icon = "FileText", Route = "/cvs", IsActive = true },
-            new() { Code = "menu:applications", Name = "Quản lý ứng tuyển", ShortName = "Ứng tuyển", SortOrder = 3, Icon = "Send", Route = "/applications", IsActive = true },
-            new() { Code = "menu:interviews", Name = "Lịch phỏng vấn", ShortName = "Lịch phỏng vấn", SortOrder = 4, Icon = "Calendar", Route = "/interviews", IsActive = true },
-            new() { Code = "menu:companies", Name = "Trang doanh nghiệp", ShortName = "Doanh nghiệp", SortOrder = 5, Icon = "Home", Route = "/companies", IsActive = true },
-            new() { Code = "menu:saved-jobs", Name = "Việc làm đã lưu", ShortName = "Đã lưu", SortOrder = 6, Icon = "Heart", Route = "/saved-jobs", IsActive = true },
-            new() { Code = "menu:messages", Name = "Tin nhắn & Trò chuyện", ShortName = "Tin nhắn", SortOrder = 7, Icon = "MessageSquare", Route = "/messages", IsActive = true },
-            new() { Code = "menu:notifications", Name = "Trung tâm thông báo", ShortName = "Thông báo", SortOrder = 8, Icon = "Bell", Route = "/notifications", IsActive = true },
-            new() { Code = "menu:reports", Name = "Báo cáo & Thống kê", ShortName = "Báo cáo", SortOrder = 9, Icon = "BarChart3", Route = "/reports", IsActive = true },
+            new() { Code = "menu:talent-pool", Name = "Săn ứng viên (Talent Pool)", ShortName = "Săn ứng viên", SortOrder = 2, Icon = "Users", Route = "/employer/candidates", IsActive = true },
+            new() { Code = "menu:cvs", Name = "Hồ sơ & CV", ShortName = "CV", SortOrder = 3, Icon = "FileText", Route = "/cvs", IsActive = true },
+            new() { Code = "menu:applications", Name = "Quản lý ứng tuyển", ShortName = "Ứng tuyển", SortOrder = 4, Icon = "Send", Route = "/employer/applications", IsActive = true },
+            new() { Code = "menu:assessments", Name = "Đánh giá năng lực", ShortName = "Trắc nghiệm", SortOrder = 5, Icon = "GraduationCap", Route = "/employer/assessments", IsActive = true },
+            new() { Code = "menu:candidate", Name = "Khu vực ứng viên", ShortName = "Ứng viên", SortOrder = 6, Icon = "UserCheck", Route = "/candidate/applications", IsActive = true },
+            new() { Code = "menu:interviews", Name = "Lịch phỏng vấn", ShortName = "Lịch phỏng vấn", SortOrder = 7, Icon = "Calendar", Route = "/interviews", IsActive = true },
+            new() { Code = "menu:companies", Name = "Trang doanh nghiệp", ShortName = "Doanh nghiệp", SortOrder = 8, Icon = "Home", Route = "/companies", IsActive = true },
+            new() { Code = "menu:messages", Name = "Tin nhắn & Trò chuyện", ShortName = "Tin nhắn", SortOrder = 9, Icon = "MessageSquare", Route = "/messages", IsActive = true },
+            new() { Code = "menu:notifications", Name = "Trung tâm thông báo", ShortName = "Thông báo", SortOrder = 10, Icon = "Bell", Route = "/notifications", IsActive = true },
+            new() { Code = "menu:reports", Name = "Báo cáo & Thống kê", ShortName = "Báo cáo", SortOrder = 11, Icon = "BarChart3", Route = "/reports", IsActive = true },
             new() { Code = "menu:system", Name = "Cấu hình hệ thống", ShortName = "Cấu hình", SortOrder = 99, Icon = "Settings", IsActive = true }
         };
 
@@ -150,11 +194,15 @@ public static class DataSeeder
         var modules = new List<(string Code, string Name, string ShortName, string ParentCode, int SortOrder, string? Route)>
         {
             ("module:jobs", "Việc làm", "Việc làm", "menu:jobs", 1, "/jobs"),
+            ("module:talent-pool", "Săn ứng viên (Talent Pool)", "Săn ứng viên", "menu:talent-pool", 1, "/employer/candidates"),
             ("module:cvs", "Hồ sơ & CV", "CV", "menu:cvs", 1, "/cvs"),
-            ("module:applications", "Ứng tuyển", "Ứng tuyển", "menu:applications", 1, "/applications"),
+            ("module:applications", "Ứng tuyển", "Ứng tuyển", "menu:applications", 1, "/employer/applications"),
+            ("module:assessments", "Đánh giá năng lực", "Trắc nghiệm", "menu:assessments", 1, "/employer/assessments"),
+            ("module:candidate-applications", "Lịch sử ứng tuyển", "Ứng tuyển", "menu:candidate", 1, "/candidate/applications"),
+            ("module:candidate-offers", "Thư mời nhận việc", "Job Offers", "menu:candidate", 2, "/candidate/offers"),
+            ("module:saved-jobs", "Việc làm đã lưu", "Đã lưu", "menu:candidate", 3, "/candidate/saved-jobs"),
             ("module:interviews", "Lịch phỏng vấn", "Lịch phỏng vấn", "menu:interviews", 1, "/interviews"),
             ("module:companies", "Doanh nghiệp", "Doanh nghiệp", "menu:companies", 1, "/companies"),
-            ("module:saved-jobs", "Việc làm đã lưu", "Đã lưu", "menu:saved-jobs", 1, "/saved-jobs"),
             ("module:messages", "Tin nhắn", "Tin nhắn", "menu:messages", 1, "/messages"),
             ("module:notifications", "Thông báo", "Thông báo", "menu:notifications", 1, "/notifications"),
             ("module:reports", "Báo cáo & Thống kê", "Báo cáo", "menu:reports", 1, "/reports"),
@@ -218,7 +266,14 @@ public static class DataSeeder
             ("module:companies", "companies:update", "Cập nhật doanh nghiệp"),
             ("module:companies", "companies:delete", "Xóa thông tin doanh nghiệp"),
 
+            ("module:candidate-applications", "applications:view", "Xem lịch sử ứng tuyển"),
+            ("module:candidate-applications", "applications:create", "Nộp hồ sơ ứng tuyển"),
             ("module:saved-jobs", "saved-jobs:view", "Xem việc làm đã lưu"),
+            ("module:talent-pool", "cv:search", "Tìm kiếm ứng viên Talent Pool"),
+            ("module:assessments", "assessment:manage", "Quản lý đề thi trực tuyến"),
+            ("module:assessments", "assessment:take", "Làm bài thi trực tuyến"),
+            ("module:candidate-offers", "offer:view", "Xem thư mời nhận việc"),
+            ("module:candidate-offers", "offer:manage", "Quản lý thư mời nhận việc"),
             ("module:messages", "messages:view", "Xem tin nhắn"),
             ("module:messages", "messages:send", "Gửi tin nhắn"),
             ("module:notifications", "notifications:view", "Xem thông báo"),
@@ -329,6 +384,8 @@ public static class DataSeeder
             "jobs:view",
             "cvs:view", "cvs:create", "cvs:update", "cvs:delete",
             "applications:view", "applications:create", "applications:delete",
+            "assessment:take",
+            "offer:view",
             "interviews:view",
             "companies:view",
             "saved-jobs:view",
@@ -369,8 +426,10 @@ public static class DataSeeder
         var employerPermCodes = new List<string>
         {
             "jobs:view", "jobs:create", "jobs:update", "jobs:delete",
-            "cvs:view",
+            "cvs:view", "cv:search",
             "applications:view", "applications:update",
+            "assessment:manage",
+            "offer:manage",
             "interviews:view", "interviews:create", "interviews:update", "interviews:delete",
             "companies:view", "companies:update",
             "messages:view", "messages:send",
@@ -470,7 +529,14 @@ public static class DataSeeder
         {
             new() { ConfigKey = "system.timezone", ConfigValue = "Asia/Ho_Chi_Minh", Group = "System", Description = "Múi giờ mặc định (GMT+7)" },
             new() { ConfigKey = "system.date_format", ConfigValue = "DD/MM/YYYY", Group = "System", Description = "Định dạng ngày mặc định" },
-            new() { ConfigKey = "system.datetime_format", ConfigValue = "DD/MM/YYYY HH:mm", Group = "System", Description = "Định dạng ngày giờ mặc định" }
+            new() { ConfigKey = "system.datetime_format", ConfigValue = "DD/MM/YYYY HH:mm", Group = "System", Description = "Định dạng ngày giờ mặc định" },
+            new() { ConfigKey = "smtp.host", ConfigValue = "smtp.gmail.com", Group = "SMTP", Description = "Máy chủ SMTP gửi mail (Mặc định Gmail: smtp.gmail.com)" },
+            new() { ConfigKey = "smtp.port", ConfigValue = "587", Group = "SMTP", Description = "Cổng SMTP (Mặc định TLS: 587 hoặc SSL: 465)" },
+            new() { ConfigKey = "smtp.username", ConfigValue = "baong@seryn.vn", Group = "SMTP", Description = "Tài khoản Gmail của công ty dùng để gửi thư" },
+            new() { ConfigKey = "smtp.password", ConfigValue = "pwlchmevksutkuna", Group = "SMTP", Description = "Mật khẩu ứng dụng Gmail (Google App Password 16 ký tự)" },
+            new() { ConfigKey = "smtp.enable_ssl", ConfigValue = "true", Group = "SMTP", Description = "Bật mã hóa bảo mật SSL/TLS (Bắt buộc cho Gmail)" },
+            new() { ConfigKey = "smtp.from_email", ConfigValue = "baong@seryn.vn", Group = "SMTP", Description = "Email người gửi hiển thị (để trống sẽ dùng smtp.username)" },
+            new() { ConfigKey = "smtp.from_name", ConfigValue = "Công ty TNHH HaMo Group - Phòng Tuyển Dụng", Group = "SMTP", Description = "Tên hiển thị người gửi khi ứng viên nhận thư" }
         };
 
         foreach (var c in configs)

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Header.module.scss';
-import { MapPin, Menu, ChevronDown, LogOut } from 'lucide-react';
+import { MapPin, Menu, ChevronDown } from 'lucide-react';
 import { ThemeToggle } from '../../../features/user-settings/components/ThemeToggle/ThemeToggle';
 import { LanguageSelector } from '../../../features/user-settings/components/LanguageSelector/LanguageSelector';
 import { NotificationBell } from '../../../features/notifications/components/NotificationBell/NotificationBell';
@@ -49,7 +49,7 @@ export const Header = ({ sidebarExpanded, onToggle }: HeaderProps) => {
 
   const handleLogout = async () => {
     await authService.logout();
-    window.location.href = '/auth/login';
+    navigate('/auth/login', { replace: true });
   };
 
   // Close menus when clicking outside
@@ -127,7 +127,6 @@ export const Header = ({ sidebarExpanded, onToggle }: HeaderProps) => {
                 onClick={handleLogout}
                 className={`${styles.header__dropdownItem} ${styles.header__dropdownItem_logout}`}
               >
-                <LogOut size={16} style={{ marginRight: 8 }} />
                 {t('common.logout', 'Đăng xuất')}
               </button>
             </div>

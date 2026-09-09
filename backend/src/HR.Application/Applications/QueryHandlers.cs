@@ -19,11 +19,16 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
         var user = await context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
+            .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         var roles = user?.UserRoles.Select(ur => ur.Role.Name).ToList() ?? [];
+        if (user?.Role != null && !roles.Contains(user.Role.Name))
+        {
+            roles.Add(user.Role.Name);
+        }
         var isSuperAdmin = roles.Contains("Super Admin") || user?.Username == "admin";
-        var isCandidate = roles.Contains("Ứng viên");
+        var isCandidate = roles.Contains("Ứng viên") || roles.Contains("CANDIDATE") || await context.Candidates.AnyAsync(c => c.Id == userId, cancellationToken);
 
         var query = context.Applications
             .Include(a => a.Job)
@@ -36,7 +41,7 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
         if (isCandidate)
         {
             // Candidates only see their own applications
-            query = query.Where(a => a.Candidate.UserId == userId);
+            query = query.Where(a => a.CandidateId == userId || a.Candidate.Id == userId);
         }
         else if (!isSuperAdmin)
         {
@@ -58,12 +63,27 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
             query = query.Where(a => a.JobId == request.JobId.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(request.Status))
+        {
+            if (Enum.TryParse<ApplicationStatus>(request.Status, true, out var statusEnum))
+            {
+                query = query.Where(a => a.Status == statusEnum);
+            }
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Keyword))
         {
-            var kw = request.Keyword.ToLower();
-            query = query.Where(a => a.Job.Title.ToLower().Contains(kw) 
-                || (a.Candidate.User.FullName != null && a.Candidate.User.FullName.ToLower().Contains(kw))
-                || (a.CandidateCv.CvTitle.ToLower().Contains(kw)));
+            var kw = request.Keyword.Trim().ToLower();
+            var cleanKw = kw.Replace("#app-", "").Replace("app-", "").Replace("#", "").Trim();
+            int.TryParse(cleanKw, out var searchId);
+
+            query = query.Where(a => 
+                (searchId > 0 && a.Id == searchId) ||
+                (a.Job != null && a.Job.Title.ToLower().Contains(kw)) ||
+                (a.Candidate != null && a.Candidate.FullName != null && a.Candidate.FullName.ToLower().Contains(kw)) ||
+                (a.Candidate != null && a.Candidate.User != null && a.Candidate.User.FullName != null && a.Candidate.User.FullName.ToLower().Contains(kw)) ||
+                (a.Candidate != null && a.Candidate.User != null && a.Candidate.User.Email != null && a.Candidate.User.Email.ToLower().Contains(kw)) ||
+                (a.CandidateCv != null && a.CandidateCv.CvTitle != null && a.CandidateCv.CvTitle.ToLower().Contains(kw)));
         }
 
         var rawList = await query

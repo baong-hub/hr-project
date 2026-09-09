@@ -27,22 +27,33 @@ public class GetCompaniesHandler : IRequestHandler<GetCompaniesQuery, PagedResul
     {
         var query = _context.Companies.AsNoTracking();
 
-        // [US-02] public view only returns VERIFIED companies
-        query = query.Where(c => c.VerificationStatus == CompanyVerificationStatus.VERIFIED);
+        // Trả về tất cả các doanh nghiệp đã đăng ký đang hoạt động (không bị từ chối hoặc đình chỉ)
+        query = query.Where(c => c.VerificationStatus != CompanyVerificationStatus.REJECTED 
+                              && c.VerificationStatus != CompanyVerificationStatus.SUSPENDED);
 
         if (!string.IsNullOrEmpty(request.Search))
         {
-            query = query.Where(c => c.Name.Contains(request.Search));
+            var search = request.Search.Trim().ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(search) || (c.Description != null && c.Description.ToLower().Contains(search)));
         }
 
-        if (!string.IsNullOrEmpty(request.Industry))
+        if (!string.IsNullOrWhiteSpace(request.Industry))
         {
-            query = query.Where(c => c.Industry == request.Industry);
+            var ind = request.Industry.Trim().ToLower();
+            if (ind.Contains("khác") || ind == "other")
+            {
+                query = query.Where(c => c.Industry != null && (c.Industry.ToLower().Contains("khác") || c.Industry.ToLower().Contains("other")));
+            }
+            else
+            {
+                query = query.Where(c => c.Industry != null && (c.Industry.ToLower().Contains(ind) || ind.Contains(c.Industry.ToLower())));
+            }
         }
 
         var total = await query.CountAsync(cancellationToken);
 
         var items = await query
+            .OrderByDescending(c => c.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);

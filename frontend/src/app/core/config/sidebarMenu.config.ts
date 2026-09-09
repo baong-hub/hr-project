@@ -23,11 +23,54 @@ export const SIDEBAR_MENU: SidebarItem[] = [
     code: 'menu:cvs'
   },
   {
-    label: 'Quản lý ứng tuyển',
+    label: 'Hồ sơ ứng tuyển',
     shortName: 'Ứng tuyển',
     icon: 'Send',
-    route: '/applications',
+    route: '/employer/applications',
     code: 'menu:applications'
+  },
+  {
+    label: 'Săn ứng viên (Talent Pool)',
+    shortName: 'Săn ứng viên',
+    icon: 'UserSearch',
+    route: '/employer/candidates',
+    code: 'menu:talent-pool'
+  },
+  {
+    label: 'Đánh giá năng lực',
+    shortName: 'Trắc nghiệm',
+    icon: 'GraduationCap',
+    route: '/employer/assessments',
+    code: 'menu:assessments'
+  },
+  {
+    label: 'Khu vực ứng viên',
+    shortName: 'Ứng viên',
+    icon: 'UserCheck',
+    code: 'menu:candidate',
+    children: [
+      {
+        label: 'Lịch sử ứng tuyển',
+        shortName: 'Ứng tuyển',
+        icon: 'Send',
+        route: '/candidate/applications',
+        code: 'menu:candidate-applications'
+      },
+      {
+        label: 'Thư mời nhận việc',
+        shortName: 'Job Offers',
+        icon: 'Award',
+        route: '/candidate/offers',
+        code: 'menu:candidate-offers'
+      },
+      {
+        label: 'Việc làm đã lưu',
+        shortName: 'Đã lưu',
+        icon: 'Heart',
+        route: '/candidate/saved-jobs',
+        code: 'menu:saved-jobs'
+      }
+    ]
   },
   {
     label: 'Lịch phỏng vấn',
@@ -42,13 +85,6 @@ export const SIDEBAR_MENU: SidebarItem[] = [
     icon: 'Building2',
     route: '/companies',
     code: 'menu:companies'
-  },
-  {
-    label: 'Việc làm đã lưu',
-    shortName: 'Đã lưu',
-    icon: 'Heart',
-    route: '/candidate/saved-jobs',
-    code: 'menu:saved-jobs'
   },
   {
     label: 'Tin nhắn & Trò chuyện',

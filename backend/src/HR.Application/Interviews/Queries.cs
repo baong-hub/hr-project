@@ -18,3 +18,8 @@ public record GetInterviewsQuery(
 /// EP-02: GET /api/v1/interviews/{id} — Chi tiết lịch phỏng vấn
 /// </summary>
 public record GetInterviewByIdQuery(int Id) : IRequest<InterviewDto?>;
+
+/// <summary>
+/// GET /api/v1/interviews/{id}/evaluations — Lấy danh sách đánh giá của buổi phỏng vấn
+/// </summary>
+public record GetInterviewEvaluationsQuery(int InterviewId) : IRequest<List<InterviewEvaluationDto>>;

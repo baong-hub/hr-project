@@ -35,6 +35,8 @@ public interface IApplicationDbContext
     DbSet<Interview> Interviews { get; }
     DbSet<InterviewEvaluation> InterviewEvaluations { get; }
     DbSet<TechnicalTest> TechnicalTests { get; }
+    DbSet<JobAssessmentTemplate> JobAssessmentTemplates { get; }
+    DbSet<JobOffer> JobOffers { get; }
     DbSet<SavedJob> SavedJobs { get; }
     DbSet<CandidateFollow> CandidateFollows { get; }
     DbSet<RefreshToken> RefreshTokens { get; }

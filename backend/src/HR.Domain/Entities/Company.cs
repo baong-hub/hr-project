@@ -23,6 +23,11 @@ public class Company : BaseEntity
     public string? Benefits { get; set; }
     public string? Contact { get; set; }
     public string? SocialLinks { get; set; } // Represented as JSON string in C#
+    public string? VideoUrl { get; set; }
+    public string? OfficeGallery { get; set; } // JSON array of string URLs
+    public string? CultureHighlights { get; set; } // JSON array of { title, description, icon }
+    public string? CompanyFaqs { get; set; } // JSON array of { question, answer }
+    public string? Testimonials { get; set; } // JSON array of { authorName, authorRole, avatarUrl, content, rating }
     public CompanyVerificationStatus VerificationStatus { get; set; } = CompanyVerificationStatus.DRAFT;
 
     // Navigation properties

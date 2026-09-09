@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Send, MessageSquare } from 'lucide-react';
 import { authService } from '../../../core/services/auth.service';
+import { chatSignalRService } from '../../../core/services/signalr.service';
 import { messagesService, type ConversationItem, type ChatMessageItem, type ConversationDetail } from '../services/messages.service';
 import { toast } from '../../../core/services/toast.service';
 import styles from './MessagesPage.module.scss';
@@ -73,20 +74,45 @@ export const MessagesPage: React.FC = () => {
 
   useEffect(() => {
     fetchConversations(true);
+    chatSignalRService.startConnection();
+
+    return () => {
+      chatSignalRService.stopConnection();
+    };
   }, []);
 
   useEffect(() => {
     if (selectedConvoId) {
       fetchActiveConversation(selectedConvoId);
       setSearchParams({ conversationId: selectedConvoId.toString() });
+      chatSignalRService.joinConversation(selectedConvoId);
 
-      // Polling interval
-      const interval = setInterval(() => {
-        fetchActiveConversation(selectedConvoId);
-      }, 5000);
-      return () => clearInterval(interval);
+      const handleIncomingMessage = (msg: any) => {
+        if (msg.conversationId === selectedConvoId) {
+          setMessages(prev => {
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, {
+              id: msg.id,
+              conversationId: msg.conversationId,
+              senderId: msg.senderId,
+              senderName: msg.senderName,
+              content: msg.content,
+              sentAt: msg.sentAt,
+              isRead: true,
+              isMine: msg.senderId === currentUserId
+            }];
+          });
+          scrollToBottom();
+        }
+      };
+
+      chatSignalRService.registerMessageCallback(handleIncomingMessage);
+
+      return () => {
+        chatSignalRService.leaveConversation(selectedConvoId);
+      };
     }
-  }, [selectedConvoId]);
+  }, [selectedConvoId, currentUserId]);
 
   // Handle send message
   const handleSendMessage = async (e: React.FormEvent) => {

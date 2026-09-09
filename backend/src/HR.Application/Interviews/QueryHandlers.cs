@@ -160,3 +160,33 @@ public class GetInterviewByIdQueryHandler(IApplicationDbContext context)
         );
     }
 }
+
+/// <summary>
+/// Handler: GET /api/v1/interviews/{id}/evaluations — Lấy danh sách đánh giá của buổi phỏng vấn
+/// </summary>
+public class GetInterviewEvaluationsQueryHandler(IApplicationDbContext context)
+    : IRequestHandler<GetInterviewEvaluationsQuery, List<InterviewEvaluationDto>>
+{
+    public async Task<List<InterviewEvaluationDto>> Handle(GetInterviewEvaluationsQuery request, CancellationToken cancellationToken)
+    {
+        return await context.InterviewEvaluations
+            .AsNoTracking()
+            .Where(e => e.InterviewId == request.InterviewId)
+            .OrderByDescending(e => e.CreatedAt)
+            .Select(e => new InterviewEvaluationDto(
+                e.Id,
+                e.InterviewId,
+                e.TechnicalScore,
+                e.CommunicationScore,
+                e.ProblemSolvingScore,
+                e.ExperienceScore,
+                e.CultureFitScore,
+                e.SalaryExpectationScore,
+                e.OverallScore,
+                e.Result.ToString(),
+                e.Comments,
+                e.CreatedAt
+            ))
+            .ToListAsync(cancellationToken);
+    }
+}

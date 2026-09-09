@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { Button } from '../../../shared/ui/Button/Button';
 import styles from './LoginPage.module.scss';
-import { LogIn, Lock, User, Eye, EyeOff, Database, Mail } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, Database, Mail } from 'lucide-react';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -276,7 +276,6 @@ export const LoginPage = () => {
                     type="submit"
                     className={styles.submitBtn}
                     loading={loading}
-                    icon={!loading && <LogIn size={18} />}
                   >
                     Xác thực Email
                   </Button>
@@ -361,7 +360,6 @@ export const LoginPage = () => {
                 type="submit" 
                 className={styles.submitBtn} 
                 loading={loading}
-                icon={!loading && <LogIn size={18} />}
               >
                 {loading ? 'Đang xác thực...' : 'Đăng nhập ngay'}
               </Button>

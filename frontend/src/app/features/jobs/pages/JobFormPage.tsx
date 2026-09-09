@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Send, Sparkles, Wand2, X } from 'lucide-react';
+import { Wand2, X } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { aiService } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
@@ -232,7 +232,7 @@ export const JobFormPage: React.FC = () => {
     <div className={styles.jobsPage} style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={() => navigate('/employer/jobs')} className={styles.btnSecondary}>
-          <ArrowLeft size={16} /> Quay lại quản lý
+          Quay lại quản lý
         </button>
         <h1 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, margin: 0 }}>
           {isEditMode ? 'Sửa tin tuyển dụng' : 'Đăng tuyển dụng mới'}
@@ -293,6 +293,9 @@ export const JobFormPage: React.FC = () => {
                 <option value="Hà Nội">Hà Nội</option>
                 <option value="TP. HCM">TP. Hồ Chí Minh</option>
                 <option value="Đà Nẵng">Đà Nẵng</option>
+                <option value="Hải Phòng">Hải Phòng</option>
+                <option value="Cần Thơ">Cần Thơ</option>
+                <option value="Remote">Remote / Từ xa</option>
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -349,11 +352,10 @@ export const JobFormPage: React.FC = () => {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
                 boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
               }}
             >
-              <Sparkles size={15} /> AI Viết JD Tự Động
+              AI Viết JD Tự Động
             </button>
           </div>
           
@@ -450,7 +452,7 @@ export const JobFormPage: React.FC = () => {
             disabled={submitting}
             className={styles.btnSecondary}
           >
-            <Save size={16} /> Lưu bản nháp
+            Lưu bản nháp
           </button>
           <button
             type="button"
@@ -458,7 +460,7 @@ export const JobFormPage: React.FC = () => {
             disabled={submitting}
             className={styles.btnPrimary}
           >
-            <Send size={16} /> Gửi duyệt & Đăng tin
+            Gửi duyệt & Đăng tin
           </button>
         </div>
       </div>
@@ -568,9 +570,7 @@ export const JobFormPage: React.FC = () => {
                       Đang sinh nội dung...
                     </>
                   ) : (
-                    <>
-                      <Sparkles size={16} /> Bắt đầu tạo bằng AI
-                    </>
+                    'Bắt đầu tạo bằng AI'
                   )}
                 </button>
               </div>

@@ -24,9 +24,9 @@ public class ReportsController(IMediator mediator) : ControllerBase
 
     [HttpGet("employer/funnel")]
     [RequirePermission("report:view")]
-    public async Task<IActionResult> GetEmployerFunnel()
+    public async Task<IActionResult> GetEmployerFunnel([FromQuery] string? from, [FromQuery] string? to)
     {
-        var result = await mediator.Send(new GetRecruitmentFunnelQuery());
+        var result = await mediator.Send(new GetRecruitmentFunnelQuery(from, to));
         return Ok(ApiResponse<RecruitmentFunnelDto>.Ok(result));
     }
 
