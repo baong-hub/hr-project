@@ -28,3 +28,13 @@ public record RespondInterviewCommand(
 /// EP-05: PATCH /api/v1/interviews/{id}/cancel — Hủy lịch phỏng vấn
 /// </summary>
 public record CancelInterviewCommand(int Id) : IRequest<bool>;
+
+/// <summary>
+/// PATCH /api/v1/interviews/{id}/status — Cập nhật trạng thái lịch phỏng vấn linh hoạt
+/// </summary>
+public record UpdateInterviewStatusCommand(int Id, string Status, string? Reason = null) : IRequest<bool>;
+
+/// <summary>
+/// POST /api/v1/interviews/{id}/evaluations — Gửi đánh giá buổi phỏng vấn
+/// </summary>
+public record SubmitInterviewEvaluationCommand(int InterviewId, CreateInterviewEvaluationDto Evaluation) : IRequest<InterviewEvaluationDto>;

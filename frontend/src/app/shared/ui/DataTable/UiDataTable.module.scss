@@ -9,25 +9,43 @@
 .tableScroll {
   overflow-x: auto;
   max-width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
 }
 
 .table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--font-size-base);
 
   thead {
     background-color: var(--color-bg-subtle);
     
     th {
-      padding: 10px var(--table-cell-padding-x);
-      font-weight: var(--font-weight-semibold);
-      color: var(--color-text-primary);
-      border-bottom: 1px solid var(--color-border-default);
+      padding: 14px 18px;
+      font-weight: 700;
+      font-size: 0.8125rem;
+      color: var(--color-text-secondary);
+      border-bottom: 2px solid var(--color-border-default);
       border-right: 1px solid var(--color-border-default);
-      white-space: normal;
+      white-space: nowrap;
       line-height: var(--line-height-tight);
       vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      background-color: #f8fafc;
 
       &:last-child {
         border-right: none;
@@ -37,25 +55,31 @@
 
   tbody {
     tr {
-      height: 48px;
+      min-height: 60px;
       border-bottom: 1px solid var(--color-border-default);
-      transition: var(--transition-fast);
+      transition: background-color 0.15s ease;
 
       &:hover {
-        background-color: var(--color-bg-subtle);
+        background-color: #f8fafc;
+
+        .stickyCol {
+          background-color: #f8fafc;
+        }
       }
 
-      &:last-child {
+      &:last-child td {
         border-bottom: none;
       }
     }
 
     td {
-      padding: 10px var(--table-cell-padding-x);
+      padding: 14px 18px;
       color: var(--color-text-primary);
-      line-height: var(--line-height-normal);
+      line-height: 1.5;
       vertical-align: middle;
+      border-bottom: 1px solid var(--color-border-default);
       border-right: 1px solid var(--color-border-default);
+      background-color: transparent;
 
       &:last-child {
         border-right: none;
@@ -67,8 +91,9 @@
 .stickyCol {
   position: sticky;
   left: 0;
-  background-color: inherit;
-  z-index: var(--z-base);
+  background-color: #ffffff;
+  z-index: 10;
+  box-shadow: 2px 0 6px -1px rgba(0, 0, 0, 0.08);
 
   &::after {
     content: '';
@@ -76,9 +101,8 @@
     top: 0;
     right: 0;
     bottom: 0;
-    width: 4px;
-    box-shadow: inset 4px 0 6px -2px rgba(15, 23, 42, 0.08);
-    pointer-events: none;
+    width: 1px;
+    background-color: var(--color-border-default);
   }
 }
 

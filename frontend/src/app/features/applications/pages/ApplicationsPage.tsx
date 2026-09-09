@@ -316,6 +316,13 @@ export const ApplicationsPage: React.FC = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            className={styles.btnSecondary} 
+            onClick={() => navigate('/employer/applications')}
+            title="Chuyển sang Quản lý hồ sơ ứng tuyển dạng danh sách chi tiết"
+          >
+            <FileText size={14} /> Danh sách hồ sơ ứng tuyển
+          </button>
           <button className={styles.btnSecondary} onClick={() => fetchApplications()}><RotateCcw size={14} /> Tải lại</button>
         </div>
       </div>

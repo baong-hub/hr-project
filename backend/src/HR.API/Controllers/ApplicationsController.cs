@@ -18,7 +18,7 @@ namespace HR.Api.Controllers;
 public class ApplicationsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    [RequirePermission("job:apply", "job:manage")]
+    [RequirePermission("applications:view", "job:apply", "job:manage")]
     public async Task<IActionResult> GetAll([FromQuery] GetApplicationsQuery query)
     {
         var result = await mediator.Send(query);
@@ -26,7 +26,7 @@ public class ApplicationsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("{id:int}")]
-    [RequirePermission("job:apply", "job:manage")]
+    [RequirePermission("applications:view", "job:apply", "job:manage")]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await mediator.Send(new GetApplicationByIdQuery(id));

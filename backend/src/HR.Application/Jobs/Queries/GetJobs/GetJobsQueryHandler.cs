@@ -79,10 +79,61 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
                 || j.Requirements.ToLower().Contains(kw));
         }
 
-        // Filter by city
+        // Filter by city (flexible matching: aliases, accents, abbreviations)
         if (!string.IsNullOrWhiteSpace(request.City))
         {
-            query = query.Where(j => j.City == request.City);
+            var rawCity = request.City.Trim().ToLower();
+            if (rawCity == "hcm" || rawCity.Contains("hồ chí minh") || rawCity.Contains("ho chi minh") || rawCity.Contains("sài gòn") || rawCity.Contains("saigon") || rawCity == "tp. hcm" || rawCity == "tp.hcm")
+            {
+                query = query.Where(j => 
+                    j.City.ToLower().Contains("hcm") || 
+                    j.City.ToLower().Contains("hồ chí minh") || 
+                    j.City.ToLower().Contains("ho chi minh") || 
+                    j.City.ToLower().Contains("sài gòn") || 
+                    j.City.ToLower().Contains("saigon"));
+            }
+            else if (rawCity == "hanoi" || rawCity.Contains("hà nội") || rawCity.Contains("ha noi") || rawCity == "hn")
+            {
+                query = query.Where(j => 
+                    j.City.ToLower().Contains("hà nội") || 
+                    j.City.ToLower().Contains("ha noi") || 
+                    j.City.ToLower().Contains("hanoi") || 
+                    j.City.ToLower().Contains("hn"));
+            }
+            else if (rawCity == "danang" || rawCity.Contains("đà nẵng") || rawCity.Contains("da nang") || rawCity == "dn")
+            {
+                query = query.Where(j => 
+                    j.City.ToLower().Contains("đà nẵng") || 
+                    j.City.ToLower().Contains("da nang") || 
+                    j.City.ToLower().Contains("danang") || 
+                    j.City.ToLower().Contains("dn"));
+            }
+            else if (rawCity == "haiphong" || rawCity.Contains("hải phòng") || rawCity.Contains("hai phong") || rawCity == "hp")
+            {
+                query = query.Where(j => 
+                    j.City.ToLower().Contains("hải phòng") || 
+                    j.City.ToLower().Contains("hai phong") || 
+                    j.City.ToLower().Contains("haiphong") || 
+                    j.City.ToLower().Contains("hp"));
+            }
+            else if (rawCity == "cantho" || rawCity.Contains("cần thơ") || rawCity.Contains("can tho") || rawCity == "ct")
+            {
+                query = query.Where(j => 
+                    j.City.ToLower().Contains("cần thơ") || 
+                    j.City.ToLower().Contains("can tho") || 
+                    j.City.ToLower().Contains("cantho") || 
+                    j.City.ToLower().Contains("ct"));
+            }
+            else if (rawCity == "remote" || rawCity.Contains("từ xa"))
+            {
+                query = query.Where(j => 
+                    j.City.ToLower().Contains("remote") || 
+                    j.City.ToLower().Contains("từ xa"));
+            }
+            else
+            {
+                query = query.Where(j => j.City.ToLower().Contains(rawCity) || rawCity.Contains(j.City.ToLower()));
+            }
         }
 
         // Filter by SalaryFrom

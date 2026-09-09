@@ -1,24 +1,16 @@
 import * as signalR from '@microsoft/signalr';
 import { authService } from './auth.service';
 
-class SignalRService {
+class ChatSignalRService {
   private connection: signalR.HubConnection | null = null;
-  private onCallEventCallback: ((event: any) => void) | null = null;
-  private onAgentStatusCallback: ((status: any) => void) | null = null;
-  private currentExtension: string = '';
+  private currentConversationId: number | null = null;
+  private onMessageCallback: ((message: any) => void) | null = null;
 
-  public async startConnection(extension: string) {
-    if (this.connection && this.currentExtension === extension) return;
-    
-    if (this.connection) {
-      await this.stopConnection();
-    }
+  public async startConnection() {
+    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) return;
 
-    this.currentExtension = extension;
     const token = authService.getToken();
-    
-    // Sử dụng proxy /hubs của Vite
-    const hubUrl = `/hubs/callcenter?extension=${extension}`;
+    const hubUrl = `/hubs/chat`;
 
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
@@ -27,48 +19,66 @@ class SignalRService {
       .withAutomaticReconnect()
       .build();
 
-    this.connection.on('ReceiveCallEvent', (payload: any) => {
-      console.log('SignalR ReceiveCallEvent:', payload);
-      if (this.onCallEventCallback) {
-        this.onCallEventCallback(payload);
+    this.connection.on('ReceiveMessage', (payload: any) => {
+      if (this.onMessageCallback) {
+        this.onMessageCallback(payload);
       }
-      window.dispatchEvent(new CustomEvent('call-log-updated', { detail: payload }));
-    });
-
-    this.connection.on('AgentStatusUpdated', (payload: any) => {
-      console.log('SignalR AgentStatusUpdated:', payload);
-      if (this.onAgentStatusCallback) {
-        this.onAgentStatusCallback(payload);
-      }
+      window.dispatchEvent(new CustomEvent('app-chat-message-received', { detail: payload }));
     });
 
     try {
       await this.connection.start();
-      console.log(`SignalR successfully connected to CallCenter Hub for extension: ${extension}`);
+      console.log('SignalR successfully connected to Chat Hub.');
+      if (this.currentConversationId) {
+        await this.joinConversation(this.currentConversationId);
+      }
     } catch (err) {
-      console.error('Error starting SignalR connection:', err);
-      // Thử kết nối lại sau 5 giây
-      setTimeout(() => this.startConnection(extension), 5000);
+      console.error('Error starting Chat SignalR connection:', err);
+      setTimeout(() => this.startConnection(), 5000);
     }
   }
 
-  public registerCallbacks(onCallEvent: (event: any) => void, onAgentStatus: (status: any) => void) {
-    this.onCallEventCallback = onCallEvent;
-    this.onAgentStatusCallback = onAgentStatus;
+  public async joinConversation(conversationId: number) {
+    this.currentConversationId = conversationId;
+    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
+      try {
+        await this.connection.invoke('JoinConversation', conversationId);
+      } catch (err) {
+        console.error(`Error joining conversation ${conversationId}:`, err);
+      }
+    }
+  }
+
+  public async leaveConversation(conversationId: number) {
+    if (this.connection && this.connection.state === signalR.HubConnectionState.Connected) {
+      try {
+        await this.connection.invoke('LeaveConversation', conversationId);
+      } catch (err) {
+        console.error(`Error leaving conversation ${conversationId}:`, err);
+      }
+    }
+    if (this.currentConversationId === conversationId) {
+      this.currentConversationId = null;
+    }
+  }
+
+  public registerMessageCallback(callback: (message: any) => void) {
+    this.onMessageCallback = callback;
   }
 
   public async stopConnection() {
     if (!this.connection) return;
     try {
       await this.connection.stop();
-      console.log('SignalR connection stopped.');
+      console.log('Chat SignalR connection stopped.');
     } catch (err) {
-      console.error('Error stopping SignalR connection:', err);
+      console.error('Error stopping Chat SignalR:', err);
     } finally {
       this.connection = null;
-      this.currentExtension = '';
+      this.currentConversationId = null;
     }
   }
 }
 
-export const signalRService = new SignalRService();
+export const chatSignalRService = new ChatSignalRService();
+export const signalRService = chatSignalRService; // alias for backward compatibility

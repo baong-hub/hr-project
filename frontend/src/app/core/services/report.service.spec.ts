@@ -33,16 +33,17 @@ describe('reportService Unit Tests', () => {
   });
 
   describe('getEmployerFunnel', () => {
-    it('getEmployerFunnel_WhenCalled_ShouldCallApiGet', async () => {
+    it('getEmployerFunnel_WhenCalled_ShouldCallApiGetWithParams', async () => {
       // Arrange
+      const mockParams = { from: '2026-08-01', to: '2026-08-31' };
       const mockResponse = { data: { success: true, data: { stages: [] } } };
       (api.get as jest.Mock).mockResolvedValue(mockResponse);
 
       // Act
-      const result = await reportService.getEmployerFunnel();
+      const result = await reportService.getEmployerFunnel(mockParams);
 
       // Assert
-      expect(api.get).toHaveBeenCalledWith('/reports/employer/funnel');
+      expect(api.get).toHaveBeenCalledWith('/reports/employer/funnel', { params: mockParams });
       expect(result).toEqual(mockResponse);
     });
   });

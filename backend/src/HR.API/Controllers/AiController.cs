@@ -30,6 +30,12 @@ public class AiController(
         public int? JobId { get; set; }
     }
 
+    public class GenerateInterviewQuestionsRequest
+    {
+        public int JobId { get; set; }
+        public int CandidateId { get; set; }
+    }
+
     /// <summary>
     /// Phân tích mức độ phù hợp giữa CV của ứng viên đang đăng nhập và một công việc cụ thể
     /// </summary>
@@ -71,4 +77,20 @@ public class AiController(
         var reply = await aiService.ChatWithAssistantAsync(userId, request.Message, request.JobId);
         return Ok(ApiResponse<object>.Ok(new { reply }));
     }
+
+    /// <summary>
+    /// AI tự động sinh bộ câu hỏi phỏng vấn chuyên sâu dựa trên JD công việc và hồ sơ ứng viên
+    /// </summary>
+    [HttpPost("generate-interview-questions")]
+    public async Task<IActionResult> GenerateInterviewQuestions([FromBody] GenerateInterviewQuestionsRequest request)
+    {
+        if (request.JobId <= 0)
+        {
+            return BadRequest(ApiResponse<InterviewQuestionsResult>.Fail("INVALID_JOB_ID", "Vui lòng cung cấp mã công việc hợp lệ."));
+        }
+
+        var result = await aiService.GenerateInterviewQuestionsAsync(request.JobId, request.CandidateId);
+        return Ok(ApiResponse<InterviewQuestionsResult>.Ok(result));
+    }
 }
+

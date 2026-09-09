@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using MediatR;
 using HR.Application.Common.Exceptions;
 using HR.Application.Common.Interfaces;
 using HR.Application.Applications.Commands.ChangeApplicationStatus;
@@ -18,6 +19,9 @@ public class ChangeApplicationStatusHandlerTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly INotificationSender _notificationSender;
+    private readonly IEmailService _emailService;
+    private readonly IMediator _mediator;
     private readonly ChangeApplicationStatusHandler _handler;
 
     public ChangeApplicationStatusHandlerTests()
@@ -28,7 +32,10 @@ public class ChangeApplicationStatusHandlerTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _currentUserService = Substitute.For<ICurrentUserService>();
-        _handler = new ChangeApplicationStatusHandler(_context, _currentUserService);
+        _notificationSender = Substitute.For<INotificationSender>();
+        _emailService = Substitute.For<IEmailService>();
+        _mediator = Substitute.For<IMediator>();
+        _handler = new ChangeApplicationStatusHandler(_context, _currentUserService, _notificationSender, _emailService, _mediator);
     }
 
     public void Dispose()
@@ -45,6 +52,8 @@ public class ChangeApplicationStatusHandlerTests : IDisposable
         _currentUserService.UserId.Returns(userId);
         _currentUserService.Username.Returns("recruiter");
 
+        var company = new Company { Id = 1, Name = "Tech Corp" };
+        var candidate = new Candidate { Id = 1, UserId = 10, FullName = "Nguyen Van A" };
         var employer = new Employer { Id = 1, UserId = userId, CompanyId = 1 };
         var job = new Job { Id = 1, CompanyId = 1, EmployerId = 1, Title = ".NET Dev", Description = "Desc...", Requirements = "Reqs..." };
         
@@ -58,6 +67,8 @@ public class ChangeApplicationStatusHandlerTests : IDisposable
             Status = ApplicationStatus.HIRED 
         };
 
+        _context.Companies.Add(company);
+        _context.Candidates.Add(candidate);
         _context.Employers.Add(employer);
         _context.Jobs.Add(job);
         _context.Applications.Add(app);
@@ -81,19 +92,23 @@ public class ChangeApplicationStatusHandlerTests : IDisposable
         _currentUserService.UserId.Returns(userId);
         _currentUserService.Username.Returns("recruiter");
 
-        var employer = new Employer { Id = 1, UserId = userId, CompanyId = 1 };
-        var job = new Job { Id = 1, CompanyId = 1, EmployerId = 1, Title = ".NET Dev", Description = "Desc...", Requirements = "Reqs..." };
+        var company = new Company { Id = 2, Name = "Tech Corp" };
+        var candidate = new Candidate { Id = 2, UserId = 11, FullName = "Nguyen Van B" };
+        var employer = new Employer { Id = 2, UserId = userId, CompanyId = 2 };
+        var job = new Job { Id = 2, CompanyId = 2, EmployerId = 2, Title = ".NET Dev", Description = "Desc...", Requirements = "Reqs..." };
         
         // Initial state: APPLIED (submitted)
         var app = new HR.Domain.Entities.Application 
         { 
             Id = 2, 
-            JobId = 1, 
-            CandidateId = 1, 
+            JobId = 2, 
+            CandidateId = 2, 
             CandidateCvId = 1, 
             Status = ApplicationStatus.APPLIED 
         };
 
+        _context.Companies.Add(company);
+        _context.Candidates.Add(candidate);
         _context.Employers.Add(employer);
         _context.Jobs.Add(job);
         _context.Applications.Add(app);

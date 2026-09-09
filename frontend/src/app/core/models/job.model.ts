@@ -1,6 +1,7 @@
 export interface JobDto {
   id: number;
   employerId: number;
+  companyId?: number;
   companyName: string;
   companyLogoUrl?: string;
   title: string;

@@ -7,11 +7,15 @@ using HR.Application.Common.Models;
 using HR.Domain.Entities;
 using HR.Domain.Enums;
 using MediatR;
+using HR.Application.TechnicalTests.Commands.InviteCandidateTest;
 using Microsoft.EntityFrameworkCore;
 
 namespace HR.Application.Applications.Commands.SubmitApplication;
 
-public class SubmitApplicationHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+public class SubmitApplicationHandler(
+    IApplicationDbContext context,
+    ICurrentUserService currentUserService,
+    IMediator mediator)
     : IRequestHandler<SubmitApplicationCommand, ApiResponse<ApplicationDto>>
 {
     public async Task<ApiResponse<ApplicationDto>> Handle(SubmitApplicationCommand request, CancellationToken cancellationToken)
@@ -81,6 +85,18 @@ public class SubmitApplicationHandler(IApplicationDbContext context, ICurrentUse
 
         context.Applications.Add(application);
         await context.SaveChangesAsync(cancellationToken);
+
+        // [ONLINE ASSESSMENT]: Nếu Job có đề thi và cấu hình AutoInviteOnApply -> Tự động mời làm bài test ngay
+        try
+        {
+            var hasAutoTest = await context.JobAssessmentTemplates
+                .AnyAsync(t => t.JobId == request.JobId && t.IsActive && t.AutoInviteOnApply, cancellationToken);
+            if (hasAutoTest)
+            {
+                await mediator.Send(new InviteCandidateTestCommand(application.Id), cancellationToken);
+            }
+        }
+        catch { }
 
         // Load relations to return complete DTO
         var createdApp = await context.Applications

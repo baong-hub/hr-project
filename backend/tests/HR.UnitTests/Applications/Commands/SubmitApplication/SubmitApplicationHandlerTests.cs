@@ -10,6 +10,7 @@ using HR.Domain.Enums;
 using HR.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
+using MediatR;
 using Xunit;
 
 namespace HR.UnitTests.Applications.Commands.SubmitApplication;
@@ -18,6 +19,7 @@ public class SubmitApplicationHandlerTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IMediator _mediator;
     private readonly SubmitApplicationHandler _handler;
 
     public SubmitApplicationHandlerTests()
@@ -28,7 +30,8 @@ public class SubmitApplicationHandlerTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _currentUserService = Substitute.For<ICurrentUserService>();
-        _handler = new SubmitApplicationHandler(_context, _currentUserService);
+        _mediator = Substitute.For<IMediator>();
+        _handler = new SubmitApplicationHandler(_context, _currentUserService, _mediator);
     }
 
     public void Dispose()

@@ -23,6 +23,7 @@ export const CompanyListPage: React.FC = () => {
     'Y tế / Sức khỏe',
     'Giáo dục / Đào tạo',
     'Bán lẻ / Tiêu dùng',
+    'Khác',
   ];
 
   const fetchCompanies = async () => {
@@ -37,8 +38,14 @@ export const CompanyListPage: React.FC = () => {
       });
 
       if (response.data.success && response.data.data) {
-        setCompanies(response.data.data.items);
-        setTotal(response.data.data.meta.total);
+        const raw = response.data.data;
+        if (Array.isArray(raw)) {
+          setCompanies(raw);
+          setTotal(raw.length);
+        } else if (Array.isArray(raw.items)) {
+          setCompanies(raw.items);
+          setTotal(raw.meta?.total ?? raw.items.length);
+        }
       } else {
         setError(response.data.error?.message || 'Có lỗi xảy ra khi lấy danh sách doanh nghiệp.');
       }
@@ -63,6 +70,13 @@ export const CompanyListPage: React.FC = () => {
     setSearch('');
     setIndustry('');
     setPage(1);
+    companiesService.getCompanies({ page: 1, pageSize }).then((res) => {
+      if (res.data.success && res.data.data) {
+        const raw = res.data.data;
+        setCompanies(Array.isArray(raw) ? raw : (raw.items || []));
+        setTotal(Array.isArray(raw) ? raw.length : (raw.meta?.total || 0));
+      }
+    });
   };
 
   const totalPages = Math.ceil(total / pageSize);
@@ -340,30 +354,58 @@ export const CompanyListPage: React.FC = () => {
                       justifyContent: 'space-between',
                       borderTop: '1px solid var(--color-border-default)',
                       paddingTop: 'var(--space-4)',
-                      marginTop: 'var(--space-4)'
+                      marginTop: 'var(--space-4)',
+                      flexWrap: 'wrap',
+                      gap: 'var(--space-2)'
                     }}>
-                      <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-brand-primary-dark)', fontWeight: 'var(--font-weight-semibold)' }}>
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-brand-primary-dark)', fontWeight: 'var(--font-weight-semibold)' }}>
                         Đang mở tuyển dụng
                       </span>
 
-                      <button
-                        onClick={() => navigate(`/companies/${company.id}`)}
-                        style={{
-                          padding: '6px 16px',
-                          backgroundColor: 'var(--color-brand-secondary)',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: 'var(--radius-md)',
-                          cursor: 'pointer',
-                          fontWeight: 'var(--font-weight-medium)',
-                          fontSize: 'var(--font-size-sm)',
-                          transition: 'background-color var(--transition-fast)'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary-hover)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary)'}
-                      >
-                        Xem chi tiết
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/companies/${company.id}/careers`);
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            backgroundColor: '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 'var(--radius-md)',
+                            cursor: 'pointer',
+                            fontWeight: 'var(--font-weight-medium)',
+                            fontSize: 'var(--font-size-xs)',
+                            transition: 'opacity var(--transition-fast)'
+                          }}
+                          title="Xem cổng tuyển dụng và cơ hội việc làm"
+                        >
+                          Cơ hội việc làm
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/companies/${company.id}`);
+                          }}
+                          style={{
+                            padding: '6px 14px',
+                            backgroundColor: 'var(--color-brand-secondary)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 'var(--radius-md)',
+                            cursor: 'pointer',
+                            fontWeight: 'var(--font-weight-medium)',
+                            fontSize: 'var(--font-size-xs)',
+                            transition: 'background-color var(--transition-fast)'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary-hover)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary)'}
+                        >
+                          Xem chi tiết
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

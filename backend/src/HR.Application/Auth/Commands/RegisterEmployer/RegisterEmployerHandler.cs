@@ -45,9 +45,11 @@ public class RegisterEmployerHandler : IRequestHandler<RegisterEmployerCommand, 
             {
                 Code = "COM_" + Guid.NewGuid().ToString("N")[..8].ToUpper(),
                 Name = request.CompanyName.Trim(),
-                Industry = "Other",
-                SizeRange = "1-10",
-                AddressList = "N/A"
+                Industry = "Công nghệ thông tin",
+                SizeRange = "10-50",
+                AddressList = "Hà Nội, Việt Nam",
+                VerificationStatus = HR.Domain.Enums.CompanyVerificationStatus.VERIFIED,
+                IsActive = true
             };
             _context.Companies.Add(company);
             await _context.SaveChangesAsync(cancellationToken);

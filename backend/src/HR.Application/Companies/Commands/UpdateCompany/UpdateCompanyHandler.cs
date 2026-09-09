@@ -65,6 +65,15 @@ public class UpdateCompanyHandler : IRequestHandler<UpdateCompanyCommand, Compan
         company.Industry = request.Industry;
         company.Address = request.AddressList; // addressList from API maps to address in DB
 
+        if (request.Benefits != null) company.Benefits = request.Benefits;
+        if (request.VideoUrl != null) company.VideoUrl = request.VideoUrl;
+        if (request.OfficeGallery != null) company.OfficeGallery = request.OfficeGallery;
+        if (request.CultureHighlights != null) company.CultureHighlights = request.CultureHighlights;
+        if (request.CompanyFaqs != null) company.CompanyFaqs = request.CompanyFaqs;
+        if (request.Testimonials != null) company.Testimonials = request.Testimonials;
+        if (request.SocialLinks != null) company.SocialLinks = request.SocialLinks;
+        if (request.Contact != null) company.Contact = request.Contact;
+
         _context.Companies.Update(company);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -92,7 +101,12 @@ public class UpdateCompanyHandler : IRequestHandler<UpdateCompanyCommand, Compan
             company.SocialLinks,
             company.VerificationStatus.ToString(),
             followersCount,
-            isFollowing
+            isFollowing,
+            company.VideoUrl,
+            company.OfficeGallery,
+            company.CultureHighlights,
+            company.CompanyFaqs,
+            company.Testimonials
         );
     }
 }

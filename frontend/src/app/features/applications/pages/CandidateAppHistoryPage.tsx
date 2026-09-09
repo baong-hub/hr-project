@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, RefreshCw, CheckCircle } from 'lucide-react';
 import { applicationsService } from '../../../core/services/applications.service';
+import { jobOfferService } from '../../../core/services/job-offer.service';
 import { toast } from '../../../core/services/toast.service';
 import type { ApplicationDto } from '../../../core/models/application.model';
+import type { JobOffer } from '../../../core/models/job-offer.model';
+import { CandidateOfferModal } from '../../job-offers/components/CandidateOfferModal';
 import styles from './ApplicationsPage.module.scss'; // Reusing shared styles
 
 export const CandidateAppHistoryPage: React.FC = () => {
   const [applications, setApplications] = useState<ApplicationDto[]>([]);
+  const [offersMap, setOffersMap] = useState<Record<number, JobOffer>>({});
+  const [activeOfferModal, setActiveOfferModal] = useState<JobOffer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,17 +18,33 @@ export const CandidateAppHistoryPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await applicationsService.getApplications();
-      if (res.data?.success) {
-        const items = res.data.data?.items || (res.data.data as any) || [];
+      const [resApp, resOffers] = await Promise.all([
+        applicationsService.getApplications(),
+        jobOfferService.getCandidateOffers().catch(() => ({ data: { data: [] } as any }))
+      ]);
+
+      if (resApp.data?.success) {
+        const rawData = resApp.data.data;
+        const items = Array.isArray(rawData) ? rawData : (rawData as any)?.items || [];
         setApplications(items);
+
+        // Map offers by applicationId
+        const offers: JobOffer[] = (resOffers as any)?.data?.data || [];
+        const map: Record<number, JobOffer> = {};
+        offers.forEach((o: JobOffer) => {
+          if (o && o.applicationId) {
+            map[o.applicationId] = o;
+          }
+        });
+        setOffersMap(map);
       } else {
-        setError(res.data?.error?.message || 'Có lỗi xảy ra khi tải dữ liệu.');
+        setError(resApp.data?.error?.message || 'Có lỗi xảy ra khi tải dữ liệu.');
       }
     } catch (err: any) {
       console.error(err);
-      setError('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
-      toast.error('Lỗi khi tải danh sách ứng tuyển.');
+      const msg = err.response?.data?.error?.message || 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -51,7 +71,7 @@ export const CandidateAppHistoryPage: React.FC = () => {
           </p>
         </div>
         <button className={styles.btnSecondary} onClick={fetchApplications} disabled={loading}>
-          <RefreshCw size={14} className={loading ? 'spin' : ''} /> Tải lại
+          Tải lại
         </button>
       </div>
 
@@ -81,7 +101,6 @@ export const CandidateAppHistoryPage: React.FC = () => {
           borderRadius: '12px',
           border: '1px solid var(--color-border-default)'
         }}>
-          <CheckCircle size={48} style={{ margin: '0 auto 16px auto', color: 'var(--color-text-muted)', opacity: 0.5 }} />
           <h3>Chưa có hồ sơ ứng tuyển</h3>
           <p style={{ marginTop: '8px' }}>Bạn chưa nộp hồ sơ vào tin tuyển dụng nào.</p>
         </div>
@@ -98,7 +117,7 @@ export const CandidateAppHistoryPage: React.FC = () => {
                   <div>
                     <h3>{app.jobTitle}</h3>
                     <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-                      🏢 {app.companyName}
+                      {app.companyName}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px' }}>
@@ -108,12 +127,75 @@ export const CandidateAppHistoryPage: React.FC = () => {
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className={styles.btnSecondary}
-                      style={{ padding: '4px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      style={{ padding: '4px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center' }}
                     >
-                      <FileText size={12} /> Xem CV đã nộp
+                      Xem CV đã nộp
                     </a>
                   </div>
                 </div>
+
+                {/* Offer Action Banner if an offer is received */}
+                {offersMap[app.id] && (
+                  <div
+                    style={{
+                      marginTop: '14px',
+                      padding: '14px 20px',
+                      borderRadius: '12px',
+                      background: offersMap[app.id].status === 'ACCEPTED'
+                        ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+                        : offersMap[app.id].status === 'NEGOTIATING'
+                          ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)'
+                          : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                      border: `1px solid ${
+                        offersMap[app.id].status === 'ACCEPTED'
+                          ? '#a7f3d0'
+                          : offersMap[app.id].status === 'NEGOTIATING'
+                            ? '#fde68a'
+                            : '#bfdbfe'
+                      }`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '16px',
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0f172a' }}>
+                        {offersMap[app.id].status === 'ACCEPTED'
+                          ? 'Bạn đã chính thức ký duyệt nhận việc thành công!'
+                          : offersMap[app.id].status === 'NEGOTIATING'
+                            ? 'Đang chờ phản hồi thương lượng từ Nhà tuyển dụng'
+                            : 'Bạn nhận được Thư Mời Nhận Việc (Job Offer)!'}
+                      </div>
+                      <div style={{ fontSize: '0.825rem', color: '#475569', marginTop: '2px' }}>
+                        Tổng thu nhập: <strong>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(offersMap[app.id].totalSalary)} / tháng</strong> • Ngày bắt đầu: <strong>{new Date(offersMap[app.id].startDate).toLocaleDateString('vi-VN')}</strong>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveOfferModal(offersMap[app.id])}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        borderRadius: '8px',
+                        background: offersMap[app.id].status === 'PENDING' ? '#2563eb' : '#ffffff',
+                        color: offersMap[app.id].status === 'PENDING' ? '#ffffff' : '#0f172a',
+                        border: offersMap[app.id].status === 'PENDING' ? 'none' : '1px solid #cbd5e1',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        boxShadow: offersMap[app.id].status === 'PENDING' ? '0 4px 8px rgba(37,99,235,0.25)' : 'none'
+                      }}
+                    >
+                      {offersMap[app.id].status === 'PENDING'
+                        ? 'Xem Thư Mời & Phản Hồi Ngay'
+                        : 'Xem Chi Tiết Thư Mời'}
+                    </button>
+                  </div>
+                )}
 
                 {isWithdrawn ? (
                   <div style={{
@@ -172,6 +254,19 @@ export const CandidateAppHistoryPage: React.FC = () => {
             );
           })}
         </div>
+      )}
+
+      {/* Candidate Offer Modal */}
+      {activeOfferModal && (
+        <CandidateOfferModal
+          offer={activeOfferModal}
+          onClose={() => setActiveOfferModal(null)}
+          onOfferUpdated={(updated) => {
+            setActiveOfferModal(updated);
+            setOffersMap((prev) => ({ ...prev, [updated.applicationId]: updated }));
+            fetchApplications();
+          }}
+        />
       )}
     </div>
   );

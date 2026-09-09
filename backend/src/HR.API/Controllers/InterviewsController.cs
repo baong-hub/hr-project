@@ -20,12 +20,19 @@ public class InterviewsController(IMediator mediator) : ControllerBase
     [RequirePermission("interview:schedule")]
     public async Task<IActionResult> Schedule([FromBody] ScheduleInterviewDto dto)
     {
+        var startTime = dto.StartTime != default ? dto.StartTime : (dto.ScheduledAt ?? DateTime.Now.AddDays(1));
+        var endTime = dto.EndTime ?? startTime.AddHours(1);
+        var interviewType = !string.IsNullOrWhiteSpace(dto.InterviewType) ? dto.InterviewType : "ONLINE";
+        var locationOrLink = !string.IsNullOrWhiteSpace(dto.LocationOrLink) 
+            ? dto.LocationOrLink 
+            : (!string.IsNullOrWhiteSpace(dto.MeetingLink) ? dto.MeetingLink : (dto.Location ?? "Online"));
+
         var command = new ScheduleInterviewCommand(
             dto.ApplicationId,
-            dto.StartTime,
-            dto.EndTime,
-            dto.InterviewType,
-            dto.LocationOrLink,
+            startTime,
+            endTime,
+            interviewType,
+            locationOrLink,
             dto.Notes
         );
 
@@ -83,5 +90,39 @@ public class InterviewsController(IMediator mediator) : ControllerBase
     {
         var result = await mediator.Send(new CancelInterviewCommand(id));
         return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    /// <summary>
+    /// PATCH /api/v1/interviews/{id}/status — Cập nhật trạng thái lịch phỏng vấn linh hoạt
+    /// </summary>
+    [HttpPatch("{id:int}/status")]
+    [HttpPut("{id:int}/status")]
+    [RequirePermission("interview:schedule", "interview:respond", "interview:view")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateInterviewStatusDto dto)
+    {
+        var result = await mediator.Send(new UpdateInterviewStatusCommand(id, dto.Status, dto.Reason));
+        return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    /// <summary>
+    /// POST /api/v1/interviews/{id}/evaluations — Gửi đánh giá buổi phỏng vấn
+    /// </summary>
+    [HttpPost("{id:int}/evaluations")]
+    [RequirePermission("interview:schedule", "job:manage")]
+    public async Task<IActionResult> SubmitEvaluation(int id, [FromBody] CreateInterviewEvaluationDto dto)
+    {
+        var result = await mediator.Send(new SubmitInterviewEvaluationCommand(id, dto));
+        return Ok(ApiResponse<InterviewEvaluationDto>.Ok(result));
+    }
+
+    /// <summary>
+    /// GET /api/v1/interviews/{id}/evaluations — Lấy danh sách đánh giá của buổi phỏng vấn
+    /// </summary>
+    [HttpGet("{id:int}/evaluations")]
+    [RequirePermission("interview:view", "job:manage")]
+    public async Task<IActionResult> GetEvaluations(int id)
+    {
+        var result = await mediator.Send(new GetInterviewEvaluationsQuery(id));
+        return Ok(ApiResponse<List<InterviewEvaluationDto>>.Ok(result));
     }
 }

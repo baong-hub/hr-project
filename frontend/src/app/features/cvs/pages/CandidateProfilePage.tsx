@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cvsService } from '../../../core/services/cvs.service';
 import { authService } from '../../../core/services/auth.service';
-import type { UpdateProfileDto, CandidateProfileDto } from '../../../core/models/cv.model';
+import type { UpdateProfileDto } from '../../../core/models/cv.model';
 import { 
   User, 
   Tag, 
@@ -46,21 +46,12 @@ export const CandidateProfilePage: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // Lấy danh sách CV để xác định xem Candidate đã có profile chưa
-        const cvsResponse = await cvsService.getCvs();
-        if (cvsResponse.success && cvsResponse.data && cvsResponse.data.length > 0) {
-          // Lấy thông tin ứng viên từ CV đầu tiên hoặc gọi search để tự lấy
-          const candidateId = cvsResponse.data[0].candidateId;
-          // Gọi API tìm kiếm ứng viên của chính mình
-          const searchResponse = await cvsService.searchCandidates({ search: personalInfo.fullName });
-          if (searchResponse.success && searchResponse.data) {
-            const myProfile = searchResponse.data.find((p: CandidateProfileDto) => p.id === candidateId);
-            if (myProfile) {
-              setSkills(myProfile.skills || []);
-              setExperienceSummary(myProfile.objective || '');
-              setVisibilityStatus(myProfile.visibilityStatus as 'PUBLIC' | 'PRIVATE');
-            }
-          }
+        const res = await cvsService.getProfile();
+        if (res.success && res.data) {
+          const profile = res.data;
+          setSkills(profile.skills || []);
+          setExperienceSummary(profile.objective || '');
+          setVisibilityStatus((profile.visibilityStatus as 'PUBLIC' | 'PRIVATE') || 'PRIVATE');
         }
       } catch (err: any) {
         console.error('Không thể tải hồ sơ hiện tại:', err);

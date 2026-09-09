@@ -44,39 +44,74 @@ public class GetRecruitmentFunnelQueryHandler : IRequestHandler<GetRecruitmentFu
         {
             return new RecruitmentFunnelDto(new List<FunnelStageDto>
             {
-                new("SUBMITTED", 0),
-                new("REVIEWING", 0),
+                new("APPLIED", 0),
+                new("SCREENING", 0),
                 new("SHORTLISTED", 0),
-                new("ACCEPTED", 0)
+                new("INTERVIEW", 0),
+                new("OFFER", 0),
+                new("HIRED", 0),
+                new("REJECTED", 0)
             });
         }
 
-        var applicationCounts = await _context.Applications
-            .Where(a => jobIds.Contains(a.JobId) && a.DeletedAt == null)
+        // Parse date filters
+        var fromDate = string.IsNullOrEmpty(request.From)
+            ? (DateTime?)null
+            : DateTime.Parse(request.From);
+
+        var toDate = string.IsNullOrEmpty(request.To)
+            ? (DateTime?)null
+            : DateTime.Parse(request.To).AddDays(1).AddTicks(-1);
+
+        // Query applications with optional date filter
+        var appsQuery = _context.Applications
+            .Where(a => jobIds.Contains(a.JobId) && a.DeletedAt == null);
+
+        if (fromDate.HasValue)
+            appsQuery = appsQuery.Where(a => a.AppliedAt >= fromDate.Value);
+        if (toDate.HasValue)
+            appsQuery = appsQuery.Where(a => a.AppliedAt <= toDate.Value);
+
+        var applicationCounts = await appsQuery
             .GroupBy(a => a.Status)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
         var statusDict = applicationCounts.ToDictionary(x => x.Status, x => x.Count);
 
-        var submittedCount = statusDict.TryGetValue(ApplicationStatus.APPLIED, out var cApplied) ? cApplied : 0;
+        // Get individual counts by current status
+        int GetCount(ApplicationStatus status) =>
+            statusDict.TryGetValue(status, out var c) ? c : 0;
 
-        var reviewingCount = statusDict.TryGetValue(ApplicationStatus.SCREENING, out var cScreening) ? cScreening : 0;
+        var appliedOnly = GetCount(ApplicationStatus.APPLIED);
+        var screeningOnly = GetCount(ApplicationStatus.SCREENING);
+        var shortlistedOnly = GetCount(ApplicationStatus.SHORTLISTED);
+        var interviewOnly = GetCount(ApplicationStatus.INTERVIEW);
+        var offerOnly = GetCount(ApplicationStatus.OFFER);
+        var hiredOnly = GetCount(ApplicationStatus.HIRED);
+        var rejectedOnly = GetCount(ApplicationStatus.REJECTED);
+        var withdrawnOnly = GetCount(ApplicationStatus.WITHDRAWN);
 
-        var shortlistedCount = 
-            (statusDict.TryGetValue(ApplicationStatus.SHORTLISTED, out var cShortlisted) ? cShortlisted : 0) +
-            (statusDict.TryGetValue(ApplicationStatus.INTERVIEW, out var cInterview) ? cInterview : 0);
-
-        var acceptedCount = 
-            (statusDict.TryGetValue(ApplicationStatus.OFFER, out var cOffer) ? cOffer : 0) +
-            (statusDict.TryGetValue(ApplicationStatus.HIRED, out var cHired) ? cHired : 0);
+        // Cumulative funnel: each stage includes applications that have progressed 
+        // past it. The status progression is: APPLIED -> SCREENING -> SHORTLISTED -> INTERVIEW -> OFFER -> HIRED
+        // An application at HIRED has passed through all previous stages.
+        // REJECTED/WITHDRAWN are terminal states counted separately.
+        var hiredCumulative = hiredOnly;
+        var offerCumulative = offerOnly + hiredCumulative;
+        var interviewCumulative = interviewOnly + offerCumulative;
+        var shortlistedCumulative = shortlistedOnly + interviewCumulative;
+        var screeningCumulative = screeningOnly + shortlistedCumulative;
+        var appliedCumulative = appliedOnly + screeningCumulative + rejectedOnly + withdrawnOnly;
 
         var stages = new List<FunnelStageDto>
         {
-            new("SUBMITTED", submittedCount),
-            new("REVIEWING", reviewingCount),
-            new("SHORTLISTED", shortlistedCount),
-            new("ACCEPTED", acceptedCount)
+            new("APPLIED", appliedCumulative),
+            new("SCREENING", screeningCumulative),
+            new("SHORTLISTED", shortlistedCumulative),
+            new("INTERVIEW", interviewCumulative),
+            new("OFFER", offerCumulative),
+            new("HIRED", hiredCumulative),
+            new("REJECTED", rejectedOnly)
         };
 
         return new RecruitmentFunnelDto(stages);

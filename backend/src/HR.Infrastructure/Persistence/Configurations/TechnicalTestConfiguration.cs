@@ -18,6 +18,12 @@ public class TechnicalTestConfiguration : IEntityTypeConfiguration<TechnicalTest
             .HasColumnName("application_id")
             .IsRequired();
 
+        builder.Property(x => x.Title)
+            .HasColumnName("title")
+            .HasMaxLength(255)
+            .HasDefaultValue(string.Empty)
+            .IsRequired();
+
         builder.Property(x => x.TestType)
             .HasColumnName("test_type")
             .HasConversion<string>()
@@ -27,6 +33,24 @@ public class TechnicalTestConfiguration : IEntityTypeConfiguration<TechnicalTest
         builder.Property(x => x.DurationMinutes)
             .HasColumnName("duration_minutes")
             .HasColumnType("int")
+            .IsRequired();
+
+        builder.Property(x => x.PassingScore)
+            .HasColumnName("passing_score")
+            .HasColumnType("int")
+            .HasDefaultValue(70)
+            .IsRequired();
+
+        builder.Property(x => x.TotalQuestions)
+            .HasColumnName("total_questions")
+            .HasColumnType("int")
+            .HasDefaultValue(0)
+            .IsRequired();
+
+        builder.Property(x => x.CorrectAnswersCount)
+            .HasColumnName("correct_answers_count")
+            .HasColumnType("int")
+            .HasDefaultValue(0)
             .IsRequired();
 
         builder.Property(x => x.Score)
@@ -39,9 +63,25 @@ public class TechnicalTestConfiguration : IEntityTypeConfiguration<TechnicalTest
             .HasColumnName("status")
             .HasConversion<string>()
             .HasMaxLength(20)
-            .HasDefaultValue(TechnicalTestStatus.FAILED)
+            .HasDefaultValue(TechnicalTestStatus.PENDING)
             .HasSentinel((TechnicalTestStatus)(-1))
             .IsRequired();
+
+        builder.Property(x => x.StartTime)
+            .HasColumnName("start_time")
+            .HasColumnType("datetime(6)");
+
+        builder.Property(x => x.SubmittedAt)
+            .HasColumnName("submitted_at")
+            .HasColumnType("datetime(6)");
+
+        builder.Property(x => x.QuestionsData)
+            .HasColumnName("questions_data")
+            .HasColumnType("longtext");
+
+        builder.Property(x => x.AnswersData)
+            .HasColumnName("answers_data")
+            .HasColumnType("longtext");
 
         builder.Property(x => x.Notes)
             .HasColumnName("notes")

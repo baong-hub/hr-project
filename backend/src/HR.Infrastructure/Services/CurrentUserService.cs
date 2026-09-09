@@ -81,29 +81,44 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
         {
             if (IsSuperAdmin) return true;
 
-            var user = httpContextAccessor.HttpContext?.User;
-            if (user != null)
+            var httpContext = httpContextAccessor.HttpContext;
+            if (httpContext?.Items.TryGetValue("__CurrentUserService_IsAdmin", out var cached) == true && cached is bool isAdminCached)
             {
-                if (user.IsInRole("Super Admin") || user.IsInRole("Admin")) return true;
-
-                var accountType = user.FindFirst("accountType")?.Value;
-                if (string.Equals(accountType, "Admin", StringComparison.OrdinalIgnoreCase)) return true;
+                return isAdminCached;
             }
 
+            var user = httpContext?.User;
+            if (user != null)
+            {
+                if (user.IsInRole("Super Admin") || user.IsInRole("Admin"))
+                {
+                    if (httpContext != null) httpContext.Items["__CurrentUserService_IsAdmin"] = true;
+                    return true;
+                }
+
+                var accountType = user.FindFirst("accountType")?.Value;
+                if (string.Equals(accountType, "Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (httpContext != null) httpContext.Items["__CurrentUserService_IsAdmin"] = true;
+                    return true;
+                }
+            }
+
+            bool result = false;
             try
             {
-                var dbContext = httpContextAccessor.HttpContext?.RequestServices.GetService<IApplicationDbContext>();
+                var dbContext = httpContext?.RequestServices.GetService<IApplicationDbContext>();
                 if (dbContext != null && UserId > 0)
                 {
-                    var isDbAdmin = dbContext.Users
+                    result = dbContext.Users
                         .AsNoTracking()
                         .Any(u => u.Id == UserId && (u.AccountType == AccountType.Admin || u.UserRoles.Any(ur => ur.Role.Name == "Super Admin" || ur.Role.Name == "Admin" || ur.Role.Level == 0)));
-                    if (isDbAdmin) return true;
                 }
             }
             catch { }
 
-            return false;
+            if (httpContext != null) httpContext.Items["__CurrentUserService_IsAdmin"] = result;
+            return result;
         }
     }
 
@@ -111,21 +126,71 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
     {
         if (IsAdmin) return true;
 
+        var codesToCheck = new List<string> { code };
+        if (code == "job:apply")
+        {
+            codesToCheck.AddRange(new[] { "applications:view", "applications:create" });
+        }
+        else if (code == "applications:view")
+        {
+            codesToCheck.AddRange(new[] { "job:apply", "job:manage" });
+        }
+        else if (code == "job:manage")
+        {
+            codesToCheck.AddRange(new[] { "jobs:create", "jobs:update", "applications:update", "applications:view" });
+        }
+        else if (code == "cv:manage")
+        {
+            codesToCheck.AddRange(new[] { "cvs:view", "cvs:create", "cvs:update" });
+        }
+        else if (code == "cv:search")
+        {
+            codesToCheck.AddRange(new[] { "cvs:view", "job:manage" });
+        }
+
+        // 1. Check JWT claims first (Instant in-memory check, 0ms)
+        var permissions = httpContextAccessor.HttpContext?.User?.FindAll("permission").Select(c => c.Value) ?? Enumerable.Empty<string>();
+        if (permissions.Any(p => codesToCheck.Any(c => p == c || p.StartsWith(c + "#"))))
+        {
+            return true;
+        }
+
+        // 2. Check cached DB permissions in HttpContext (avoid repeated DB calls)
+        var httpContext = httpContextAccessor.HttpContext;
+        if (httpContext != null)
+        {
+            if (httpContext.Items.TryGetValue("__CurrentUserService_PermCodes", out var cachedPerms) && cachedPerms is HashSet<string> set)
+            {
+                return codesToCheck.Any(c => set.Contains(c));
+            }
+        }
+
+        // 3. Fallback to database if not found in JWT claims (load all user permissions at once for request cache)
         try
         {
-            var dbContext = httpContextAccessor.HttpContext?.RequestServices.GetService<IApplicationDbContext>();
+            var dbContext = httpContext?.RequestServices.GetService<IApplicationDbContext>();
             if (dbContext != null && UserId > 0)
             {
-                var hasInDb = dbContext.UserPermissions
+                var userPermCodes = dbContext.UserPermissions
                     .AsNoTracking()
-                    .Any(up => up.UserId == UserId && up.Permission.Code == code);
-                if (hasInDb) return true;
+                    .Where(up => up.UserId == UserId)
+                    .Select(up => up.Permission.Code)
+                    .ToHashSet();
+
+                if (httpContext != null)
+                {
+                    httpContext.Items["__CurrentUserService_PermCodes"] = userPermCodes;
+                }
+
+                if (codesToCheck.Any(c => userPermCodes.Contains(c)))
+                {
+                    return true;
+                }
             }
         }
         catch { }
 
-        var permissions = httpContextAccessor.HttpContext?.User?.FindAll("permission").Select(c => c.Value) ?? Enumerable.Empty<string>();
-        return permissions.Any(p => p == code || p.StartsWith(code + "#"));
+        return false;
     }
 
     public DataScope GetDataScope(string permissionCode)

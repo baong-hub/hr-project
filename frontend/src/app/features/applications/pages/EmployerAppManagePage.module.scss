@@ -58,48 +58,64 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
+  justify-content: center;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
-.badgeApplied { background-color: #e3f2fd; color: #0d47a1; }
-.badgeScreening { background-color: #e8f5e9; color: #2e7d32; }
-.badgeShortlisted { background-color: #ede7f6; color: #4a148c; }
-.badgeInterview { background-color: #fff8e1; color: #ff8f00; }
-.badgeOffer { background-color: #fce4ec; color: #c2185b; }
-.badgeHired { background-color: #e0f2f1; color: #004d40; }
-.badgeRejected { background-color: #ffebee; color: #c62828; }
-.badgeWithdrawn { background-color: #eceff1; color: #37474f; }
+.badgeApplied { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.badgeScreening { background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.badgeShortlisted { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+.badgeInterview { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.badgeOffer { background-color: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
+.badgeHired { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.badgeRejected { background-color: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.badgeWithdrawn { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
 /* Table sticky actions */
 .actionBtn {
-  border: none;
-  background: transparent;
+  border: 1px solid var(--color-border-default);
+  background: #ffffff;
   color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 6px;
-  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  &:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 }
 
-.actionBtn:hover {
-  background-color: var(--color-bg-hover);
-  color: var(--color-brand-primary);
-}
-
-.actionBtnEdit:hover { color: #f59e0b; }
-.actionBtnInterview:hover { color: #2e7d32; }
-.actionBtnDownload:hover { color: #0d47a1; }
+.actionBtnEdit:hover { color: #d97706; border-color: #fde68a; background-color: #fffbeb; }
+.actionBtnInterview:hover { color: #15803d; border-color: #bbf7d0; background-color: #f0fdf4; }
+.actionBtnDownload:hover { color: #1d4ed8; border-color: #bfdbfe; background-color: #eff6ff; }
 
 .actionGroup {
   display: flex;
-  gap: var(--space-1);
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Status select inline popover */

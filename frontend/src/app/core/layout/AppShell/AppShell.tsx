@@ -14,6 +14,9 @@ import {
 import { Sidebar } from '../Sidebar/Sidebar';
 import { authService } from '../../services/auth.service';
 import { profileService } from '../../services/profile.service';
+import { notificationService } from '../../services/notification.service';
+import { notificationSignalRService } from '../../services/signalrNotification.service';
+import { presenceSignalRService } from '../../services/presenceSignalR.service';
 import { AiChatWidget } from '../../../shared/ui/AiChatWidget/AiChatWidget';
 import styles from './AppShell.module.scss';
 
@@ -22,10 +25,38 @@ export const AppShell: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(() => authService.getUser());
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  const fetchUnreadCount = () => {
+    notificationService.getUnreadCount().then(res => {
+      if (res.data?.success && res.data.data) {
+        setUnreadCount(res.data.data.count || 0);
+      }
+    }).catch(() => {});
+  };
 
   useEffect(() => {
-    const syncUser = () => setCurrentUser(authService.getUser());
+    const syncUser = () => {
+      const u = authService.getUser();
+      setCurrentUser(u);
+      if (u?.id) {
+        notificationSignalRService.startConnection(u.id);
+        presenceSignalRService.startConnection(u.id);
+      }
+    };
     window.addEventListener('app-auth-changed', syncUser);
+
+    const onNotificationReceived = () => {
+      setUnreadCount(prev => prev + 1);
+    };
+    window.addEventListener('app-notification-received', onNotificationReceived);
+
+    const user = authService.getUser();
+    if (user?.id) {
+      notificationSignalRService.startConnection(user.id);
+      presenceSignalRService.startConnection(user.id);
+      fetchUnreadCount();
+    }
 
     // Fetch latest profile from API to guarantee full name and avatar are synced
     profileService.getProfile().then(res => {
@@ -42,7 +73,10 @@ export const AppShell: React.FC = () => {
       }
     }).catch(() => {});
 
-    return () => window.removeEventListener('app-auth-changed', syncUser);
+    return () => {
+      window.removeEventListener('app-auth-changed', syncUser);
+      window.removeEventListener('app-notification-received', onNotificationReceived);
+    };
   }, []);
 
   const displayName = currentUser?.fullName || currentUser?.companyName || currentUser?.name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Người dùng');
@@ -58,7 +92,7 @@ export const AppShell: React.FC = () => {
 
   const handleLogout = async () => {
     await authService.logout();
-    window.location.href = '/auth/login';
+    navigate('/auth/login', { replace: true });
   };
 
   return (
@@ -95,10 +129,10 @@ export const AppShell: React.FC = () => {
                 <Globe size={18} />
                 <span className={styles.langText}>VI</span>
               </button>
-              <button className={styles.iconBtn} title="Notifications">
+              <button className={styles.iconBtn} title="Notifications" onClick={() => navigate('/notifications')}>
                 <div className={styles.badgeWrapper}>
                   <Bell size={18} />
-                  <span className={styles.redBadge}>15</span>
+                  {unreadCount > 0 && <span className={styles.redBadge}>{unreadCount > 99 ? '99+' : unreadCount}</span>}
                 </div>
               </button>
               <button className={styles.iconBtn} title="Billing">

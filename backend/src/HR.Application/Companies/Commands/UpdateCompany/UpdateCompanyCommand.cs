@@ -12,5 +12,13 @@ public record UpdateCompanyCommand(
     string? Website,
     string SizeRange,
     string Industry,
-    string AddressList
+    string AddressList,
+    string? Benefits = null,
+    string? VideoUrl = null,
+    string? OfficeGallery = null,
+    string? CultureHighlights = null,
+    string? CompanyFaqs = null,
+    string? Testimonials = null,
+    string? SocialLinks = null,
+    string? Contact = null
 ) : IRequest<CompanyDto>;

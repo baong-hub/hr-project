@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, DollarSign, Clock, Calendar, Sparkles, CheckCircle, AlertCircle, Lightbulb, X } from 'lucide-react';
+import { MapPin, DollarSign, Clock, Calendar, Sparkles, CheckCircle, AlertCircle, Lightbulb, X } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { cvsService } from '../../../core/services/cvs.service';
 import { applicationsService } from '../../../core/services/applications.service';
+import { savedJobService } from '../../../core/services/saved-job.service';
 import { authService } from '../../../core/services/auth.service';
 import { aiService, type JobFitAnalysisResult } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
@@ -15,7 +16,9 @@ export const JobDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
-  const isCandidate = roles.includes('Ứng viên');
+  const userRole = user?.role || user?.accountType || '';
+  const isEmployer = roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN';
+  const isCandidate = !isEmployer;
 
   // State
   const [job, setJob] = useState<JobDto | null>(null);
@@ -33,6 +36,13 @@ export const JobDetailPage: React.FC = () => {
   const [showAiModal, setShowAiModal] = useState(false);
   const [analyzingAi, setAnalyzingAi] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<JobFitAnalysisResult | null>(null);
+
+  // Saved Job state
+  const [isSaved, setIsSaved] = useState(false);
+  const [togglingSave, setTogglingSave] = useState(false);
+
+  // Applied state (prevent duplicate applications)
+  const [hasApplied, setHasApplied] = useState(false);
 
   const handleAnalyzeJobFit = async () => {
     if (!job) return;
@@ -109,14 +119,20 @@ export const JobDetailPage: React.FC = () => {
       });
       if (res.data?.success) {
         toast.success('Ứng tuyển thành công!');
+        setHasApplied(true);
         setShowApplyModal(false);
         setCoverLetter('');
       } else {
         toast.error(res.data?.error?.message || 'Ứng tuyển thất bại.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error('Lỗi khi gửi đơn ứng tuyển.');
+      const errMsg = err?.response?.data?.error?.message || err?.message || 'Lỗi khi gửi đơn ứng tuyển.';
+      toast.error(errMsg);
+      if (errMsg.includes('đã nộp đơn') || errMsg.includes('already applied')) {
+        setHasApplied(true);
+        setShowApplyModal(false);
+      }
     } finally {
       setSubmittingApply(false);
     }
@@ -128,6 +144,63 @@ export const JobDetailPage: React.FC = () => {
     if (from && to) return `${fmt(from)} - ${fmt(to)}`;
     if (from) return `Từ ${fmt(from)}`;
     return `Đến ${fmt(to!)}`;
+  };
+
+  // Fetch saved status for this job
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      if (!authService.isAuthenticated() || isEmployer || !id) return;
+      try {
+        const res = await savedJobService.getSavedJobs({ page: 1, pageSize: 200 });
+        if (res.data?.success && res.data.data) {
+          const raw = res.data.data;
+          const items = Array.isArray(raw) ? raw : (raw as any)?.items || [];
+          const saved = items.some((item: any) => item.jobId === Number(id));
+          setIsSaved(saved);
+        }
+      } catch (err) {
+        console.error('Failed to check saved status:', err);
+      }
+    };
+    checkSavedStatus();
+  }, [id, isEmployer]);
+
+  // Check if already applied
+  useEffect(() => {
+    const checkAppliedStatus = async () => {
+      if (!authService.isAuthenticated() || isEmployer || !id) return;
+      try {
+        const res = await applicationsService.getApplications();
+        if (res.data?.success && res.data.data) {
+          const raw = res.data.data;
+          const items = Array.isArray(raw) ? raw : (raw as any)?.items || [];
+          const applied = items.some((item: any) => item.jobId === Number(id));
+          setHasApplied(applied);
+        }
+      } catch (err) {
+        console.error('Failed to check applied status:', err);
+      }
+    };
+    checkAppliedStatus();
+  }, [id, isEmployer]);
+
+  const toggleSaveJob = async () => {
+    if (!job || !isCandidate) return;
+    setTogglingSave(true);
+    const wasSaved = isSaved;
+    setIsSaved(!wasSaved); // Optimistic
+    try {
+      const res = await savedJobService.toggleSave(job.id);
+      if (res.data?.success && res.data.data) {
+        setIsSaved(res.data.data.isSaved);
+        toast.success(res.data.data.isSaved ? 'Đã lưu việc làm!' : 'Đã bỏ lưu việc làm.');
+      }
+    } catch (err) {
+      setIsSaved(wasSaved); // Rollback
+      toast.error('Lỗi khi lưu việc làm.');
+    } finally {
+      setTogglingSave(false);
+    }
   };
 
   if (loading) {
@@ -143,7 +216,7 @@ export const JobDetailPage: React.FC = () => {
       <div style={{ padding: '60px', textAlign: 'center' }}>
         <p style={{ color: 'var(--color-error)', marginBottom: '16px' }}>{error || 'Công việc không tồn tại.'}</p>
         <button onClick={() => navigate('/jobs')} className={styles.btnSecondary}>
-          <ArrowLeft size={16} /> Quay lại danh sách
+          Quay lại danh sách
         </button>
       </div>
     );
@@ -153,7 +226,7 @@ export const JobDetailPage: React.FC = () => {
     <div className={styles.jobsPage} style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div style={{ marginBottom: '12px' }}>
         <button onClick={() => navigate(-1)} className={styles.btnSecondary}>
-          <ArrowLeft size={16} /> Quay lại
+          Quay lại
         </button>
       </div>
 
@@ -197,7 +270,7 @@ export const JobDetailPage: React.FC = () => {
               onClick={handleAnalyzeJobFit} 
               className={styles.btnSecondary} 
               style={{ 
-                flex: '1 1 200px', 
+                flex: '1 1 180px', 
                 justifyContent: 'center', 
                 padding: '12px',
                 background: 'linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)',
@@ -205,21 +278,64 @@ export const JobDetailPage: React.FC = () => {
                 color: '#4338ca',
                 fontWeight: 600,
                 display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
+                alignItems: 'center'
               }}
             >
-              <Sparkles size={16} color="#4f46e5" /> Phân tích độ phù hợp với AI
+              Phân tích độ phù hợp hồ sơ
             </button>
             {isCandidate && (
-              <button 
+              <button
                 type="button"
-                onClick={() => { setShowApplyModal(true); fetchCvs(); }} 
-                className={styles.btnPrimary} 
-                style={{ flex: '1 1 200px', justifyContent: 'center', padding: '12px' }}
+                onClick={toggleSaveJob}
+                disabled={togglingSave}
+                className={styles.btnSecondary}
+                style={{
+                  flex: '0 0 auto',
+                  justifyContent: 'center',
+                  padding: '12px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontWeight: 600,
+                  color: isSaved ? '#ef4444' : undefined,
+                  borderColor: isSaved ? '#fecaca' : undefined,
+                  background: isSaved ? '#fef2f2' : undefined,
+                  transition: 'all 0.2s ease',
+                }}
               >
-                Nộp đơn ứng tuyển ngay
+                {isSaved ? 'Đã lưu' : 'Lưu việc làm'}
               </button>
+            )}
+            {isCandidate && (
+              hasApplied ? (
+                <button 
+                  disabled
+                  className={styles.btnSecondary} 
+                  style={{
+                    flex: '1 1 180px',
+                    justifyContent: 'center',
+                    padding: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#ecfdf5',
+                    color: '#059669',
+                    borderColor: '#a7f3d0',
+                    fontWeight: 600,
+                    cursor: 'not-allowed',
+                    opacity: 0.9,
+                  }}
+                >
+                  Đã ứng tuyển vị trí này
+                </button>
+              ) : (
+                <button 
+                  type="button"
+                  onClick={() => { setShowApplyModal(true); fetchCvs(); }} 
+                  className={styles.btnPrimary} 
+                  style={{ flex: '1 1 180px', justifyContent: 'center', padding: '12px' }}
+                >
+                  Nộp đơn ứng tuyển ngay
+                </button>
+              )
             )}
           </div>
         </div>
