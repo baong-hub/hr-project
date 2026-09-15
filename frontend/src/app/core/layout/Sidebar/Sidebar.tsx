@@ -44,9 +44,12 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   }, [location.pathname, menus]);
 
   const hasPermission = (code?: string, route?: string) => {
-    // 1. Ẩn hoàn toàn "Khu vực ứng viên" đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho Ứng viên)
+    // 1. Ẩn hoàn toàn "Khu vực ứng viên" và "Hồ sơ & CV" đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho Ứng viên)
     if (isSuperAdmin || isEmployer || !isCandidate) {
       if (
+        code === 'menu:cvs' ||
+        code === 'module:cvs' ||
+        route === '/cvs' ||
         code === 'menu:candidate' ||
         code === 'module:candidate' ||
         code === 'menu:saved-jobs' || 
@@ -297,9 +300,14 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const filterMenuItems = (items: SidebarItem[]): SidebarItem[] => {
     return items
       .map((item) => {
-        // Ẩn menu Khu vực ứng viên đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho ứng viên)
+        // Ẩn menu Khu vực ứng viên & Hồ sơ CV đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho ứng viên)
         if (isSuperAdmin || isEmployer || !isCandidate) {
           if (
+            item.code === 'menu:cvs' ||
+            item.code === 'module:cvs' ||
+            item.route === '/cvs' ||
+            item.label === 'Hồ sơ & CV' ||
+            item.shortName === 'CV' ||
             item.code === 'menu:candidate' ||
             item.code === 'module:candidate' ||
             item.code === 'menu:saved-jobs' ||
@@ -340,6 +348,11 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
           const visibleChildren = item.children.filter((child) => {
             if (isSuperAdmin || isEmployer || !isCandidate) {
               if (
+                child.code === 'menu:cvs' ||
+                child.code === 'module:cvs' ||
+                child.route === '/cvs' ||
+                child.label === 'Hồ sơ & CV' ||
+                child.shortName === 'CV' ||
                 child.code === 'menu:candidate' ||
                 child.code === 'menu:saved-jobs' ||
                 child.code === 'module:saved-jobs' ||
@@ -463,7 +476,7 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
                       {expanded ? (
                         <span className={styles.label}>{getTranslatedLabel(item.code, item.label)}</span>
                       ) : (
-                        item.shortName && <span className={styles.shortName}>{getTranslatedLabel(item.shortName, item.shortName)}</span>
+                        item.shortName && <span className={styles.shortName}>{getTranslatedLabel(item.code, item.shortName)}</span>
                       )}
                       {expanded && (
                         <div className={styles.arrow}>
@@ -503,7 +516,7 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
                     {expanded ? (
                       <span className={styles.label}>{getTranslatedLabel(item.code, item.label)}</span>
                     ) : (
-                      item.shortName && <span className={styles.shortName}>{getTranslatedLabel(item.shortName, item.shortName)}</span>
+                      item.shortName && <span className={styles.shortName}>{getTranslatedLabel(item.code, item.shortName)}</span>
                     )}
                   </NavLink>
                 )}

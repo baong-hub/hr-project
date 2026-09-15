@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { companiesService } from '../../../core/services/companies.service';
 import { jobsService } from '../../../core/services/jobs.service';
 import { authService } from '../../../core/services/auth.service';
@@ -115,6 +116,7 @@ const DEFAULT_TESTIMONIALS: CompanyTestimonial[] = [
 ];
 
 export const CompanyCareersPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const companyId = Number(id);
@@ -168,10 +170,10 @@ export const CompanyCareersPage: React.FC = () => {
             console.error(jobErr);
           }
         } else {
-          setError(compRes.data.error?.message || 'Không tìm thấy thông tin doanh nghiệp.');
+          setError(compRes.data.error?.message || t('companies.empty_title', 'Không tìm thấy thông tin doanh nghiệp.'));
         }
       } catch (err: any) {
-        setError('Có lỗi xảy ra khi kết nối máy chủ trang tuyển dụng.');
+        setError(t('common.fail', 'Có lỗi xảy ra khi kết nối máy chủ trang tuyển dụng.'));
       } finally {
         setLoading(false);
       }
@@ -199,8 +201,8 @@ export const CompanyCareersPage: React.FC = () => {
   // Handle Follow Toggle
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
-      toast.info('Vui lòng đăng nhập để theo dõi doanh nghiệp.');
-      navigate('/login');
+      toast.info(t('auth.login_title', 'Vui lòng đăng nhập để theo dõi doanh nghiệp.'));
+      navigate('/auth/login');
       return;
     }
 
@@ -212,12 +214,12 @@ export const CompanyCareersPage: React.FC = () => {
         setFollowersCount(res.data.data.followersCount);
         toast.success(
           res.data.data.isFollowing
-            ? 'Đã theo dõi doanh nghiệp thành công!'
-            : 'Đã hủy theo dõi doanh nghiệp.'
+            ? t('companies.btn_following', 'Đã theo dõi doanh nghiệp thành công!')
+            : t('common.success', 'Đã hủy theo dõi doanh nghiệp.')
         );
       }
     } catch (err) {
-      toast.error('Có lỗi xảy ra khi cập nhật theo dõi.');
+      toast.error(t('common.fail', 'Có lỗi xảy ra khi cập nhật theo dõi.'));
     } finally {
       setFollowLoading(false);
     }
@@ -227,7 +229,7 @@ export const CompanyCareersPage: React.FC = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 0', gap: 16 }}>
         <Loader2 style={{ animation: 'spin 1s linear infinite', color: '#4f46e5', width: 40, height: 40 }} />
-        <span style={{ fontSize: '15px', color: 'var(--color-text-secondary)' }}>Đang tải Cổng tuyển dụng & Thương hiệu doanh nghiệp...</span>
+        <span style={{ fontSize: '15px', color: 'var(--color-text-secondary)' }}>{t('companies.loading', 'Đang tải Cổng tuyển dụng & Thương hiệu doanh nghiệp...')}</span>
       </div>
     );
   }
@@ -236,10 +238,10 @@ export const CompanyCareersPage: React.FC = () => {
     return (
       <div style={{ maxWidth: 800, margin: '60px auto', padding: 32, textAlign: 'center', background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0' }}>
         <Building2 size={48} color="#94a3b8" style={{ marginBottom: 16 }} />
-        <h2 style={{ fontSize: 20, margin: '0 0 8px 0' }}>Không tìm thấy trang tuyển dụng</h2>
-        <p style={{ color: '#64748b', marginBottom: 24 }}>{error || 'Doanh nghiệp này không tồn tại hoặc chưa kích hoạt trang thương hiệu.'}</p>
+        <h2 style={{ fontSize: 20, margin: '0 0 8px 0' }}>{t('companies.empty_title', 'Không tìm thấy trang tuyển dụng')}</h2>
+        <p style={{ color: '#64748b', marginBottom: 24 }}>{error || t('companies.empty_desc', 'Doanh nghiệp này không tồn tại hoặc chưa kích hoạt trang thương hiệu.')}</p>
         <Link to="/companies" style={{ display: 'inline-flex', padding: '10px 20px', background: '#4f46e5', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
-          Xem danh sách doanh nghiệp khác
+          {t('companies.back_to_list', 'Xem danh sách doanh nghiệp khác')}
         </Link>
       </div>
     );
@@ -315,7 +317,7 @@ export const CompanyCareersPage: React.FC = () => {
           onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-subtle, #f8fafc)'; e.currentTarget.style.color = 'var(--color-text-primary, #1e293b)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-default, #fff)'; e.currentTarget.style.color = 'var(--color-text-secondary, #64748b)'; }}
         >
-          <ArrowLeft size={16} /> Quay lại danh sách doanh nghiệp
+          <ArrowLeft size={16} /> {t('companies.back_to_list', 'Quay lại danh sách doanh nghiệp')}
         </button>
       </div>
 
@@ -339,11 +341,11 @@ export const CompanyCareersPage: React.FC = () => {
               <div className={styles.nameRow}>
                 <h1>{company.name}</h1>
                 <span className={styles.verifiedBadge}>
-                  <CheckCircle2 size={12} /> DOANH NGHIỆP XÁC THỰC
+                  <CheckCircle2 size={12} /> {t('companies.verified_badge', 'DOANH NGHIỆP XÁC THỰC')}
                 </span>
               </div>
               <p className={styles.tagline}>
-                {company.industry} • {company.sizeRange} nhân sự • Gia nhập đội ngũ kiến tạo tương lai
+                {company.industry} • {company.sizeRange} • {t('companies.followers_count', { count: followersCount })}
               </p>
             </div>
           </div>
@@ -356,11 +358,11 @@ export const CompanyCareersPage: React.FC = () => {
               onClick={handleFollowToggle}
             >
               <Heart size={16} fill={isFollowing ? '#4f46e5' : 'none'} color={isFollowing ? '#4f46e5' : '#64748b'} />
-              {isFollowing ? 'Đang theo dõi' : 'Theo dõi'} ({followersCount})
+              {isFollowing ? t('companies.btn_following', 'Đang theo dõi') : t('companies.btn_follow', 'Theo dõi')} ({followersCount})
             </button>
 
             <a href="#active-jobs" className={styles.btnViewJobs}>
-              <Briefcase size={16} /> Xem {jobs.length} việc làm đang tuyển
+              <Briefcase size={16} /> {t('companies.tab_jobs', { count: jobs.length, defaultValue: `Xem ${jobs.length} việc làm đang tuyển` })}
             </a>
           </div>
         </div>
@@ -369,27 +371,27 @@ export const CompanyCareersPage: React.FC = () => {
         <div className={styles.metaPillsBar}>
           <div className={styles.metaPill}>
             <Building2 />
-            <span>Ngành nghề: <strong>{company.industry}</strong></span>
+            <span>{t('companies.industry_prefix', { industry: company.industry, defaultValue: `Ngành: ${company.industry}` })}</span>
           </div>
           <div className={styles.metaPill}>
             <Users />
-            <span>Quy mô: <strong>{company.sizeRange} nhân sự</strong></span>
+            <span>{t('companies.size_prefix', { size: company.sizeRange, defaultValue: `Quy mô: ${company.sizeRange}` })}</span>
           </div>
           {company.foundedYear && (
             <div className={styles.metaPill}>
               <Calendar />
-              <span>Thành lập: <strong>Năm {company.foundedYear}</strong></span>
+              <span>{t('companies.founded_prefix', { year: company.foundedYear, defaultValue: `Thành lập: Năm ${company.foundedYear}` })}</span>
             </div>
           )}
           <div className={styles.metaPill}>
             <MapPin />
-            <span>Trụ sở: <strong>{company.address}</strong></span>
+            <span>{t('companies.headquarters', 'Trụ sở')}: <strong>{company.address}</strong></span>
           </div>
           {company.website && (
             <div className={styles.metaPill}>
               <Globe />
               <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer">
-                Website công ty <ExternalLink size={12} style={{ display: 'inline' }} />
+                {t('companies.website_link', 'Website công ty')} <ExternalLink size={12} style={{ display: 'inline' }} />
               </a>
             </div>
           )}
@@ -399,10 +401,10 @@ export const CompanyCareersPage: React.FC = () => {
       {/* 2. CULTURE & VIDEO SHOWCASE */}
       <section>
         <div className={styles.sectionHeader}>
-          <span className={styles.subBadge}><Sparkles size={12} /> Văn hóa & Con người</span>
-          <h2>Môi Trường Làm Việc Đột Phá</h2>
+          <span className={styles.subBadge}><Sparkles size={12} /> {t('companies.culture_sub', 'Văn hóa & Con người')}</span>
+          <h2>{t('companies.culture_title', 'Môi Trường Làm Việc Đột Phá')}</h2>
           <p>
-            Tại {company.name}, chúng tôi tin rằng thành công vượt bậc bắt đầu từ việc trao quyền, nuôi dưỡng tài năng và tạo ra một không gian nơi mỗi cá nhân đều có thể tỏa sáng.
+            {t('companies.culture_desc', { name: company.name, defaultValue: `Tại ${company.name}, chúng tôi tin rằng thành công vượt bậc bắt đầu từ việc trao quyền, nuôi dưỡng tài năng và tạo ra một không gian nơi mỗi cá nhân đều có thể tỏa sáng.` })}
           </p>
         </div>
 
@@ -418,10 +420,10 @@ export const CompanyCareersPage: React.FC = () => {
               />
             ) : (
               <div className={styles.videoPlaceholder}>
-                <div className={styles.playBtn} onClick={() => alert('Video giới thiệu văn hóa đang được chuẩn bị.')}>
+                <div className={styles.playBtn} onClick={() => alert(t('companies.video_explore', { name: company.name, defaultValue: `Khám phá hành trình văn hóa tại ${company.name}` }))}>
                   <Play size={24} fill="#fff" color="#fff" />
                 </div>
-                <span>Khám phá hành trình văn hóa tại {company.name}</span>
+                <span>{t('companies.video_explore', { name: company.name, defaultValue: `Khám phá hành trình văn hóa tại ${company.name}` })}</span>
               </div>
             )}
           </div>
@@ -454,9 +456,9 @@ export const CompanyCareersPage: React.FC = () => {
       {/* 3. OFFICE & WORKING ENVIRONMENT GALLERY */}
       <section>
         <div className={styles.sectionHeader}>
-          <span className={styles.subBadge}><Building2 size={12} /> Không gian làm việc</span>
-          <h2>Góc Nhìn Thực Tế Tại Văn Phòng</h2>
-          <p>Không gian làm việc mở chuẩn quốc tế, trang thiết bị tối tân và khu pantry thư giãn đầy năng lượng.</p>
+          <span className={styles.subBadge}><Building2 size={12} /> {t('companies.workspace_sub', 'Không gian làm việc')}</span>
+          <h2>{t('companies.workspace_title', 'Góc Nhìn Thực Tế Tại Văn Phòng')}</h2>
+          <p>{t('companies.workspace_desc', 'Không gian làm việc mở chuẩn quốc tế, trang thiết bị tối tân và khu pantry thư giãn đầy năng lượng.')}</p>
         </div>
 
         <div className={styles.galleryGrid}>
@@ -464,7 +466,7 @@ export const CompanyCareersPage: React.FC = () => {
             <div key={idx} className={styles.galleryItem}>
               <img src={imgUrl} alt={`Office photo ${idx + 1}`} />
               <div className={styles.galleryOverlay}>
-                <span>Không gian làm việc sáng tạo #{idx + 1}</span>
+                <span>{t('companies.workspace_photo', { index: idx + 1, defaultValue: `Không gian làm việc sáng tạo #${idx + 1}` })}</span>
               </div>
             </div>
           ))}
@@ -474,57 +476,57 @@ export const CompanyCareersPage: React.FC = () => {
       {/* 4. PERKS & BENEFITS */}
       <section>
         <div className={styles.sectionHeader}>
-          <span className={styles.subBadge}><ShieldCheck size={12} /> Chế độ & Đãi ngộ</span>
-          <h2>Lợi Ích Đặc Quyền Cho Nhân Sự</h2>
-          <p>Chúng tôi cam kết mang lại chính sách đãi ngộ xứng đáng, đồng hành cùng sự an tâm và phát triển dài hạn của bạn.</p>
+          <span className={styles.subBadge}><ShieldCheck size={12} /> {t('companies.benefits_sub', 'Chế độ & Đãi ngộ')}</span>
+          <h2>{t('companies.benefits_title', 'Lợi Ích Đặc Quyền Cho Nhân Sự')}</h2>
+          <p>{t('companies.benefits_desc', 'Chúng tôi cam kết mang lại chính sách đãi ngộ xứng đáng, đồng hành cùng sự an tâm và phát triển dài hạn của bạn.')}</p>
         </div>
 
         <div className={styles.benefitsGrid}>
           <div className={styles.benefitCard}>
             <div className={styles.bIcon}><ShieldCheck /></div>
             <div className={styles.bContent}>
-              <h3>Bảo Hiểm Sức Khỏe Toàn Diện</h3>
-              <p>Gói bảo hiểm sức khỏe cao cấp (PVI/Bảo Việt) chi trả nội & ngoại trú cho nhân viên và gói ưu đãi đặc quyền cho người thân.</p>
+              <h3>{t('companies.benefit_health_title', 'Bảo Hiểm Sức Khỏe Toàn Diện')}</h3>
+              <p>{t('companies.benefit_health_desc', 'Gói bảo hiểm sức khỏe cao cấp (PVI/Bảo Việt) chi trả nội & ngoại trú cho nhân viên và gói ưu đãi đặc quyền cho người thân.')}</p>
             </div>
           </div>
 
           <div className={styles.benefitCard}>
             <div className={styles.bIcon}><Plane /></div>
             <div className={styles.bContent}>
-              <h3>Du Lịch & Team Building Hàng Năm</h3>
-              <p>Chuyến du lịch nghỉ dưỡng chuẩn 5 sao hàng năm, các sự kiện dã ngoại, sinh nhật và hoạt động gắn kết sôi nổi mỗi quý.</p>
+              <h3>{t('companies.benefit_trip_title', 'Du Lịch & Team Building Hàng Năm')}</h3>
+              <p>{t('companies.benefit_trip_desc', 'Chuyến du lịch nghỉ dưỡng chuẩn 5 sao hàng năm, các sự kiện dã ngoại, sinh nhật và hoạt động gắn kết sôi nổi mỗi quý.')}</p>
             </div>
           </div>
 
           <div className={styles.benefitCard}>
             <div className={styles.bIcon}><Laptop /></div>
             <div className={styles.bContent}>
-              <h3>Thiết Bị Công Nghệ Tối Tân</h3>
-              <p>Trang bị MacBook Pro M-series thế hệ mới nhất, 2 màn hình 4K Dell UltraSharp cùng ghế công thái học cao cấp.</p>
+              <h3>{t('companies.benefit_tech_title', 'Thiết Bị Công Nghệ Tối Tân')}</h3>
+              <p>{t('companies.benefit_tech_desc', 'Trang bị MacBook Pro M-series thế hệ mới nhất, 2 màn hình 4K Dell UltraSharp cùng ghế công thái học cao cấp.')}</p>
             </div>
           </div>
 
           <div className={styles.benefitCard}>
             <div className={styles.bIcon}><Coins /></div>
             <div className={styles.bContent}>
-              <h3>Chính Sách Thưởng & ESOP</h3>
-              <p>Thưởng lương tháng 13 đảm bảo, thưởng nóng hiệu suất (Performance Bonus) định kỳ và cơ hội sở hữu cổ phần ưu đãi ESOP.</p>
+              <h3>{t('companies.benefit_bonus_title', 'Chính Sách Thưởng & ESOP')}</h3>
+              <p>{t('companies.benefit_bonus_desc', 'Thưởng lương tháng 13 đảm bảo, thưởng nóng hiệu suất (Performance Bonus) định kỳ và cơ hội sở hữu cổ phần ưu đãi ESOP.')}</p>
             </div>
           </div>
 
           <div className={styles.benefitCard}>
             <div className={styles.bIcon}><Clock /></div>
             <div className={styles.bContent}>
-              <h3>Thời Gian Linh Hoạt & Hybrid</h3>
-              <p>Chế độ làm việc Hybrid (làm việc từ xa 2-3 ngày/tuần), giờ giấc làm việc linh hoạt, 14 - 16 ngày nghỉ phép hưởng nguyên lương.</p>
+              <h3>{t('companies.benefit_flex_title', 'Thời Gian Linh Hoạt & Hybrid')}</h3>
+              <p>{t('companies.benefit_flex_desc', 'Chế độ làm việc Hybrid (làm việc từ xa 2-3 ngày/tuần), giờ giấc làm việc linh hoạt, 14 - 16 ngày nghỉ phép hưởng nguyên lương.')}</p>
             </div>
           </div>
 
           <div className={styles.benefitCard}>
             <div className={styles.bIcon}><GraduationCap /></div>
             <div className={styles.bContent}>
-              <h3>Ngân Sách Học Tập & Chứng Chỉ</h3>
-              <p>Hỗ trợ $1,000 ngân sách đào tạo mỗi năm, tài trợ 100% lệ phí thi các chứng chỉ công nghệ quốc tế danh giá.</p>
+              <h3>{t('companies.benefit_training_title', 'Ngân Sách Học Tập & Chứng Chỉ')}</h3>
+              <p>{t('companies.benefit_training_desc', 'Hỗ trợ $1,000 ngân sách đào tạo mỗi năm, tài trợ 100% lệ phí thi các chứng chỉ công nghệ quốc tế danh giá.')}</p>
             </div>
           </div>
         </div>
@@ -532,7 +534,7 @@ export const CompanyCareersPage: React.FC = () => {
         {/* Custom Benefits text if provided */}
         {company.benefits && (
           <div style={{ marginTop: 24, padding: 20, background: '#f8fafc', borderRadius: 16, border: '1px solid #e2e8f0', fontSize: '14px', color: '#475569', lineHeight: 1.7 }}>
-            <strong style={{ color: '#0f172a', display: 'block', marginBottom: 6 }}>Phúc lợi bổ sung từ công ty:</strong>
+            <strong style={{ color: '#0f172a', display: 'block', marginBottom: 6 }}>{t('companies.benefits_additional', 'Phúc lợi bổ sung từ công ty:')}</strong>
             {company.benefits}
           </div>
         )}
@@ -541,9 +543,9 @@ export const CompanyCareersPage: React.FC = () => {
       {/* 5. ACTIVE JOB OPENINGS */}
       <section id="active-jobs" className={styles.jobsSection}>
         <div className={styles.sectionHeader} style={{ marginBottom: 24 }}>
-          <span className={styles.subBadge}><Briefcase size={12} /> Tuyển dụng trực tiếp</span>
-          <h2>Cơ Hội Nghề Nghiệp Đang Mở</h2>
-          <p>Khám phá các vị trí công việc phù hợp với kỹ năng và định hướng phát triển của bạn.</p>
+          <span className={styles.subBadge}><Briefcase size={12} /> {t('companies.jobs_sub', 'Tuyển dụng trực tiếp')}</span>
+          <h2>{t('companies.jobs_title', 'Cơ Hội Nghề Nghiệp Đang Mở')}</h2>
+          <p>{t('companies.jobs_desc', 'Khám phá các vị trí công việc phù hợp với kỹ năng và định hướng phát triển của bạn.')}</p>
         </div>
 
         {/* Filter bar */}
@@ -552,7 +554,7 @@ export const CompanyCareersPage: React.FC = () => {
             <Search />
             <input 
               type="text" 
-              placeholder="Tìm theo tên vị trí hoặc từ khóa..." 
+              placeholder={t('companies.jobs_search_placeholder', 'Tìm theo tên vị trí hoặc từ khóa...')} 
               value={jobSearch}
               onChange={e => setJobSearch(e.target.value)}
             />
@@ -568,7 +570,7 @@ export const CompanyCareersPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', fontSize: '13.5px', color: '#64748b', fontWeight: 600 }}>
-            Hiển thị <strong>&nbsp;{filteredJobs.length}&nbsp;</strong> vị trí phù hợp
+            {t('companies.jobs_matching_count', { count: filteredJobs.length, defaultValue: `Hiển thị ${filteredJobs.length} vị trí phù hợp` })}
           </div>
         </div>
 
@@ -576,7 +578,7 @@ export const CompanyCareersPage: React.FC = () => {
         {filteredJobs.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748b' }}>
             <Briefcase size={40} style={{ opacity: 0.5, marginBottom: 12 }} />
-            <p style={{ margin: 0 }}>Hiện chưa có vị trí nào khớp với bộ lọc tìm kiếm của bạn.</p>
+            <p style={{ margin: 0 }}>{t('companies.jobs_empty_filter', 'Hiện chưa có vị trí nào khớp với bộ lọc tìm kiếm của bạn.')}</p>
           </div>
         ) : (
           <div className={styles.jobCardsList}>
@@ -591,23 +593,23 @@ export const CompanyCareersPage: React.FC = () => {
                       </span>
                     )}
                     <span className={styles.jBadge}>
-                      <MapPin size={13} /> {job.city || 'Toàn quốc'}
+                      <MapPin size={13} /> {job.city || t('common.all', 'Toàn quốc')}
                     </span>
                     <span className={`${styles.jBadge} ${styles.salary}`}>
                       💰 {job.salaryFrom && job.salaryTo 
                         ? `${job.salaryFrom.toLocaleString()} - ${job.salaryTo.toLocaleString()} VND`
-                        : 'Mức lương thỏa thuận'}
+                        : t('jobs.salary_negotiable', 'Mức lương thỏa thuận')}
                     </span>
                     {job.expiredAt && (
                       <span className={styles.jBadge}>
-                        📅 Hạn nộp: {job.expiredAt.split('T')[0]}
+                        📅 {t('jobs.deadline', { date: job.expiredAt.split('T')[0], defaultValue: `Hạn nộp: ${job.expiredAt.split('T')[0]}` })}
                       </span>
                     )}
                   </div>
                 </div>
 
                 <Link to={`/jobs/${job.id}`} className={styles.btnApply}>
-                  Ứng tuyển ngay <ArrowRight size={14} />
+                  {t('jobs.btn_apply_now', 'Ứng tuyển ngay')} <ArrowRight size={14} />
                 </Link>
               </div>
             ))}
@@ -618,9 +620,9 @@ export const CompanyCareersPage: React.FC = () => {
       {/* 6. EMPLOYEE TESTIMONIALS & REVIEWS */}
       <section>
         <div className={styles.sectionHeader}>
-          <span className={styles.subBadge}><Star size={12} /> Đánh giá nội bộ</span>
-          <h2>Đội Ngũ Nói Gì Về Chúng Tôi?</h2>
-          <p>Lắng nghe những trải nghiệm thực tế từ các kỹ sư và chuyên viên đang cống hiến tại {company.name}.</p>
+          <span className={styles.subBadge}><Star size={12} /> {t('companies.testimonials_sub', 'Đánh giá nội bộ')}</span>
+          <h2>{t('companies.testimonials_title', 'Đội Ngũ Nói Gì Về Chúng Tôi?')}</h2>
+          <p>{t('companies.testimonials_desc', { name: company.name, defaultValue: `Lắng nghe những trải nghiệm thực tế từ các kỹ sư và chuyên viên đang cống hiến tại ${company.name}.` })}</p>
         </div>
 
         <div className={styles.testimonialsGrid}>
@@ -655,9 +657,9 @@ export const CompanyCareersPage: React.FC = () => {
       {/* 7. COMPANY FAQS & Q&A ACCORDION */}
       <section>
         <div className={styles.sectionHeader}>
-          <span className={styles.subBadge}><Sparkles size={12} /> Hỏi & Đáp</span>
-          <h2>Câu Hỏi Thường Gặp Về Văn Hóa & Tuyển Dụng</h2>
-          <p>Giải đáp nhanh những thắc mắc của ứng viên về quy trình phỏng vấn và cuộc sống tại {company.name}.</p>
+          <span className={styles.subBadge}><Sparkles size={12} /> {t('companies.faqs_sub', 'Hỏi & Đáp')}</span>
+          <h2>{t('companies.faqs_title', 'Câu Hỏi Thường Gặp Về Văn Hóa & Tuyển Dụng')}</h2>
+          <p>{t('companies.faqs_desc', { name: company.name, defaultValue: `Giải đáp nhanh những thắc mắc của ứng viên về quy trình phỏng vấn và cuộc sống tại ${company.name}.` })}</p>
         </div>
 
         <div className={styles.faqsContainer}>

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { companiesService } from '../../../core/services/companies.service';
 import type { CompanyDto } from '../../../core/models/company.model';
 
 export const CompanyListPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [companies, setCompanies] = useState<CompanyDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -82,33 +84,69 @@ export const CompanyListPage: React.FC = () => {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div style={{ padding: 'var(--space-6) var(--space-4)', maxWidth: '1200px', margin: '0 auto', textAlign: 'left' }}>
+    <div style={{ width: '100%', padding: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', boxSizing: 'border-box' }}>
       {/* Title */}
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', color: 'var(--color-text-primary)', margin: '0 0 var(--space-2)' }}>
-          Khám Phá Doanh Nghiệp
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)' }}>
-          Tìm hiểu văn hóa, môi trường làm việc và cơ hội nghề nghiệp tại các doanh nghiệp hàng đầu.
-        </p>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 'var(--space-4)',
+        background: 'linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%)',
+        padding: 'var(--space-5) var(--space-6)',
+        borderRadius: 'var(--radius-xl)',
+        border: '1px solid var(--color-border-default)',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        <div>
+          <h1 style={{
+            fontSize: 'var(--font-size-2xl)',
+            fontWeight: 800,
+            margin: '0 0 6px 0',
+            background: 'linear-gradient(90deg, var(--color-text-primary) 0%, var(--color-brand-primary) 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            {t('companies.title', 'Khám Phá Doanh Nghiệp')}
+          </h1>
+          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
+            {t('companies.subtitle', 'Tìm hiểu văn hóa, môi trường làm việc và cơ hội nghề nghiệp tại các doanh nghiệp hàng đầu.')}
+          </p>
+        </div>
+
+        <span style={{
+          fontSize: '0.875rem',
+          color: 'var(--color-brand-primary)',
+          background: 'var(--color-bg-card)',
+          border: '1px solid var(--color-border-default)',
+          padding: '8px 16px',
+          borderRadius: 'var(--radius-md)',
+          fontWeight: 600,
+          boxShadow: 'var(--shadow-xs)'
+        }}>
+          🏢 {total} {t('sidebar.menu_companies', 'Doanh nghiệp')}
+        </span>
       </div>
 
       {/* Filter and Search Bar */}
       <form onSubmit={handleSearchSubmit} style={{
         display: 'flex',
-        gap: 'var(--space-4)',
-        padding: 'var(--space-4)',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-3) var(--space-4)',
         backgroundColor: 'var(--color-bg-card)',
         borderRadius: 'var(--radius-lg)',
         boxShadow: 'var(--shadow-sm)',
         border: '1px solid var(--color-border-default)',
-        marginBottom: 'var(--space-6)',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        width: '100%',
+        boxSizing: 'border-box'
       }}>
-        <div style={{ flex: '1 1 300px' }}>
+        <div style={{ flex: '1 1 280px' }}>
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên công ty..."
+            placeholder={t('companies.search_placeholder', 'Tìm kiếm theo tên công ty...')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -118,12 +156,14 @@ export const CompanyListPage: React.FC = () => {
               borderRadius: 'var(--radius-md)',
               fontSize: 'var(--font-size-base)',
               outline: 'none',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              backgroundColor: 'var(--color-bg-app)',
+              color: 'var(--color-text-primary)'
             }}
           />
         </div>
 
-        <div style={{ flex: '1 1 200px' }}>
+        <div style={{ flex: '0 1 220px' }}>
           <select
             value={industry}
             onChange={(e) => {
@@ -137,12 +177,12 @@ export const CompanyListPage: React.FC = () => {
               borderRadius: 'var(--radius-md)',
               fontSize: 'var(--font-size-base)',
               outline: 'none',
-              backgroundColor: 'var(--color-bg-card)',
+              backgroundColor: 'var(--color-bg-app)',
               color: 'var(--color-text-primary)',
               boxSizing: 'border-box'
             }}
           >
-            <option value="">Tất cả ngành nghề</option>
+            <option value="">{t('companies.all_industries', 'Tất cả ngành nghề')}</option>
             {industries.map((ind) => (
               <option key={ind} value={ind}>{ind}</option>
             ))}
@@ -160,7 +200,7 @@ export const CompanyListPage: React.FC = () => {
             fontWeight: 'var(--font-weight-semibold)',
             fontSize: 'var(--font-size-base)'
           }}>
-            Tìm kiếm
+            {t('companies.btn_search', 'Tìm kiếm')}
           </button>
           <button type="button" onClick={handleReset} style={{
             padding: '10px 20px',
@@ -172,7 +212,7 @@ export const CompanyListPage: React.FC = () => {
             fontWeight: 'var(--font-weight-medium)',
             fontSize: 'var(--font-size-base)'
           }}>
-            Xóa bộ lọc
+            {t('companies.btn_clear_filter', 'Xóa bộ lọc')}
           </button>
         </div>
       </form>
@@ -190,7 +230,7 @@ export const CompanyListPage: React.FC = () => {
             margin: '0 auto var(--space-4)'
           }} />
           <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-          Đang tải dữ liệu doanh nghiệp...
+          {t('companies.loading', 'Đang tải dữ liệu doanh nghiệp...')}
         </div>
       )}
 
@@ -218,7 +258,7 @@ export const CompanyListPage: React.FC = () => {
               padding: 'var(--space-16) 0',
               textAlign: 'center',
               backgroundColor: 'var(--color-bg-card)',
-              borderRadius: 'var(--radius-lg)',
+              borderRadius: 'var(--radius-xl)',
               border: '1px solid var(--color-border-default)',
               color: 'var(--color-text-muted)'
             }}>
@@ -227,16 +267,16 @@ export const CompanyListPage: React.FC = () => {
                 <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
               </svg>
               <h3 style={{ margin: '0 0 var(--space-2)', color: 'var(--color-text-primary)', fontSize: 'var(--font-size-lg)' }}>
-                Không tìm thấy doanh nghiệp
+                {t('companies.empty_title', 'Không tìm thấy doanh nghiệp')}
               </h3>
-              <p style={{ color: 'var(--color-text-secondary)' }}>Thử thay đổi từ khóa hoặc bộ lọc ngành nghề khác.</p>
+              <p style={{ color: 'var(--color-text-secondary)' }}>{t('companies.empty_desc', 'Thử thay đổi từ khóa hoặc bộ lọc ngành nghề khác.')}</p>
             </div>
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-              gap: 'var(--space-6)',
-              marginBottom: 'var(--space-8)'
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: 'var(--space-5)',
+              width: '100%'
             }}>
               {companies.map((company) => (
                 <div key={company.id} style={{
@@ -330,7 +370,7 @@ export const CompanyListPage: React.FC = () => {
                           padding: '2px 8px',
                           borderRadius: 'var(--radius-sm)'
                         }}>
-                          Quy mô: {company.sizeRange}
+                          {t('companies.size_label', { size: company.sizeRange, defaultValue: `Quy mô: ${company.sizeRange}` })}
                         </span>
                       </div>
 
@@ -344,7 +384,7 @@ export const CompanyListPage: React.FC = () => {
                         WebkitBoxOrient: 'vertical',
                         minHeight: '38px'
                       }}>
-                        Địa chỉ: {company.address}
+                        {t('companies.address_label', { address: company.address, defaultValue: `Địa chỉ: ${company.address}` })}
                       </p>
                     </div>
 
@@ -359,7 +399,7 @@ export const CompanyListPage: React.FC = () => {
                       gap: 'var(--space-2)'
                     }}>
                       <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-brand-primary-dark)', fontWeight: 'var(--font-weight-semibold)' }}>
-                        Đang mở tuyển dụng
+                        {t('companies.hiring_badge', 'Đang mở tuyển dụng')}
                       </span>
 
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -379,9 +419,9 @@ export const CompanyListPage: React.FC = () => {
                             fontSize: 'var(--font-size-xs)',
                             transition: 'opacity var(--transition-fast)'
                           }}
-                          title="Xem cổng tuyển dụng và cơ hội việc làm"
+                          title={t('companies.btn_careers', 'Cơ hội việc làm')}
                         >
-                          Cơ hội việc làm
+                          {t('companies.btn_careers', 'Cơ hội việc làm')}
                         </button>
 
                         <button
@@ -403,7 +443,7 @@ export const CompanyListPage: React.FC = () => {
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary-hover)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary)'}
                         >
-                          Xem chi tiết
+                          {t('companies.btn_view_detail', 'Xem chi tiết')}
                         </button>
                       </div>
                     </div>
@@ -429,7 +469,7 @@ export const CompanyListPage: React.FC = () => {
                   fontSize: 'var(--font-size-sm)'
                 }}
               >
-                Trước
+                {t('common.prev', 'Trước')}
               </button>
 
               {Array.from({ length: totalPages }).map((_, index) => {
@@ -466,7 +506,7 @@ export const CompanyListPage: React.FC = () => {
                   fontSize: 'var(--font-size-sm)'
                 }}
               >
-                Sau
+                {t('common.next', 'Sau')}
               </button>
             </div>
           )}

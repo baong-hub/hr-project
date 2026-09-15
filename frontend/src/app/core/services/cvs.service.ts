@@ -12,10 +12,11 @@ export const cvsService = {
     api.put<ApiResponse<boolean>>('/candidates/profile', data).then(res => res.data),
 
   // EP-02: Tải lên file CV (PDF)
-  uploadCv: (cvTitle: string, file: File) => {
+  uploadCv: (cvTitle: string, file: File, cvType: string = 'UPLOAD') => {
     const formData = new FormData();
     formData.append('cvTitle', cvTitle);
     formData.append('file', file);
+    formData.append('cvType', cvType);
     return api.post<ApiResponse<CandidateCvDto>>('/candidates/cvs', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'

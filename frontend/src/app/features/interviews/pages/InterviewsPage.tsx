@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   User, CheckCircle, XCircle, Award, X, FileSignature, Search, Filter
 } from 'lucide-react';
@@ -8,19 +9,8 @@ import { authService } from '../../../core/services/auth.service';
 import { toast } from '../../../core/services/toast.service';
 import styles from './InterviewsPage.module.scss';
 
-const STATUS_MAP: Record<string, { label: string; className: string }> = {
-  SCHEDULED: { label: 'Chờ phản hồi', className: styles.badgeScheduled },
-  INTERVIEW_INVITATION: { label: 'Chờ phản hồi', className: styles.badgeScheduled },
-  INTERVIEW_SCHEDULED: { label: 'Đã xác nhận', className: styles.badgeAccepted },
-  ACCEPTED: { label: 'Đã xác nhận', className: styles.badgeAccepted },
-  DECLINED: { label: 'Từ chối', className: styles.badgeDeclined },
-  CANCELLED: { label: 'Đã hủy', className: styles.badgeCancelled },
-  COMPLETED: { label: 'Hoàn thành', className: styles.badgeCompleted },
-  INTERVIEW_COMPLETED: { label: 'Hoàn thành', className: styles.badgeCompleted },
-  EVALUATION: { label: 'Đang đánh giá', className: styles.badgeScheduled }
-};
-
 export const InterviewsPage: React.FC = () => {
+  const { t } = useTranslation();
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
@@ -33,6 +23,28 @@ export const InterviewsPage: React.FC = () => {
   // Filter States
   const [searchKeyword, setSearchKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+
+  const getStatusBadge = (status?: string) => {
+    const s = (status || '').toUpperCase();
+    switch (s) {
+      case 'SCHEDULED':
+      case 'INTERVIEW_INVITATION':
+      case 'EVALUATION':
+        return { label: t('interviews.filter_scheduled', 'Chờ phản hồi'), className: styles.badgeScheduled };
+      case 'INTERVIEW_SCHEDULED':
+      case 'ACCEPTED':
+        return { label: t('interviews.filter_accepted', 'Đã xác nhận'), className: styles.badgeAccepted };
+      case 'DECLINED':
+        return { label: t('interviews.filter_declined', 'Từ chối'), className: styles.badgeDeclined };
+      case 'CANCELLED':
+        return { label: t('interviews.filter_cancelled', 'Đã hủy'), className: styles.badgeCancelled };
+      case 'COMPLETED':
+      case 'INTERVIEW_COMPLETED':
+        return { label: t('interviews.filter_completed', 'Hoàn thành'), className: styles.badgeCompleted };
+      default:
+        return { label: status || '—', className: '' };
+    }
+  };
 
   const filteredInterviews = useMemo(() => {
     return (interviews || []).filter(i => {
@@ -204,9 +216,9 @@ export const InterviewsPage: React.FC = () => {
   ) / 10;
 
   const formatDateTime = (dateStr: string) => {
-    if (!dateStr) return 'Chưa xếp lịch';
+    if (!dateStr) return '—';
     const date = new Date(dateStr);
-    return date.toLocaleString('vi-VN', {
+    return date.toLocaleString(t('common.locale', 'vi-VN'), {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -220,9 +232,11 @@ export const InterviewsPage: React.FC = () => {
       {/* Title area */}
       <div className={styles.titleArea}>
         <div>
-          <h1>Quản lý Lịch phỏng vấn</h1>
+          <h1>{t('interviews.title', 'Quản lý Lịch phỏng vấn')}</h1>
           <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
-            {isCandidate ? 'Theo dõi lời mời phỏng vấn và phản hồi xác nhận tham gia trực tiếp' : 'Xem danh sách, đánh giá chuyên môn và cập nhật tiến độ các buổi phỏng vấn'}
+            {isCandidate 
+              ? t('interviews.subtitle_candidate', 'Theo dõi lời mời phỏng vấn và phản hồi xác nhận tham gia trực tiếp') 
+              : t('interviews.subtitle_employer', 'Xem danh sách, đánh giá chuyên môn và cập nhật tiến độ các buổi phỏng vấn')}
           </p>
         </div>
       </div>
@@ -243,7 +257,7 @@ export const InterviewsPage: React.FC = () => {
           <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--color-text-secondary)' }} />
           <input 
             type="text"
-            placeholder={isCandidate ? "Tìm theo vị trí hoặc người phỏng vấn..." : "Tìm theo vị trí hoặc tên ứng viên..."}
+            placeholder={isCandidate ? t('interviews.search_candidate', 'Tìm theo vị trí hoặc người phỏng vấn...') : t('interviews.search_employer', 'Tìm theo vị trí hoặc tên ứng viên...')}
             value={searchKeyword}
             onChange={e => setSearchKeyword(e.target.value)}
             style={{
@@ -272,12 +286,12 @@ export const InterviewsPage: React.FC = () => {
               color: 'var(--color-text-primary)'
             }}
           >
-            <option value="">Tất cả trạng thái</option>
-            <option value="SCHEDULED">Chờ phản hồi</option>
-            <option value="ACCEPTED">Đã xác nhận</option>
-            <option value="COMPLETED">Hoàn thành</option>
-            <option value="DECLINED">Từ chối</option>
-            <option value="CANCELLED">Đã hủy</option>
+            <option value="">{t('interviews.all_status', 'Tất cả trạng thái')}</option>
+            <option value="SCHEDULED">{t('interviews.filter_scheduled', 'Chờ phản hồi')}</option>
+            <option value="ACCEPTED">{t('interviews.filter_accepted', 'Đã xác nhận')}</option>
+            <option value="COMPLETED">{t('interviews.filter_completed', 'Hoàn thành')}</option>
+            <option value="DECLINED">{t('interviews.filter_declined', 'Từ chối')}</option>
+            <option value="CANCELLED">{t('interviews.filter_cancelled', 'Đã hủy')}</option>
           </select>
         </div>
 
@@ -296,14 +310,14 @@ export const InterviewsPage: React.FC = () => {
               cursor: 'pointer',
               color: 'var(--color-text-secondary)'
             }}
-            title="Xóa bộ lọc"
+            title={t('interviews.btn_clear_filter', 'Xóa bộ lọc')}
           >
-            Xóa lọc
+            {t('interviews.btn_clear_filter', 'Xóa lọc')}
           </button>
         )}
 
         <div style={{ marginLeft: 'auto', fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-          {filteredInterviews.length} lịch phỏng vấn
+          {t('interviews.filter_count', { count: filteredInterviews.length, defaultValue: `${filteredInterviews.length} lịch phỏng vấn` })}
         </div>
       </div>
 
@@ -313,35 +327,35 @@ export const InterviewsPage: React.FC = () => {
           <table className={styles.dataTable}>
             <thead>
               <tr>
-                <th>Vị trí ứng tuyển</th>
-                {isCandidate ? <th>Người phỏng vấn (Employer)</th> : <th>Ứng viên (Candidate)</th>}
-                <th>Thời gian</th>
-                <th>Hình thức / Địa điểm</th>
-                <th>Link phòng họp</th>
-                <th>Ghi chú</th>
-                <th>Trạng thái</th>
-                <th style={{ textAlign: 'right' }}>Thao tác</th>
+                <th>{t('interviews.col_job', 'Vị trí ứng tuyển')}</th>
+                {isCandidate ? <th>{t('interviews.col_interviewer', 'Người phỏng vấn (Employer)')}</th> : <th>{t('interviews.col_candidate', 'Ứng viên (Candidate)')}</th>}
+                <th>{t('interviews.col_time', 'Thời gian')}</th>
+                <th>{t('interviews.col_type', 'Hình thức / Địa điểm')}</th>
+                <th>{t('interviews.col_link', 'Link phòng họp')}</th>
+                <th>{t('interviews.col_notes', 'Ghi chú')}</th>
+                <th>{t('interviews.col_status', 'Trạng thái')}</th>
+                <th style={{ textAlign: 'right' }}>{t('interviews.col_actions', 'Thao tác')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '24px' }}>Đang tải lịch hẹn...</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '24px' }}>{t('interviews.loading', 'Đang tải lịch hẹn...')}</td></tr>
               ) : (!Array.isArray(interviews) || interviews.length === 0) ? (
                 <tr>
                   <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
-                    Bạn chưa có lịch hẹn phỏng vấn nào.
+                    {t('interviews.empty', 'Bạn chưa có lịch hẹn phỏng vấn nào.')}
                   </td>
                 </tr>
               ) : filteredInterviews.length === 0 ? (
                 <tr>
                   <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
-                    Không tìm thấy lịch hẹn nào khớp với bộ lọc tìm kiếm.
+                    {t('interviews.not_found', 'Không tìm thấy lịch hẹn nào khớp với bộ lọc tìm kiếm.')}
                   </td>
                 </tr>
               ) : (
                 filteredInterviews.map(i => {
                   const statusUpper = (i.status || '').toUpperCase();
-                  const st = STATUS_MAP[statusUpper] || { label: i.status || '—', className: '' };
+                  const st = getStatusBadge(statusUpper);
                   return (
                     <tr key={i.id}>
                       <td style={{ fontWeight: 600 }}>{i.jobTitle}</td>
@@ -352,14 +366,14 @@ export const InterviewsPage: React.FC = () => {
                         </div>
                       </td>
                       <td>{formatDateTime(i.startTime || i.scheduledAt)}</td>
-                      <td>{i.interviewType === 'ONLINE' ? 'Trực tuyến (Online)' : (i.locationOrLink || i.location || 'Tại văn phòng')}</td>
+                      <td>{i.interviewType === 'ONLINE' ? t('interviews.type_online', 'Trực tuyến (Online)') : (i.locationOrLink || i.location || t('interviews.type_office', 'Tại văn phòng'))}</td>
                       <td>
                         {(i.locationOrLink?.startsWith('http') || i.meetingLink) ? (
                           <a href={i.locationOrLink?.startsWith('http') ? i.locationOrLink : i.meetingLink} target="_blank" rel="noreferrer" className={styles.meetingLink}>
-                            Link phòng họp
+                            {t('interviews.meeting_link', 'Link phòng họp')}
                           </a>
                         ) : (
-                          <span style={{ color: 'var(--color-text-muted)' }}>Trực tiếp</span>
+                          <span style={{ color: 'var(--color-text-muted)' }}>{t('interviews.direct_meeting', 'Trực tiếp')}</span>
                         )}
                       </td>
                       <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={i.notes}>
@@ -375,14 +389,14 @@ export const InterviewsPage: React.FC = () => {
                               <button 
                                 className={`${styles.actionBtn} ${styles.btnAccept}`} 
                                 onClick={() => handleUpdateStatus(i.id, 'ACCEPTED')} 
-                                title="Xác nhận tham gia"
+                                title={t('interviews.btn_accept', 'Xác nhận tham gia')}
                               >
                                 <CheckCircle size={15} />
                               </button>
                               <button 
                                 className={`${styles.actionBtn} ${styles.btnDecline}`} 
                                 onClick={() => handleUpdateStatus(i.id, 'DECLINED')} 
-                                title="Từ chối lời mời"
+                                title={t('interviews.btn_decline', 'Từ chối lời mời')}
                               >
                                 <XCircle size={15} />
                               </button>
@@ -393,7 +407,7 @@ export const InterviewsPage: React.FC = () => {
                               <button 
                                 className={`${styles.actionBtn} ${styles.btnEvaluate}`} 
                                 onClick={() => handleOpenEvaluation(i)} 
-                                title="Đánh giá kết quả phỏng vấn"
+                                title={t('interviews.btn_evaluate', 'Đánh giá kết quả phỏng vấn')}
                               >
                                 <Award size={14} />
                               </button>
@@ -407,7 +421,7 @@ export const InterviewsPage: React.FC = () => {
                                     candidateEmail: i.candidateEmail,
                                     jobTitle: i.jobTitle || 'Vị trí nhận việc'
                                   })}
-                                  title="Phát hành Thư Mời Nhận Việc (Job Offer)"
+                                  title={t('interviews.btn_offer', 'Phát hành Thư Mời Nhận Việc (Job Offer)')}
                                 >
                                   <FileSignature size={14} />
                                 </button>
@@ -418,14 +432,14 @@ export const InterviewsPage: React.FC = () => {
                                     className={styles.actionBtn} 
                                     style={{ color: '#2e7d32', borderColor: '#c6f6d5' }} 
                                     onClick={() => handleUpdateStatus(i.id, 'COMPLETED')} 
-                                    title="Đánh dấu hoàn thành"
+                                    title={t('interviews.btn_complete', 'Đánh dấu hoàn thành')}
                                   >
                                     <CheckCircle size={14} />
                                   </button>
                                   <button 
                                     className={`${styles.actionBtn} ${styles.actionBtnDanger}`} 
                                     onClick={() => handleUpdateStatus(i.id, 'CANCELLED')} 
-                                    title="Hủy lịch hẹn"
+                                    title={t('interviews.btn_cancel', 'Hủy lịch hẹn')}
                                   >
                                     <XCircle size={14} />
                                   </button>
@@ -450,7 +464,7 @@ export const InterviewsPage: React.FC = () => {
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>
-                Đánh Giá Phỏng Vấn: {selectedInterview.candidateName}
+                {t('interviews.eval_title', { name: selectedInterview.candidateName, defaultValue: `Đánh Giá Phỏng Vấn: ${selectedInterview.candidateName}` })}
               </h2>
               <button className={styles.modalCloseBtn} onClick={() => setEvalModalOpen(false)}>
                 <X size={18} />
@@ -461,9 +475,9 @@ export const InterviewsPage: React.FC = () => {
               {/* Overall score banner */}
               <div className={styles.scoreBanner}>
                 <div>
-                  <div className={styles.scoreBannerTitle}>Điểm Đánh Giá Tổng Kết (Overall Score)</div>
+                  <div className={styles.scoreBannerTitle}>{t('interviews.eval_overall_title', 'Điểm Đánh Giá Tổng Kết (Overall Score)')}</div>
                   <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '2px' }}>
-                    Vị trí: <strong>{selectedInterview.jobTitle}</strong>
+                    {t('interviews.eval_position', { jobTitle: selectedInterview.jobTitle, defaultValue: `Vị trí: ${selectedInterview.jobTitle}` })}
                   </div>
                 </div>
                 <div className={styles.scoreBannerValue}>{calculatedOverall} / 10</div>
@@ -474,7 +488,7 @@ export const InterviewsPage: React.FC = () => {
                 {/* 1. Technical */}
                 <div className={styles.criterionCard}>
                   <div className={styles.criterionHeader}>
-                    <span>1. Chuyên môn & Kỹ thuật</span>
+                    <span>{t('interviews.eval_tech', '1. Chuyên môn & Kỹ thuật')}</span>
                     <span className={styles.criterionScore}>{evalForm.technicalScore}/10</span>
                   </div>
                   <input
@@ -491,7 +505,7 @@ export const InterviewsPage: React.FC = () => {
                 {/* 2. Communication */}
                 <div className={styles.criterionCard}>
                   <div className={styles.criterionHeader}>
-                    <span>2. Kỹ năng giao tiếp</span>
+                    <span>{t('interviews.eval_comm', '2. Kỹ năng giao tiếp')}</span>
                     <span className={styles.criterionScore}>{evalForm.communicationScore}/10</span>
                   </div>
                   <input
@@ -508,7 +522,7 @@ export const InterviewsPage: React.FC = () => {
                 {/* 3. Problem Solving */}
                 <div className={styles.criterionCard}>
                   <div className={styles.criterionHeader}>
-                    <span>3. Giải quyết vấn đề</span>
+                    <span>{t('interviews.eval_prob', '3. Giải quyết vấn đề')}</span>
                     <span className={styles.criterionScore}>{evalForm.problemSolvingScore}/10</span>
                   </div>
                   <input
@@ -525,7 +539,7 @@ export const InterviewsPage: React.FC = () => {
                 {/* 4. Experience */}
                 <div className={styles.criterionCard}>
                   <div className={styles.criterionHeader}>
-                    <span>4. Kinh nghiệm thực tế</span>
+                    <span>{t('interviews.eval_exp', '4. Kinh nghiệm thực tế')}</span>
                     <span className={styles.criterionScore}>{evalForm.experienceScore}/10</span>
                   </div>
                   <input
@@ -542,7 +556,7 @@ export const InterviewsPage: React.FC = () => {
                 {/* 5. Culture Fit */}
                 <div className={styles.criterionCard}>
                   <div className={styles.criterionHeader}>
-                    <span>5. Phù hợp văn hóa</span>
+                    <span>{t('interviews.eval_culture', '5. Phù hợp văn hóa')}</span>
                     <span className={styles.criterionScore}>{evalForm.cultureFitScore}/10</span>
                   </div>
                   <input
@@ -559,7 +573,7 @@ export const InterviewsPage: React.FC = () => {
                 {/* 6. Salary Expectation */}
                 <div className={styles.criterionCard}>
                   <div className={styles.criterionHeader}>
-                    <span>6. Mức lương kỳ vọng</span>
+                    <span>{t('interviews.eval_salary', '6. Mức lương kỳ vọng')}</span>
                     <span className={styles.criterionScore}>{evalForm.salaryExpectationScore}/10</span>
                   </div>
                   <input
@@ -577,36 +591,36 @@ export const InterviewsPage: React.FC = () => {
               {/* Evaluation Result Decision */}
               <div className={styles.resultGroup}>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
-                  Kết Luận Đánh Giá:
+                  {t('interviews.eval_conclusion', 'Kết Luận Đánh Giá:')}
                 </label>
                 <div className={styles.resultOptions}>
                   <div
                     className={`${styles.resultOption} ${evalForm.result === 'PASS' ? styles.resultOptionPassActive : ''}`}
                     onClick={() => setEvalForm({ ...evalForm, result: 'PASS' })}
                   >
-                    Đạt (Chuyển sang Offer)
+                    {t('interviews.eval_pass', 'Đạt (Chuyển sang Offer)')}
                   </div>
                   <div
                     className={`${styles.resultOption} ${evalForm.result === 'NEXT_ROUND' ? styles.resultOptionNextActive : ''}`}
                     onClick={() => setEvalForm({ ...evalForm, result: 'NEXT_ROUND' })}
                   >
-                    Phỏng vấn vòng tiếp
+                    {t('interviews.eval_next_round', 'Phỏng vấn vòng tiếp')}
                   </div>
                   <div
                     className={`${styles.resultOption} ${evalForm.result === 'FAIL' ? styles.resultOptionFailActive : ''}`}
                     onClick={() => setEvalForm({ ...evalForm, result: 'FAIL' })}
                   >
-                    Chưa phù hợp
+                    {t('interviews.eval_fail', 'Chưa phù hợp')}
                   </div>
                 </div>
               </div>
 
               {/* Comments */}
               <div className={styles.commentGroup}>
-                <label>Nhận xét chi tiết & Lời nhắn phỏng vấn:</label>
+                <label>{t('interviews.eval_comments_label', 'Nhận xét chi tiết & Lời nhắn phỏng vấn:')}</label>
                 <textarea
                   className={styles.commentInput}
-                  placeholder="Điểm mạnh, điểm cần cải thiện, đánh giá năng lực nổi bật..."
+                  placeholder={t('interviews.eval_comments_placeholder', 'Điểm mạnh, điểm cần cải thiện, đánh giá năng lực nổi bật...')}
                   value={evalForm.comments || ''}
                   onChange={e => setEvalForm({ ...evalForm, comments: e.target.value })}
                 />
@@ -616,12 +630,12 @@ export const InterviewsPage: React.FC = () => {
               {evalHistory.length > 0 && (
                 <div style={{ marginTop: '10px' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px', color: '#6b7280' }}>
-                    Lịch sử các lần chấm trước:
+                    {t('interviews.eval_history', 'Lịch sử các lần chấm trước:')}
                   </div>
                   {evalHistory.map((h, idx) => (
                     <div key={h.id || idx} className={styles.evalHistoryItem}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <strong>Kết quả: {h.result} ({h.overallScore}/10)</strong>
+                        <strong>{t('common.status', 'Kết quả')}: {h.result} ({h.overallScore}/10)</strong>
                         <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{formatDateTime(h.createdAt)}</span>
                       </div>
                       {h.comments && <div style={{ color: '#4b5563', fontSize: '0.8rem' }}>"{h.comments}"</div>}
@@ -633,7 +647,7 @@ export const InterviewsPage: React.FC = () => {
 
             <div className={styles.modalFooter}>
               <button className={styles.btnSecondary} onClick={() => setEvalModalOpen(false)} disabled={submittingEval}>
-                Hủy bỏ
+                {t('interviews.eval_btn_cancel', 'Hủy bỏ')}
               </button>
               <button 
                 className={styles.btnPrimary} 
@@ -641,7 +655,7 @@ export const InterviewsPage: React.FC = () => {
                 disabled={submittingEval}
                 style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
               >
-                {submittingEval ? 'Đang lưu...' : 'Lưu Kết Quả Đánh Giá'}
+                {submittingEval ? t('interviews.eval_saving', 'Đang lưu...') : t('interviews.eval_btn_save', 'Lưu Kết Quả Đánh Giá')}
               </button>
             </div>
           </div>

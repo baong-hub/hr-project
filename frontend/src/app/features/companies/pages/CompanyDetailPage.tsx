@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { companiesService } from '../../../core/services/companies.service';
 import { jobsService } from '../../../core/services/jobs.service';
@@ -8,6 +9,7 @@ import type { CompanyDto } from '../../../core/models/company.model';
 import type { JobDto } from '../../../core/models/job.model';
 
 export const CompanyDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const companyId = Number(id);
@@ -99,7 +101,7 @@ export const CompanyDetailPage: React.FC = () => {
           animation: 'spin 1s linear infinite',
           margin: '0 auto var(--space-4)'
         }} />
-        Đang tải thông tin chi tiết doanh nghiệp...
+        {t('companies.loading', 'Đang tải thông tin chi tiết doanh nghiệp...')}
       </div>
     );
   }
@@ -115,7 +117,7 @@ export const CompanyDetailPage: React.FC = () => {
           border: '1px solid var(--color-danger)',
           marginBottom: 'var(--space-4)'
         }}>
-          {error || 'Không tìm thấy dữ liệu doanh nghiệp.'}
+          {error || t('companies.empty_title', 'Không tìm thấy dữ liệu doanh nghiệp.')}
         </div>
         <button onClick={() => navigate('/companies')} style={{
           padding: '10px 20px',
@@ -126,7 +128,7 @@ export const CompanyDetailPage: React.FC = () => {
           cursor: 'pointer',
           fontWeight: 'var(--font-weight-medium)'
         }}>
-          Quay lại danh sách
+          {t('companies.back_to_list', 'Quay lại danh sách')}
         </button>
       </div>
     );
@@ -139,7 +141,7 @@ export const CompanyDetailPage: React.FC = () => {
   const canEdit = isAdmin || (isCompanyOwnerOrHR && belongsToCompany);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: 'var(--space-12)', textAlign: 'left' }}>
+    <div style={{ width: '100%', padding: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', boxSizing: 'border-box', textAlign: 'left' }}>
       {/* Back Button */}
       <div style={{ marginBottom: '12px' }}>
         <button
@@ -161,7 +163,7 @@ export const CompanyDetailPage: React.FC = () => {
           onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-subtle, #f8fafc)'; e.currentTarget.style.color = 'var(--color-text-primary, #1e293b)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-default, #fff)'; e.currentTarget.style.color = 'var(--color-text-secondary, #64748b)'; }}
         >
-          <ArrowLeft size={16} /> Quay lại danh sách doanh nghiệp
+          <ArrowLeft size={16} /> {t('companies.back_to_list', 'Quay lại danh sách doanh nghiệp')}
         </button>
       </div>
 
@@ -218,10 +220,10 @@ export const CompanyDetailPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: '0 0 var(--space-2)' }}>{company.name}</h1>
           <div style={{ display: 'flex', gap: 'var(--space-4)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', flexWrap: 'wrap' }}>
-            <span>🏢 Ngành: {company.industry}</span>
-            <span>👥 Quy mô: {company.sizeRange} nhân viên</span>
-            {company.foundedYear && <span>📅 Thành lập: Năm {company.foundedYear}</span>}
-            <span>👥 Lượt theo dõi: {followersCount}</span>
+            <span>🏢 {t('companies.industry_prefix', { industry: company.industry, defaultValue: `Ngành: ${company.industry}` })}</span>
+            <span>👥 {t('companies.size_prefix', { size: company.sizeRange, defaultValue: `Quy mô: ${company.sizeRange} nhân viên` })}</span>
+            {company.foundedYear && <span>📅 {t('companies.founded_prefix', { year: company.foundedYear, defaultValue: `Thành lập: Năm ${company.foundedYear}` })}</span>}
+            <span>👥 {t('companies.followers_count', { count: followersCount, defaultValue: `Lượt theo dõi: ${followersCount}` })}</span>
           </div>
         </div>
 
@@ -241,7 +243,7 @@ export const CompanyDetailPage: React.FC = () => {
                 fontSize: 'var(--font-size-base)'
               }}
             >
-              ⚙️ Chỉnh sửa trang
+              ⚙️ {t('companies.btn_edit_page', 'Chỉnh sửa trang')}
             </button>
           )}
 
@@ -268,7 +270,7 @@ export const CompanyDetailPage: React.FC = () => {
               if (!isFollowing) e.currentTarget.style.backgroundColor = 'var(--color-brand-secondary)';
             }}
           >
-            {followLoading ? 'Đang xử lý...' : isFollowing ? '✓ Đang theo dõi' : '+ Theo dõi công ty'}
+            {followLoading ? t('common.loading', 'Đang xử lý...') : isFollowing ? t('companies.btn_following', '✓ Đang theo dõi') : t('companies.btn_follow', '+ Theo dõi công ty')}
           </button>
 
           <button
@@ -289,7 +291,7 @@ export const CompanyDetailPage: React.FC = () => {
               transition: 'transform 0.15s ease'
             }}
           >
-            🌟 Khám phá Cổng tuyển dụng & Thương hiệu ↗
+            🌟 {t('companies.btn_explore_careers', 'Khám phá Cổng tuyển dụng & Thương hiệu')} ↗
           </button>
         </div>
       </div>
@@ -315,7 +317,7 @@ export const CompanyDetailPage: React.FC = () => {
             fontSize: 'var(--font-size-md)'
           }}
         >
-          Giới thiệu công ty
+          {t('companies.tab_about', 'Giới thiệu công ty')}
         </button>
         <button
           onClick={() => setActiveTab('jobs')}
@@ -330,7 +332,7 @@ export const CompanyDetailPage: React.FC = () => {
             fontSize: 'var(--font-size-md)'
           }}
         >
-          Tin tuyển dụng ({jobs.length})
+          {t('companies.tab_jobs', { count: jobs.length, defaultValue: `Tin tuyển dụng (${jobs.length})` })}
         </button>
       </div>
 
@@ -348,7 +350,7 @@ export const CompanyDetailPage: React.FC = () => {
               boxShadow: 'var(--shadow-sm)'
             }}>
               <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
-                Chi tiết giới thiệu
+                {t('companies.about_detail', 'Chi tiết giới thiệu')}
               </h3>
               <div style={{
                 color: 'var(--color-text-secondary)',
@@ -356,13 +358,13 @@ export const CompanyDetailPage: React.FC = () => {
                 lineHeight: 'var(--line-height-loose)',
                 whiteSpace: 'pre-line'
               }}>
-                {company.description || 'Chưa có thông tin mô tả chi tiết từ doanh nghiệp.'}
+                {company.description || t('companies.no_desc', 'Chưa có thông tin mô tả chi tiết từ doanh nghiệp.')}
               </div>
 
               {company.benefits && (
                 <div style={{ marginTop: 'var(--space-6)' }}>
                   <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
-                    Chế độ đãi ngộ & Phúc lợi
+                    {t('companies.benefits_title', 'Chế độ đãi ngộ & Phúc lợi')}
                   </h3>
                   <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-base)', lineHeight: 'var(--line-height-loose)', whiteSpace: 'pre-line' }}>
                     {company.benefits}
@@ -382,7 +384,7 @@ export const CompanyDetailPage: React.FC = () => {
                 boxShadow: 'var(--shadow-sm)'
               }}>
                 <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-md)', fontWeight: 'var(--font-weight-bold)' }}>
-                  Thông tin liên hệ
+                  {t('companies.contact_info', 'Thông tin liên hệ')}
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                   {company.website && (
@@ -395,7 +397,7 @@ export const CompanyDetailPage: React.FC = () => {
                   )}
                   {company.contact && (
                     <div>
-                      <strong>Liên hệ:</strong><br />
+                      <strong>{t('common.note', 'Liên hệ')}:</strong><br />
                       {company.contact}
                     </div>
                   )}
@@ -417,7 +419,7 @@ export const CompanyDetailPage: React.FC = () => {
                 boxShadow: 'var(--shadow-sm)'
               }}>
                 <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-md)', fontWeight: 'var(--font-weight-bold)' }}>
-                  📍 Địa chỉ văn phòng
+                  📍 {t('companies.address_label', { address: '', defaultValue: 'Địa chỉ văn phòng' })}
                 </h3>
                 <div style={{
                   color: 'var(--color-text-secondary)',
@@ -442,7 +444,7 @@ export const CompanyDetailPage: React.FC = () => {
                 border: '1px solid var(--color-border-default)',
                 color: 'var(--color-text-muted)'
               }}>
-                Hiện tại doanh nghiệp này chưa đăng tin tuyển dụng nào.
+                {t('jobs.no_jobs_found', 'Hiện tại doanh nghiệp này chưa đăng tin tuyển dụng nào.')}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
@@ -465,8 +467,8 @@ export const CompanyDetailPage: React.FC = () => {
                       </h3>
                       <div style={{ display: 'flex', gap: 'var(--space-4)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', flexWrap: 'wrap' }}>
                         <span>📍 {job.city}</span>
-                        <span>💰 Mức lương: {job.salaryFrom && job.salaryTo ? `${job.salaryFrom.toLocaleString()} - ${job.salaryTo.toLocaleString()} VND` : 'Thỏa thuận'}</span>
-                        <span>⏳ Hạn nộp: {new Date(job.expiredAt).toLocaleDateString('vi-VN')}</span>
+                        <span>💰 {t('jobs.job_benefits', 'Mức lương')}: {job.salaryFrom && job.salaryTo ? `${job.salaryFrom.toLocaleString()} - ${job.salaryTo.toLocaleString()} VND` : t('jobs.salary_negotiable', 'Thỏa thuận')}</span>
+                        <span>⏳ {t('jobs.deadline', { date: new Date(job.expiredAt).toLocaleDateString(t('common.locale', 'vi-VN')), defaultValue: `Hạn nộp: ${new Date(job.expiredAt).toLocaleDateString(t('common.locale', 'vi-VN'))}` })}</span>
                       </div>
                     </div>
 
@@ -483,7 +485,7 @@ export const CompanyDetailPage: React.FC = () => {
                         fontSize: 'var(--font-size-sm)'
                       }}
                     >
-                      Ứng tuyển ngay
+                      {t('jobs.btn_apply_now', 'Ứng tuyển ngay')}
                     </button>
                   </div>
                 ))}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Bookmark, MapPin, DollarSign, Calendar, Heart, AlertCircle, Search } from 'lucide-react';
 import { savedJobService } from '../../../core/services/saved-job.service';
 import { authService } from '../../../core/services/auth.service';
@@ -7,6 +8,7 @@ import type { SavedJobDto } from '../../../core/models/saved-job.model';
 import styles from './SavedJobListPage.module.scss';
 
 export const SavedJobListPage: React.FC = () => {
+  const { t } = useTranslation();
   const [savedJobs, setSavedJobs] = useState<SavedJobDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -123,11 +125,11 @@ export const SavedJobListPage: React.FC = () => {
   };
 
   const formatSalary = (from?: number, to?: number) => {
-    if (from === undefined && to === undefined) return 'Thỏa thuận';
+    if (from === undefined && to === undefined) return t('jobs.salary_negotiable', 'Thỏa thuận');
     if (from !== undefined && to !== undefined) return `${(from / 1000000).toFixed(0)} - ${(to / 1000000).toFixed(0)} tr`;
-    if (from !== undefined) return `Từ ${(from / 1000000).toFixed(0)} tr`;
-    if (to !== undefined) return `Đến ${(to / 1000000).toFixed(0)} tr`;
-    return 'Thỏa thuận';
+    if (from !== undefined) return `${t('common.from', 'Từ')} ${(from / 1000000).toFixed(0)} tr`;
+    if (to !== undefined) return `${t('common.to', 'Đến')} ${(to / 1000000).toFixed(0)} tr`;
+    return t('jobs.salary_negotiable', 'Thỏa thuận');
   };
 
   const isExpiredOrClosed = (status: string) => {
@@ -137,7 +139,7 @@ export const SavedJobListPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      return date.toLocaleDateString(t('common.locale', 'vi-VN'), { year: 'numeric', month: '2-digit', day: '2-digit' });
     } catch {
       return dateString;
     }
@@ -147,7 +149,7 @@ export const SavedJobListPage: React.FC = () => {
     return (
       <div className={styles.stateContainer}>
         <div className={styles.loadingSpinner} />
-        <p className={styles.stateText}>Đang tải danh sách việc làm đã lưu...</p>
+        <p className={styles.stateText}>{t('saved_jobs.loading', 'Đang tải danh sách việc làm đã lưu...')}</p>
       </div>
     );
   }
@@ -156,9 +158,9 @@ export const SavedJobListPage: React.FC = () => {
     return (
       <div className={styles.stateContainer}>
         <AlertCircle size={40} className={styles.errorIcon} />
-        <p className={styles.stateText_error}>Không thể tải dữ liệu việc làm đã lưu.</p>
+        <p className={styles.stateText_error}>{t('saved_jobs.error', 'Không thể tải dữ liệu việc làm đã lưu.')}</p>
         <button className={styles.btnRetry} onClick={fetchSavedJobs}>
-          Thử lại
+          {t('common.retry', 'Thử lại')}
         </button>
       </div>
     );
@@ -168,10 +170,10 @@ export const SavedJobListPage: React.FC = () => {
     return (
       <div className={styles.stateContainer}>
         <Heart size={48} className={styles.emptyIcon} />
-        <h2>Chưa lưu việc làm nào</h2>
-        <p className={styles.emptyText}>Hãy khám phá và lưu các cơ hội phù hợp với bạn!</p>
+        <h2>{t('saved_jobs.empty_title', 'Chưa lưu việc làm nào')}</h2>
+        <p className={styles.emptyText}>{t('saved_jobs.empty_desc', 'Hãy khám phá và lưu các cơ hội phù hợp với bạn!')}</p>
         <button className={styles.btnDiscover} onClick={() => navigate('/jobs')}>
-          <Search size={16} /> Khám phá ngay
+          <Search size={16} /> {t('saved_jobs.btn_discover', 'Khám phá ngay')}
         </button>
       </div>
     );
@@ -181,15 +183,15 @@ export const SavedJobListPage: React.FC = () => {
     <div className={styles.page}>
       <div className={styles.header}>
         <div className={styles.titleWrapper}>
-          <h1>Việc làm đã lưu của bạn</h1>
-          <p className={styles.subtitle}>Danh sách các cơ hội nghề nghiệp bạn quan tâm</p>
+          <h1>{t('saved_jobs.title', 'Việc làm đã lưu của bạn')}</h1>
+          <p className={styles.subtitle}>{t('saved_jobs.subtitle', 'Danh sách các cơ hội nghề nghiệp bạn quan tâm')}</p>
         </div>
       </div>
 
       {undoItem && (
         <div className={styles.undoBanner}>
-          <span>Đã hủy lưu việc làm <strong>{undoItem.job.title}</strong></span>
-          <button className={styles.btnUndo} onClick={handleUndo}>Hoàn tác</button>
+          <span>{t('saved_jobs.undo_unsave', 'Đã hủy lưu việc làm')} <strong>{undoItem.job.title}</strong></span>
+          <button className={styles.btnUndo} onClick={handleUndo}>{t('saved_jobs.btn_undo', 'Hoàn tác')}</button>
         </div>
       )}
 
@@ -220,7 +222,7 @@ export const SavedJobListPage: React.FC = () => {
                     </h3>
                     {disabled && (
                       <span className={styles.expiredBadge}>
-                        {job.jobStatus === 'CLOSED' ? 'Đã đóng tin' : 'Hết hạn'}
+                        {job.jobStatus === 'CLOSED' ? t('saved_jobs.closed_badge', 'Đã đóng tin') : t('saved_jobs.expired_badge', 'Hết hạn')}
                       </span>
                     )}
                   </div>
@@ -238,19 +240,19 @@ export const SavedJobListPage: React.FC = () => {
                     </span>
                     <span className={styles.metaItem}>
                       <Calendar size={14} />
-                      Hạn nộp: {formatDate(job.expiredAt)}
+                      {t('jobs.deadline', { date: formatDate(job.expiredAt), defaultValue: `Hạn nộp: ${formatDate(job.expiredAt)}` })}
                     </span>
                   </div>
 
                   <p className={styles.savedAt}>
-                    Đã lưu ngày: {formatDate(job.savedAt)}
+                    {t('saved_jobs.saved_date', { date: formatDate(job.savedAt), defaultValue: `Đã lưu ngày: ${formatDate(job.savedAt)}` })}
                   </p>
                 </div>
 
                 <button 
                   className={styles.btnBookmark} 
                   onClick={() => handleToggleSave(job, index)}
-                  title="Hủy lưu việc làm"
+                  title={t('saved_jobs.btn_unsave', 'Hủy lưu việc làm')}
                 >
                   <Bookmark size={20} className={styles.bookmarkIcon} />
                 </button>
@@ -262,7 +264,7 @@ export const SavedJobListPage: React.FC = () => {
                   disabled={disabled}
                   onClick={() => handleApply(job.jobId)}
                 >
-                  Ứng tuyển ngay
+                  {t('jobs.btn_apply_now', 'Ứng tuyển ngay')}
                 </button>
               </div>
             </div>

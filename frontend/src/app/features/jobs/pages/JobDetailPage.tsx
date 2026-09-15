@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, DollarSign, Clock, Calendar, Sparkles, CheckCircle, AlertCircle, Lightbulb, X } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { cvsService } from '../../../core/services/cvs.service';
@@ -14,6 +14,8 @@ import styles from './JobsPage.module.scss';
 export const JobDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromQuickView = (location.state as any)?.fromQuickView;
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
@@ -72,6 +74,9 @@ export const JobDetailPage: React.FC = () => {
         const res = await jobsService.getJobById(Number(id));
         if (res.data?.success && res.data.data) {
           setJob(res.data.data);
+          if (!fromQuickView) {
+            jobsService.trackJobView(Number(id)).catch(() => {});
+          }
         } else {
           setError(res.data?.error?.message || 'Không tìm thấy tin tuyển dụng yêu cầu.');
         }

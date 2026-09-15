@@ -47,12 +47,14 @@ public class CandidatesController(IMediator mediator) : ControllerBase
     // EP-02: Tải lên file CV (PDF)
     [HttpPost("cvs")]
     [RequirePermission("cv:manage")]
-    public async Task<IActionResult> UploadCv([FromForm] string cvTitle, IFormFile file)
+    public async Task<IActionResult> UploadCv([FromForm] string cvTitle, IFormFile file, [FromForm] string? cvType = "UPLOAD")
     {
         if (file == null || file.Length == 0)
         {
             throw new BadRequestException("CV_INVALID_FILE", "Tệp tin tải lên không hợp lệ.");
         }
+
+        var parsedCvType = Enum.TryParse<HR.Domain.Enums.CvType>(cvType, true, out var ct) ? ct : HR.Domain.Enums.CvType.UPLOAD;
 
         using var stream = file.OpenReadStream();
         var result = await mediator.Send(new UploadCvCommand(
@@ -60,7 +62,8 @@ public class CandidatesController(IMediator mediator) : ControllerBase
             stream,
             file.FileName,
             file.ContentType,
-            file.Length
+            file.Length,
+            parsedCvType
         ));
         
         return StatusCode(StatusCodes.Status201Created, ApiResponse<CandidateCvDto>.Ok(result));

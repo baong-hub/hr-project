@@ -9,7 +9,6 @@ using HR.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 using Microsoft.AspNetCore.SignalR;
 using HR.API.Hubs;
 
@@ -39,43 +38,193 @@ public class MessagesController(
     }
 
     /// <summary>
-    /// Lấy danh sách cuộc trò chuyện của người dùng hiện tại (cả Ứng viên và Nhà tuyển dụng)
+    /// Lấy danh sách cuộc trò chuyện của người dùng hiện tại (Hợp nhất 1 cuộc trò chuyện duy nhất cho mỗi cặp Ứng viên - Doanh nghiệp)
     /// </summary>
     [HttpGet("conversations")]
     public async Task<IActionResult> GetConversations()
     {
         var userId = currentUserService.UserId;
 
-        var convos = await context.Conversations
-            .AsNoTracking()
+        // 1. Lấy tất cả hội thoại của user
+        var rawConvos = await context.Conversations
             .Where(c => c.DeletedAt == null && (c.CandidateUserId == userId || c.EmployerUserId == userId))
             .Include(c => c.Job)
                 .ThenInclude(j => j!.Company)
             .Include(c => c.CandidateUser)
             .Include(c => c.EmployerUser)
             .OrderByDescending(c => c.LastMessageAt)
-            .Select(c => new
+            .ToListAsync();
+
+        // 2. Tự động gộp các cuộc hội thoại trùng lặp giữa cùng 1 cặp (CandidateUserId, EmployerUserId)
+        var grouped = rawConvos.GroupBy(c => (c.CandidateUserId, c.EmployerUserId)).ToList();
+        var hasChanges = false;
+        var activeConvos = new List<Conversation>();
+
+        foreach (var group in grouped)
+        {
+            var primary = group.OrderByDescending(g => g.LastMessageAt).First();
+            var duplicates = group.Where(g => g.Id != primary.Id).ToList();
+
+            if (duplicates.Any())
             {
-                c.Id,
-                c.ApplicationId,
-                c.JobId,
-                JobTitle = c.Job != null ? c.Job.Title : (c.Title ?? "Trao đổi cơ hội nghề nghiệp"),
-                CompanyId = c.Job != null ? c.Job.CompanyId : 0,
-                CompanyName = c.Job != null && c.Job.Company != null ? c.Job.Company.Name : "Doanh nghiệp",
-                c.CandidateUserId,
-                CandidateName = c.CandidateUser != null ? c.CandidateUser.FullName : "Ứng viên",
-                CandidateAvatar = c.CandidateUser != null ? c.CandidateUser.AvatarUrl : null,
-                c.EmployerUserId,
-                EmployerName = c.EmployerUser != null ? c.EmployerUser.FullName : "Nhà tuyển dụng",
-                EmployerAvatar = c.EmployerUser != null ? c.EmployerUser.AvatarUrl : null,
-                c.LastMessageAt,
-                c.LastMessageContent,
-                c.LastSenderId,
-                UnreadCount = c.CandidateUserId == userId ? c.CandidateUnreadCount : c.EmployerUnreadCount
+                foreach (var dup in duplicates)
+                {
+                    // Di chuyển tin nhắn từ hội thoại trùng lặp sang hội thoại chính
+                    var dupMessages = await context.ChatMessages
+                        .Where(m => m.ConversationId == dup.Id && m.DeletedAt == null)
+                        .ToListAsync();
+
+                    foreach (var msg in dupMessages)
+                    {
+                        msg.ConversationId = primary.Id;
+                    }
+
+                    if (dup.CandidateUnreadCount > 0)
+                        primary.CandidateUnreadCount += dup.CandidateUnreadCount;
+                    if (dup.EmployerUnreadCount > 0)
+                        primary.EmployerUnreadCount += dup.EmployerUnreadCount;
+
+                    dup.DeletedAt = DateTime.Now;
+                    hasChanges = true;
+                }
+
+                // Cập nhật tin nhắn gần nhất cho hội thoại chính
+                var latestMsg = await context.ChatMessages
+                    .Where(m => m.ConversationId == primary.Id && m.DeletedAt == null)
+                    .OrderByDescending(m => m.SentAt)
+                    .FirstOrDefaultAsync();
+
+                if (latestMsg != null)
+                {
+                    primary.LastMessageAt = latestMsg.SentAt;
+                    primary.LastMessageContent = latestMsg.Content;
+                    primary.LastSenderId = latestMsg.SenderId;
+                }
+            }
+
+            activeConvos.Add(primary);
+        }
+
+        if (hasChanges)
+        {
+            await context.SaveChangesAsync();
+        }
+
+        // 3. Lấy thông tin tất cả các vị trí ứng tuyển liên quan giữa Ứng viên và Doanh nghiệp
+        var candidateUserIds = activeConvos.Select(c => c.CandidateUserId).Distinct().ToList();
+        var candidates = await context.Candidates
+            .Include(c => c.User)
+            .Where(c => candidateUserIds.Contains(c.Id) && c.DeletedAt == null)
+            .ToListAsync();
+        var candidateMap = candidates.ToDictionary(c => c.Id, c => c);
+
+        var candidateUsers = await context.Users
+            .Where(u => candidateUserIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u);
+
+        var employerUserIds = activeConvos.Select(c => c.EmployerUserId).Distinct().ToList();
+        var employers = await context.Employers
+            .Include(e => e.Company)
+            .Where(e => employerUserIds.Contains(e.UserId) && e.DeletedAt == null)
+            .ToListAsync();
+        var employerMap = employers.ToDictionary(e => e.UserId, e => e);
+
+        var candidateIds = candidates.Select(c => c.Id).ToList();
+        var companyIds = employers.Select(e => e.CompanyId).Distinct().ToList();
+
+        var allApplications = await context.Applications
+            .Where(a => candidateUserIds.Contains(a.CandidateId) && a.DeletedAt == null)
+            .Include(a => a.Job)
+            .Include(a => a.Candidate)
+                .ThenInclude(c => c.User)
+            .OrderByDescending(a => a.AppliedAt)
+            .Select(a => new
+            {
+                a.Id,
+                a.CandidateId,
+                CandidateName = a.Candidate.FullName,
+                CandidateAvatar = a.Candidate.AvatarUrl,
+                CompanyId = a.Job.CompanyId,
+                a.JobId,
+                JobTitle = a.Job.Title,
+                Status = a.Status.ToString(),
+                a.AppliedAt
             })
             .ToListAsync();
 
-        return Ok(ApiResponse<object>.Ok(convos));
+        var results = activeConvos
+            .OrderByDescending(c => c.LastMessageAt)
+            .Select(c =>
+            {
+                var candProfile = candidateMap.GetValueOrDefault(c.CandidateUserId) 
+                    ?? c.CandidateUser?.Candidate 
+                    ?? c.Application?.Candidate;
+                var candUser = candidateUsers.GetValueOrDefault(c.CandidateUserId) 
+                    ?? c.CandidateUser 
+                    ?? candProfile?.User;
+
+                var empInfo = employerMap.GetValueOrDefault(c.EmployerUserId);
+                var companyId = empInfo?.CompanyId ?? (c.Job?.CompanyId ?? 0);
+                var companyName = empInfo?.Company?.Name ?? (c.Job?.Company?.Name ?? "Doanh nghiệp");
+
+                var apps = allApplications
+                    .Where(a => a.CandidateId == c.CandidateUserId && (companyId == 0 || a.CompanyId == companyId))
+                    .Select(a => new
+                    {
+                        applicationId = a.Id,
+                        jobId = a.JobId,
+                        jobTitle = a.JobTitle,
+                        status = a.Status,
+                        appliedAt = a.AppliedAt
+                    })
+                    .ToList();
+
+                var mainJobTitle = apps.FirstOrDefault()?.jobTitle ?? (c.Job != null ? c.Job.Title : (c.Title ?? "Trao đổi cơ hội nghề nghiệp"));
+
+                var candidateName = !string.IsNullOrWhiteSpace(candProfile?.FullName)
+                    ? candProfile.FullName
+                    : (!string.IsNullOrWhiteSpace(candUser?.FullName)
+                        ? candUser.FullName
+                        : (apps.FirstOrDefault() != null && !string.IsNullOrWhiteSpace(allApplications.FirstOrDefault(a => a.CandidateId == c.CandidateUserId)?.CandidateName)
+                            ? allApplications.FirstOrDefault(a => a.CandidateId == c.CandidateUserId)?.CandidateName!
+                            : "Ứng viên"));
+
+                var candidateAvatar = candProfile?.AvatarUrl 
+                    ?? candUser?.AvatarUrl 
+                    ?? allApplications.FirstOrDefault(a => a.CandidateId == c.CandidateUserId)?.CandidateAvatar;
+
+                var employerName = !string.IsNullOrWhiteSpace(companyName) && companyName != "Doanh nghiệp"
+                    ? companyName
+                    : (c.EmployerUser != null ? c.EmployerUser.FullName : "Nhà tuyển dụng");
+
+                var employerAvatar = c.Job?.Company?.LogoUrl 
+                    ?? c.EmployerUser?.Employer?.Company?.LogoUrl 
+                    ?? c.EmployerUser?.AvatarUrl;
+
+                return new
+                {
+                    c.Id,
+                    c.ApplicationId,
+                    c.JobId,
+                    JobTitle = mainJobTitle,
+                    CompanyId = companyId,
+                    CompanyName = companyName,
+                    c.CandidateUserId,
+                    CandidateName = candidateName,
+                    CandidateAvatar = candidateAvatar,
+                    c.EmployerUserId,
+                    EmployerName = employerName,
+                    EmployerAvatar = employerAvatar,
+                    c.LastMessageAt,
+                    c.LastMessageContent,
+                    c.LastSenderId,
+                    UnreadCount = c.CandidateUserId == userId ? c.CandidateUnreadCount : c.EmployerUnreadCount,
+                    AppliedJobs = apps
+                };
+            })
+            .ToList();
+
+        return Ok(ApiResponse<object>.Ok(results));
     }
 
     /// <summary>
@@ -91,7 +240,13 @@ public class MessagesController(
             .Include(c => c.Job)
                 .ThenInclude(j => j!.Company)
             .Include(c => c.CandidateUser)
+                .ThenInclude(u => u!.Candidate)
             .Include(c => c.EmployerUser)
+                .ThenInclude(u => u!.Employer)
+                    .ThenInclude(e => e!.Company)
+            .Include(c => c.Application)
+                .ThenInclude(a => a!.Candidate)
+                    .ThenInclude(cand => cand!.User)
             .FirstOrDefaultAsync();
 
         if (convo == null)
@@ -103,14 +258,24 @@ public class MessagesController(
             .AsNoTracking()
             .Where(m => m.ConversationId == id && m.DeletedAt == null)
             .Include(m => m.Sender)
+                .ThenInclude(s => s!.Candidate)
+            .Include(m => m.Sender)
+                .ThenInclude(s => s!.Employer)
+                    .ThenInclude(e => e!.Company)
             .OrderBy(m => m.SentAt)
             .Select(m => new
             {
                 m.Id,
                 m.ConversationId,
                 m.SenderId,
-                SenderName = m.Sender != null ? m.Sender.FullName : "Thành viên",
-                SenderAvatar = m.Sender != null ? m.Sender.AvatarUrl : null,
+                SenderName = !string.IsNullOrWhiteSpace(m.Sender != null ? m.Sender.FullName : null)
+                    ? m.Sender!.FullName
+                    : (m.Sender != null && m.Sender.Candidate != null && !string.IsNullOrWhiteSpace(m.Sender.Candidate.FullName)
+                        ? m.Sender.Candidate.FullName
+                        : (m.Sender != null && m.Sender.Employer != null && m.Sender.Employer.Company != null
+                            ? m.Sender.Employer.Company.Name
+                            : "Thành viên")),
+                SenderAvatar = m.Sender != null ? (m.Sender.AvatarUrl ?? (m.Sender.Candidate != null ? m.Sender.Candidate.AvatarUrl : null)) : null,
                 m.Content,
                 m.IsRead,
                 m.SentAt,
@@ -130,19 +295,73 @@ public class MessagesController(
             await context.SaveChangesAsync();
         }
 
+        // Lấy danh sách các vị trí ứng tuyển của Ứng viên này tại Công ty
+        var candidate = await context.Candidates
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.Id == convo.CandidateUserId && c.DeletedAt == null);
+
+        var candidateUser = convo.CandidateUser 
+            ?? candidate?.User 
+            ?? await context.Users.FirstOrDefaultAsync(u => u.Id == convo.CandidateUserId);
+
+        var employer = await context.Employers
+            .Include(e => e.Company)
+            .FirstOrDefaultAsync(e => e.UserId == convo.EmployerUserId && e.DeletedAt == null);
+
+        var companyId = employer?.CompanyId ?? (convo.Job?.CompanyId ?? 0);
+        var companyName = employer?.Company?.Name ?? (convo.Job?.Company?.Name ?? "Doanh nghiệp");
+
+        var appliedJobs = companyId > 0
+            ? (object)await context.Applications
+                .Where(a => a.CandidateId == convo.CandidateUserId && a.Job.CompanyId == companyId && a.DeletedAt == null)
+                .Include(a => a.Job)
+                .OrderByDescending(a => a.AppliedAt)
+                .Select(a => new
+                {
+                    applicationId = a.Id,
+                    jobId = a.JobId,
+                    jobTitle = a.Job.Title,
+                    status = a.Status.ToString(),
+                    appliedAt = a.AppliedAt
+                })
+                .ToListAsync()
+            : new List<object>();
+
+        var candidateName = !string.IsNullOrWhiteSpace(candidate?.FullName)
+            ? candidate.FullName
+            : (!string.IsNullOrWhiteSpace(candidateUser?.FullName)
+                ? candidateUser.FullName
+                : (!string.IsNullOrWhiteSpace(convo.Application?.Candidate?.FullName)
+                    ? convo.Application.Candidate.FullName
+                    : "Ứng viên"));
+
+        var candidateAvatar = candidate?.AvatarUrl 
+            ?? candidateUser?.AvatarUrl 
+            ?? convo.Application?.Candidate?.AvatarUrl;
+
+        var employerName = !string.IsNullOrWhiteSpace(companyName) && companyName != "Doanh nghiệp"
+            ? companyName
+            : (convo.EmployerUser?.FullName ?? "Nhà tuyển dụng");
+
+        var employerAvatar = convo.Job?.Company?.LogoUrl 
+            ?? employer?.Company?.LogoUrl 
+            ?? convo.EmployerUser?.AvatarUrl;
+
         var result = new
         {
             convo.Id,
             convo.ApplicationId,
             convo.JobId,
             JobTitle = convo.Job != null ? convo.Job.Title : (convo.Title ?? "Trao đổi cơ hội nghề nghiệp"),
-            CompanyName = convo.Job != null && convo.Job.Company != null ? convo.Job.Company.Name : "Doanh nghiệp",
+            CompanyId = companyId,
+            CompanyName = companyName,
             convo.CandidateUserId,
-            CandidateName = convo.CandidateUser != null ? convo.CandidateUser.FullName : "Ứng viên",
-            CandidateAvatar = convo.CandidateUser != null ? convo.CandidateUser.AvatarUrl : null,
+            CandidateName = candidateName,
+            CandidateAvatar = candidateAvatar,
             convo.EmployerUserId,
-            EmployerName = convo.EmployerUser != null ? convo.EmployerUser.FullName : "Nhà tuyển dụng",
-            EmployerAvatar = convo.EmployerUser != null ? convo.EmployerUser.AvatarUrl : null,
+            EmployerName = employerName,
+            EmployerAvatar = employerAvatar,
+            AppliedJobs = appliedJobs,
             Messages = messages
         };
 
@@ -150,7 +369,7 @@ public class MessagesController(
     }
 
     /// <summary>
-    /// Lấy hoặc tạo cuộc trò chuyện gắn với hồ sơ ứng tuyển
+    /// Lấy hoặc tạo cuộc trò chuyện gắn với hồ sơ ứng tuyển (Hợp nhất theo Ứng viên và Doanh nghiệp)
     /// </summary>
     [HttpGet("by-application/{applicationId:int}")]
     public async Task<IActionResult> GetOrCreateByApplication(int applicationId)
@@ -174,9 +393,13 @@ public class MessagesController(
             .FirstOrDefaultAsync(e => e.CompanyId == app.Job.CompanyId && e.DeletedAt == null);
         var employerUserId = employer?.UserId ?? userId;
 
-        // Tìm conversation hiện có
+        // Tìm conversation hiện có giữa Ứng viên và Nhà tuyển dụng
         var convo = await context.Conversations
-            .FirstOrDefaultAsync(c => c.ApplicationId == applicationId && c.DeletedAt == null);
+            .Where(c => c.DeletedAt == null && 
+                        c.CandidateUserId == candidateUserId && 
+                        c.EmployerUserId == employerUserId)
+            .OrderByDescending(c => c.LastMessageAt)
+            .FirstOrDefaultAsync();
 
         if (convo == null)
         {
@@ -195,6 +418,13 @@ public class MessagesController(
             };
 
             context.Conversations.Add(convo);
+            await context.SaveChangesAsync();
+        }
+        else
+        {
+            // Cập nhật JobId và ApplicationId sang vị trí mới nhất đang xem
+            convo.ApplicationId = applicationId;
+            convo.JobId = app.JobId;
             await context.SaveChangesAsync();
         }
 
@@ -223,27 +453,32 @@ public class MessagesController(
         }
         else if (dto.ApplicationId.HasValue && dto.ApplicationId.Value > 0)
         {
-            convo = await context.Conversations
-                .FirstOrDefaultAsync(c => c.ApplicationId == dto.ApplicationId.Value && c.DeletedAt == null);
+            var app = await context.Applications
+                .Include(a => a.Job)
+                .Include(a => a.Candidate)
+                .FirstOrDefaultAsync(a => a.Id == dto.ApplicationId.Value);
 
-            if (convo == null)
+            if (app != null)
             {
-                var app = await context.Applications
-                    .Include(a => a.Job)
-                    .Include(a => a.Candidate)
-                    .FirstOrDefaultAsync(a => a.Id == dto.ApplicationId.Value);
+                var employer = await context.Employers
+                    .FirstOrDefaultAsync(e => e.CompanyId == app.Job.CompanyId && e.DeletedAt == null);
+                var employerUserId = employer?.UserId ?? userId;
 
-                if (app != null)
+                convo = await context.Conversations
+                    .Where(c => c.DeletedAt == null && 
+                                c.CandidateUserId == app.Candidate.UserId && 
+                                c.EmployerUserId == employerUserId)
+                    .OrderByDescending(c => c.LastMessageAt)
+                    .FirstOrDefaultAsync();
+
+                if (convo == null)
                 {
-                    var employer = await context.Employers
-                        .FirstOrDefaultAsync(e => e.CompanyId == app.Job.CompanyId && e.DeletedAt == null);
-
                     convo = new Conversation
                     {
                         ApplicationId = app.Id,
                         JobId = app.JobId,
                         CandidateUserId = app.Candidate.UserId,
-                        EmployerUserId = employer?.UserId ?? userId,
+                        EmployerUserId = employerUserId,
                         Title = $"Ứng tuyển: {app.Job.Title}",
                         LastMessageAt = DateTime.Now,
                         LastMessageContent = dto.Content,
@@ -251,6 +486,11 @@ public class MessagesController(
                     };
                     context.Conversations.Add(convo);
                     await context.SaveChangesAsync();
+                }
+                else
+                {
+                    convo.ApplicationId = app.Id;
+                    convo.JobId = app.JobId;
                 }
             }
         }
@@ -420,13 +660,17 @@ public class MessagesController(
             });
         }
 
-        // 4. Tìm hoặc tạo Conversation
-        var convo = await context.Conversations
-            .FirstOrDefaultAsync(c => c.ApplicationId == app.Id && c.DeletedAt == null);
-
+        // 4. Tìm hoặc tạo Conversation duy nhất giữa Ứng viên và Doanh nghiệp
         var employer = await context.Employers
             .FirstOrDefaultAsync(e => e.CompanyId == app.Job.CompanyId && e.DeletedAt == null);
         var employerUserId = employer?.UserId ?? userId;
+
+        var convo = await context.Conversations
+            .Where(c => c.DeletedAt == null && 
+                        c.CandidateUserId == app.Candidate.UserId && 
+                        c.EmployerUserId == employerUserId)
+            .OrderByDescending(c => c.LastMessageAt)
+            .FirstOrDefaultAsync();
 
         if (convo == null)
         {
@@ -444,6 +688,11 @@ public class MessagesController(
             };
             context.Conversations.Add(convo);
             await context.SaveChangesAsync();
+        }
+        else
+        {
+            convo.ApplicationId = app.Id;
+            convo.JobId = app.JobId;
         }
 
         // 5. Gửi tin nhắn mở đầu từ Nhà tuyển dụng

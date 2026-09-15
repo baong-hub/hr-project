@@ -28,7 +28,6 @@ public class DeleteCvHandler : IRequestHandler<DeleteCvCommand, bool>
         }
 
         var cv = await _context.CandidateCvs
-            .Include(c => c.Candidate)
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (cv == null)
@@ -43,7 +42,7 @@ public class DeleteCvHandler : IRequestHandler<DeleteCvCommand, bool>
 
         bool isAdmin = user?.Role?.Name == "ADMIN";
 
-        if (cv.Candidate.UserId != userId && !isAdmin)
+        if (cv.CandidateId != userId && !isAdmin)
         {
             throw new ForbiddenException("CV_FORBIDDEN_DELETE", "Bạn không có quyền xóa CV này.");
         }

@@ -21,4 +21,7 @@ export const jobsService = {
     
   updateJobStatus: (id: number, data: ChangeJobStatusDto): Promise<AxiosResponse<ApiResponse<boolean>>> => 
     api.patch(`/jobs/${id}/status`, { id, ...data }),
+    
+  trackJobView: (id: number): Promise<AxiosResponse<ApiResponse<boolean>>> => 
+    api.post(`/jobs/${id}/view`),
 };

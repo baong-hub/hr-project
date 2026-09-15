@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using HR.Application.Common.Models;
 using HR.Application.Jobs;
@@ -9,8 +10,10 @@ using HR.Application.Jobs.Queries.GetJobs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using HR.Infrastructure.Security;
 using HR.Application.Common.Exceptions;
+using HR.Application.Common.Interfaces;
 
 namespace HR.Api.Controllers;
 
@@ -83,5 +86,45 @@ public class JobsController(IMediator mediator) : ControllerBase
         }
         var result = await mediator.Send(command);
         return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    [HttpPost("{id:int}/view")]
+    [AllowAnonymous]
+    public async Task<IActionResult> TrackView(
+        int id, 
+        [FromServices] IApplicationDbContext context, 
+        [FromServices] ICurrentUserService currentUserService,
+        CancellationToken cancellationToken)
+    {
+        var job = await context.Jobs.Include(j => j.Employer).FirstOrDefaultAsync(j => j.Id == id && j.DeletedAt == null, cancellationToken);
+        if (job != null)
+        {
+            var userId = currentUserService.UserId > 0 ? currentUserService.UserId : (int?)null;
+            if (userId == null || job.Employer?.UserId != userId)
+            {
+                var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+                var cutoff = System.DateTime.Now.AddSeconds(-10);
+
+                var isRecentView = await context.JobViewLogs.AnyAsync(v =>
+                    v.JobId == job.Id &&
+                    ((userId != null && v.UserId == userId) || (userId == null && v.IpAddress == ip)) &&
+                    v.ViewedAt >= cutoff,
+                    cancellationToken);
+
+                if (!isRecentView)
+                {
+                    context.JobViewLogs.Add(new Domain.Entities.JobViewLog
+                    {
+                        JobId = job.Id,
+                        UserId = userId,
+                        IpAddress = ip,
+                        UserAgent = Request.Headers.UserAgent.ToString(),
+                        ViewedAt = System.DateTime.Now
+                    });
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+            }
+        }
+        return Ok(ApiResponse<bool>.Ok(true));
     }
 }

@@ -62,8 +62,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (theme === 'Dark') {
       document.documentElement.classList.add('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.body.classList.add('dark-mode');
     } else {
       document.documentElement.classList.remove('dark-mode');
+      document.documentElement.setAttribute('data-theme', 'light');
+      document.body.classList.remove('dark-mode');
     }
   }, [theme]);
 

@@ -87,6 +87,10 @@ public class UploadCvHandler : IRequestHandler<UploadCvCommand, CandidateCvDto>
         // Đặt làm CV mặc định nếu là CV đầu tiên
         var isFirstCv = existingCvCount == 0;
 
+        var cvType = request.CvType == CvType.BUILDER || request.CvTitle.Contains("Builder", StringComparison.OrdinalIgnoreCase) 
+            ? CvType.BUILDER 
+            : CvType.UPLOAD;
+
         var cv = new CandidateCv
         {
             CandidateId = candidate.Id,
@@ -94,7 +98,7 @@ public class UploadCvHandler : IRequestHandler<UploadCvCommand, CandidateCvDto>
             FileUrl = fileUrl,
             FileSizeBytes = request.FileSizeBytes,
             IsDefault = isFirstCv,
-            CvType = CvType.UPLOAD
+            CvType = cvType
         };
 
         _context.CandidateCvs.Add(cv);

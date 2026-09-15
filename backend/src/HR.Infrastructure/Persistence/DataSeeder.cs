@@ -16,6 +16,7 @@ public static class DataSeeder
         await SeedAdminUserAsync(context);
         await SeedSettingConfigsAsync(context);
         await SeedJobsAsync(context);
+        await SeedJobViewLogsAsync(context);
         await SeedMasterDataAsync(context);
         await SeedDepartmentsAsync(context);
         await context.SaveChangesAsync();
@@ -711,6 +712,36 @@ public static class DataSeeder
         };
 
         context.Departments.AddRange(departments);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedJobViewLogsAsync(ApplicationDbContext context)
+    {
+        if (await context.JobViewLogs.AnyAsync()) return;
+
+        var jobs = await context.Jobs.Where(j => j.DeletedAt == null).ToListAsync();
+        if (!jobs.Any()) return;
+
+        var random = new Random(42);
+        var logs = new List<JobViewLog>();
+
+        foreach (var job in jobs)
+        {
+            var viewCount = random.Next(28, 65);
+            for (int i = 0; i < viewCount; i++)
+            {
+                var daysAgo = random.Next(0, 28);
+                logs.Add(new JobViewLog
+                {
+                    JobId = job.Id,
+                    IpAddress = $"192.168.1.{random.Next(10, 200)}",
+                    UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0",
+                    ViewedAt = DateTime.Now.AddDays(-daysAgo).AddMinutes(random.Next(0, 1440))
+                });
+            }
+        }
+
+        context.JobViewLogs.AddRange(logs);
         await context.SaveChangesAsync();
     }
 }

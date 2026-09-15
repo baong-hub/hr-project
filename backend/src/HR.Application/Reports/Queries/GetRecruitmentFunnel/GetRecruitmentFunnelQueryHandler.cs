@@ -72,46 +72,96 @@ public class GetRecruitmentFunnelQueryHandler : IRequestHandler<GetRecruitmentFu
         if (toDate.HasValue)
             appsQuery = appsQuery.Where(a => a.AppliedAt <= toDate.Value);
 
-        var applicationCounts = await appsQuery
-            .GroupBy(a => a.Status)
-            .Select(g => new { Status = g.Key, Count = g.Count() })
+        var appsInScope = await appsQuery.Select(a => new { a.Id, a.Status }).ToListAsync(cancellationToken);
+        var inScopeAppIds = appsInScope.Select(a => a.Id).ToList();
+
+        if (inScopeAppIds.Count == 0)
+        {
+            return new RecruitmentFunnelDto(new List<FunnelStageDto>
+            {
+                new("APPLIED", 0),
+                new("SCREENING", 0),
+                new("SHORTLISTED", 0),
+                new("INTERVIEW", 0),
+                new("OFFER", 0),
+                new("HIRED", 0),
+                new("REJECTED", 0)
+            });
+        }
+
+        // Applications with JobOffers in database
+        var offerAppIds = await _context.JobOffers
+            .Where(o => inScopeAppIds.Contains(o.ApplicationId) && o.DeletedAt == null)
+            .Select(o => o.ApplicationId)
+            .Distinct()
             .ToListAsync(cancellationToken);
 
-        var statusDict = applicationCounts.ToDictionary(x => x.Status, x => x.Count);
+        // Applications with Interviews in database
+        var interviewAppIds = await _context.Interviews
+            .Where(i => inScopeAppIds.Contains(i.ApplicationId) && i.DeletedAt == null)
+            .Select(i => i.ApplicationId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
 
-        // Get individual counts by current status
-        int GetCount(ApplicationStatus status) =>
-            statusDict.TryGetValue(status, out var c) ? c : 0;
+        // HIRED: Status HIRED or JobOffer ACCEPTED
+        var acceptedOfferAppIds = await _context.JobOffers
+            .Where(o => inScopeAppIds.Contains(o.ApplicationId) && o.Status == JobOfferStatus.ACCEPTED && o.DeletedAt == null)
+            .Select(o => o.ApplicationId)
+            .ToListAsync(cancellationToken);
 
-        var appliedOnly = GetCount(ApplicationStatus.APPLIED);
-        var screeningOnly = GetCount(ApplicationStatus.SCREENING);
-        var shortlistedOnly = GetCount(ApplicationStatus.SHORTLISTED);
-        var interviewOnly = GetCount(ApplicationStatus.INTERVIEW);
-        var offerOnly = GetCount(ApplicationStatus.OFFER);
-        var hiredOnly = GetCount(ApplicationStatus.HIRED);
-        var rejectedOnly = GetCount(ApplicationStatus.REJECTED);
-        var withdrawnOnly = GetCount(ApplicationStatus.WITHDRAWN);
+        var hiredAppIds = appsInScope
+            .Where(a => a.Status == ApplicationStatus.HIRED)
+            .Select(a => a.Id)
+            .Union(acceptedOfferAppIds)
+            .Distinct()
+            .ToList();
 
-        // Cumulative funnel: each stage includes applications that have progressed 
-        // past it. The status progression is: APPLIED -> SCREENING -> SHORTLISTED -> INTERVIEW -> OFFER -> HIRED
-        // An application at HIRED has passed through all previous stages.
-        // REJECTED/WITHDRAWN are terminal states counted separately.
-        var hiredCumulative = hiredOnly;
-        var offerCumulative = offerOnly + hiredCumulative;
-        var interviewCumulative = interviewOnly + offerCumulative;
-        var shortlistedCumulative = shortlistedOnly + interviewCumulative;
-        var screeningCumulative = screeningOnly + shortlistedCumulative;
-        var appliedCumulative = appliedOnly + screeningCumulative + rejectedOnly + withdrawnOnly;
+        // OFFER: Status OFFER, or JobOffer exists, or reached HIRED
+        var allOfferAppIds = appsInScope
+            .Where(a => a.Status == ApplicationStatus.OFFER)
+            .Select(a => a.Id)
+            .Union(offerAppIds)
+            .Union(hiredAppIds)
+            .Distinct()
+            .ToList();
+
+        // INTERVIEW: Status INTERVIEW, or Interview exists, or reached OFFER
+        var allInterviewAppIds = appsInScope
+            .Where(a => a.Status == ApplicationStatus.INTERVIEW)
+            .Select(a => a.Id)
+            .Union(interviewAppIds)
+            .Union(allOfferAppIds)
+            .Distinct()
+            .ToList();
+
+        // SHORTLISTED: Status SHORTLISTED or reached INTERVIEW
+        var allShortlistedAppIds = appsInScope
+            .Where(a => a.Status == ApplicationStatus.SHORTLISTED)
+            .Select(a => a.Id)
+            .Union(allInterviewAppIds)
+            .Distinct()
+            .ToList();
+
+        // SCREENING: Status SCREENING or reached SHORTLISTED
+        var allScreeningAppIds = appsInScope
+            .Where(a => a.Status == ApplicationStatus.SCREENING)
+            .Select(a => a.Id)
+            .Union(allShortlistedAppIds)
+            .Distinct()
+            .ToList();
+
+        var totalApplied = appsInScope.Count;
+        var rejectedCount = appsInScope.Count(a => a.Status == ApplicationStatus.REJECTED);
 
         var stages = new List<FunnelStageDto>
         {
-            new("APPLIED", appliedCumulative),
-            new("SCREENING", screeningCumulative),
-            new("SHORTLISTED", shortlistedCumulative),
-            new("INTERVIEW", interviewCumulative),
-            new("OFFER", offerCumulative),
-            new("HIRED", hiredCumulative),
-            new("REJECTED", rejectedOnly)
+            new("APPLIED", totalApplied),
+            new("SCREENING", Math.Max(allScreeningAppIds.Count, allShortlistedAppIds.Count)),
+            new("SHORTLISTED", Math.Max(allShortlistedAppIds.Count, allInterviewAppIds.Count)),
+            new("INTERVIEW", Math.Max(allInterviewAppIds.Count, allOfferAppIds.Count)),
+            new("OFFER", allOfferAppIds.Count),
+            new("HIRED", hiredAppIds.Count),
+            new("REJECTED", rejectedCount)
         };
 
         return new RecruitmentFunnelDto(stages);

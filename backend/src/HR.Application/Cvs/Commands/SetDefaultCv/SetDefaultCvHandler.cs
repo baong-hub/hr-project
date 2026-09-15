@@ -28,7 +28,6 @@ public class SetDefaultCvHandler : IRequestHandler<SetDefaultCvCommand, bool>
         }
 
         var cv = await _context.CandidateCvs
-            .Include(c => c.Candidate)
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (cv == null)
@@ -36,7 +35,7 @@ public class SetDefaultCvHandler : IRequestHandler<SetDefaultCvCommand, bool>
             throw new NotFoundException("CV_NOT_FOUND", "Bản CV yêu cầu không tồn tại.");
         }
 
-        if (cv.Candidate.UserId != userId)
+        if (cv.CandidateId != userId)
         {
             throw new ForbiddenException("CV_FORBIDDEN_UPDATE", "Bạn không có quyền chỉnh sửa CV này.");
         }

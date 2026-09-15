@@ -62,7 +62,7 @@ public class GetEmployerSummaryQueryHandler : IRequestHandler<GetEmployerSummary
 
         var averageApplyRate = totalViews > 0
             ? Math.Round((double)totalApplications / totalViews * 100, 1)
-            : 0.0;
+            : (totalApplications > 0 ? 100.0 : 0.0);
 
         // Detailed interview & funnel analytics (filtered by date range for consistency)
         var appIds = await _context.Applications
@@ -82,11 +82,32 @@ public class GetEmployerSummaryQueryHandler : IRequestHandler<GetEmployerSummary
                     i.DeletedAt == null, cancellationToken)
             : 0;
 
-        var totalOffers = await _context.Applications
-            .CountAsync(a => jobIds.Contains(a.JobId) && 
-                a.AppliedAt >= fromDate && a.AppliedAt <= toDate &&
-                (a.Status == Domain.Enums.ApplicationStatus.OFFER || a.Status == Domain.Enums.ApplicationStatus.HIRED) && 
-                a.DeletedAt == null, cancellationToken);
+        // Query all offers created for this employer's jobs
+        var offersInPeriod = await _context.JobOffers
+            .Where(o => jobIds.Contains(o.JobId) && o.DeletedAt == null &&
+                        (o.IssuedAt >= fromDate || o.CreatedAt >= fromDate) &&
+                        (o.IssuedAt <= toDate || o.CreatedAt <= toDate))
+            .ToListAsync(cancellationToken);
+
+        var totalOffers = offersInPeriod.Count;
+        if (totalOffers == 0)
+        {
+            // Fallback for applications directly marked as OFFER or HIRED
+            totalOffers = await _context.Applications
+                .CountAsync(a => jobIds.Contains(a.JobId) && 
+                    a.AppliedAt >= fromDate && a.AppliedAt <= toDate &&
+                    (a.Status == Domain.Enums.ApplicationStatus.OFFER || a.Status == Domain.Enums.ApplicationStatus.HIRED) && 
+                    a.DeletedAt == null, cancellationToken);
+        }
+
+        var totalHired = offersInPeriod.Count(o => o.Status == Domain.Enums.JobOfferStatus.ACCEPTED);
+        if (totalHired == 0)
+        {
+            totalHired = await _context.Applications
+                .CountAsync(a => jobIds.Contains(a.JobId) && 
+                    a.AppliedAt >= fromDate && a.AppliedAt <= toDate &&
+                    a.Status == Domain.Enums.ApplicationStatus.HIRED && a.DeletedAt == null, cancellationToken);
+        }
 
         var hiredApps = await _context.Applications
             .Where(a => jobIds.Contains(a.JobId) && 
@@ -95,11 +116,9 @@ public class GetEmployerSummaryQueryHandler : IRequestHandler<GetEmployerSummary
             .Select(a => new { a.AppliedAt, a.UpdatedAt })
             .ToListAsync(cancellationToken);
 
-        var totalHired = hiredApps.Count;
-
-        var averageTimeToHireDays = totalHired > 0
+        var averageTimeToHireDays = hiredApps.Count > 0
             ? Math.Round(hiredApps.Average(a => Math.Max(0.5, (a.UpdatedAt - a.AppliedAt).TotalDays)), 1)
-            : 0.0;
+            : (totalHired > 0 ? 0.5 : 0.0);
 
         var offerAcceptanceRate = totalOffers > 0
             ? Math.Round((double)totalHired / totalOffers * 100, 1)
@@ -126,7 +145,7 @@ public class GetEmployerSummaryQueryHandler : IRequestHandler<GetEmployerSummary
             j.Title,
             j.Views,
             j.Apps,
-            j.Views > 0 ? Math.Round((double)j.Apps / j.Views * 100, 1) : 0.0,
+            j.Views > 0 ? Math.Round((double)j.Apps / j.Views * 100, 1) : (j.Apps > 0 ? 100.0 : 0.0),
             j.Status.ToString()
         )).ToList();
 

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HR.Application.Jobs;
 
-public class GetJobByIdQueryHandler(IApplicationDbContext context) 
+public class GetJobByIdQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService) 
     : IRequestHandler<GetJobByIdQuery, JobDto?>
 {
     public async Task<JobDto?> Handle(GetJobByIdQuery request, CancellationToken cancellationToken)
@@ -16,10 +16,11 @@ public class GetJobByIdQueryHandler(IApplicationDbContext context)
         var j = await context.Jobs
             .Include(j => j.Company)
             .Include(j => j.Employer)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == request.Id && x.DeletedAt == null, cancellationToken);
 
         if (j == null) return null;
+
+
 
         return new JobDto(
             j.Id,

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { companiesService } from '../../../core/services/companies.service';
 import { authService } from '../../../core/services/auth.service';
 
 export const CompanyEditPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -46,7 +48,7 @@ export const CompanyEditPage: React.FC = () => {
 
   useEffect(() => {
     if (!companyId) {
-      setError('Tài khoản của bạn chưa được liên kết với bất kỳ doanh nghiệp nào.');
+      setError(t('companies.empty_title', 'Tài khoản của bạn chưa được liên kết với bất kỳ doanh nghiệp nào.'));
       setLoading(false);
       return;
     }
@@ -85,10 +87,10 @@ export const CompanyEditPage: React.FC = () => {
             setAddresses(['']);
           }
         } else {
-          setError(response.data.error?.message || 'Không thể lấy thông tin doanh nghiệp.');
+          setError(response.data.error?.message || t('companies.empty_title', 'Không thể lấy thông tin doanh nghiệp.'));
         }
       } catch (err: any) {
-        setError(err?.response?.data?.error?.message || 'Có lỗi xảy ra khi tải thông tin doanh nghiệp.');
+        setError(err?.response?.data?.error?.message || t('common.fail', 'Có lỗi xảy ra khi tải thông tin doanh nghiệp.'));
       } finally {
         setLoading(false);
       }
@@ -121,21 +123,21 @@ export const CompanyEditPage: React.FC = () => {
 
     // Validate
     if (!name.trim()) {
-      alert('Tên doanh nghiệp không được để trống.');
+      alert(t('companies.label_company_name', 'Tên doanh nghiệp không được để trống.'));
       return;
     }
     if (!sizeRange) {
-      alert('Vui lòng chọn quy mô nhân sự.');
+      alert(t('companies.label_size_range', 'Vui lòng chọn quy mô nhân sự.'));
       return;
     }
     if (!industry) {
-      alert('Vui lòng chọn ngành nghề chính.');
+      alert(t('companies.label_industry', 'Vui lòng chọn ngành nghề chính.'));
       return;
     }
 
     const validAddresses = addresses.filter((a) => a.trim() !== '');
     if (validAddresses.length === 0) {
-      alert('Vui lòng nhập ít nhất một địa điểm văn phòng.');
+      alert(t('companies.label_office_addresses', 'Vui lòng nhập ít nhất một địa điểm văn phòng.'));
       return;
     }
 
@@ -162,13 +164,13 @@ export const CompanyEditPage: React.FC = () => {
 
       const response = await companiesService.updateCompany(companyId, updateData);
       if (response.data.success) {
-        alert('Cập nhật thông tin trang doanh nghiệp thành công!');
+        alert(t('common.update_success', 'Cập nhật thông tin trang doanh nghiệp thành công!'));
         navigate(`/companies/${companyId}`);
       } else {
-        setError(response.data.error?.message || 'Có lỗi xảy ra khi lưu.');
+        setError(response.data.error?.message || t('common.fail', 'Có lỗi xảy ra khi lưu.'));
       }
     } catch (err: any) {
-      setError(err?.response?.data?.error?.message || 'Không thể lưu thông tin doanh nghiệp.');
+      setError(err?.response?.data?.error?.message || t('common.fail', 'Không thể lưu thông tin doanh nghiệp.'));
     } finally {
       setSaving(false);
     }
@@ -186,7 +188,7 @@ export const CompanyEditPage: React.FC = () => {
           animation: 'spin 1s linear infinite',
           margin: '0 auto var(--space-4)'
         }} />
-        Đang tải biểu mẫu chỉnh sửa...
+        {t('common.loading', 'Đang tải biểu mẫu chỉnh sửa...')}
       </div>
     );
   }
@@ -195,9 +197,9 @@ export const CompanyEditPage: React.FC = () => {
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'var(--space-6) var(--space-4) var(--space-12)', textAlign: 'left' }}>
       <div style={{ marginBottom: 'var(--space-6)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: '0 0 var(--space-1)' }}>Cập Nhật Trang Doanh Nghiệp</h1>
+          <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: '0 0 var(--space-1)' }}>{t('companies.edit_title', 'Cập Nhật Trang Doanh Nghiệp')}</h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-            Xây dựng và nâng cao hình ảnh thương hiệu tuyển dụng của công ty bạn trên hệ thống.
+            {t('companies.edit_subtitle', 'Xây dựng và nâng cao hình ảnh thương hiệu tuyển dụng của công ty bạn trên hệ thống.')}
           </p>
         </div>
         <button
@@ -214,7 +216,7 @@ export const CompanyEditPage: React.FC = () => {
             fontSize: 'var(--font-size-sm)'
           }}
         >
-          Hủy bỏ
+          {t('common.cancel', 'Hủy bỏ')}
         </button>
       </div>
 
@@ -242,12 +244,12 @@ export const CompanyEditPage: React.FC = () => {
           padding: 'var(--space-6)'
         }}>
           <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
-            🖼️ Hình ảnh thương hiệu
+            {t('companies.card_brand_images', '🖼️ Hình ảnh thương hiệu')}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Đường dẫn Logo công ty
+                {t('companies.label_logo_url', 'Đường dẫn Logo công ty')}
               </label>
               <input
                 type="text"
@@ -265,7 +267,7 @@ export const CompanyEditPage: React.FC = () => {
               />
               {logoUrl && (
                 <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>Xem trước Logo:</span>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('common.show', 'Xem trước Logo')}:</span>
                   <img src={logoUrl} alt="Logo Preview" style={{ width: '40px', height: '40px', objectFit: 'contain', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-sm)' }} onError={(e) => e.currentTarget.style.display = 'none'} />
                 </div>
               )}
@@ -273,7 +275,7 @@ export const CompanyEditPage: React.FC = () => {
 
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Đường dẫn Ảnh bìa (Banner)
+                {t('companies.label_banner_url', 'Đường dẫn Ảnh bìa (Banner)')}
               </label>
               <input
                 type="text"
@@ -291,7 +293,7 @@ export const CompanyEditPage: React.FC = () => {
               />
               {bannerUrl && (
                 <div style={{ marginTop: 'var(--space-2)' }}>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>Xem trước Banner:</span>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>{t('common.show', 'Xem trước Banner')}:</span>
                   <div style={{ width: '100%', height: '80px', backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)' }} />
                 </div>
               )}
@@ -308,12 +310,12 @@ export const CompanyEditPage: React.FC = () => {
           padding: 'var(--space-6)'
         }}>
           <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
-            ℹ️ Thông tin chung
+            {t('companies.card_general_info', 'ℹ️ Thông tin chung')}
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
             <div style={{ gridColumn: 'span 2' }}>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Tên doanh nghiệp <span style={{ color: 'var(--color-danger)' }}>*</span>
+                {t('companies.label_company_name', 'Tên doanh nghiệp')} <span style={{ color: 'var(--color-danger)' }}>*</span>
               </label>
               <input
                 type="text"
@@ -333,7 +335,7 @@ export const CompanyEditPage: React.FC = () => {
 
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Quy mô nhân sự <span style={{ color: 'var(--color-danger)' }}>*</span>
+                {t('companies.label_size_range', 'Quy mô nhân sự')} <span style={{ color: 'var(--color-danger)' }}>*</span>
               </label>
               <select
                 value={sizeRange}
@@ -348,16 +350,16 @@ export const CompanyEditPage: React.FC = () => {
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="">-- Chọn quy mô --</option>
+                <option value="">{t('common.select_empty', '-- Chọn quy mô --')}</option>
                 {sizeRanges.map((sz) => (
-                  <option key={sz} value={sz}>{sz} nhân viên</option>
+                  <option key={sz} value={sz}>{sz} {t('common.records', 'nhân viên')}</option>
                 ))}
               </select>
             </div>
 
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Ngành nghề chính <span style={{ color: 'var(--color-danger)' }}>*</span>
+                {t('companies.label_industry', 'Ngành nghề chính')} <span style={{ color: 'var(--color-danger)' }}>*</span>
               </label>
               <select
                 value={industry}
@@ -372,7 +374,7 @@ export const CompanyEditPage: React.FC = () => {
                   boxSizing: 'border-box'
                 }}
               >
-                <option value="">-- Chọn ngành nghề --</option>
+                <option value="">{t('common.select_empty', '-- Chọn ngành nghề --')}</option>
                 {industries.map((ind) => (
                   <option key={ind} value={ind}>{ind}</option>
                 ))}
@@ -381,7 +383,7 @@ export const CompanyEditPage: React.FC = () => {
 
             <div style={{ gridColumn: 'span 2' }}>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Link Website
+                {t('companies.label_website', 'Link Website')}
               </label>
               <input
                 type="text"
@@ -410,15 +412,15 @@ export const CompanyEditPage: React.FC = () => {
           padding: 'var(--space-6)'
         }}>
           <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
-            📝 Mô tả & Địa điểm
+            {t('companies.card_desc_locations', '📝 Mô tả & Địa điểm')}
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                Giới thiệu chi tiết doanh nghiệp
+                {t('companies.label_description', 'Giới thiệu chi tiết doanh nghiệp')}
               </label>
               <textarea
-                placeholder="Mô tả chi tiết về lịch sử thành lập, văn hóa doanh nghiệp..."
+                placeholder={t('companies.label_description', 'Mô tả chi tiết về lịch sử thành lập, văn hóa doanh nghiệp...')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={6}
@@ -437,7 +439,7 @@ export const CompanyEditPage: React.FC = () => {
             {/* Branch offices */}
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                📍 Danh sách địa chỉ văn phòng <span style={{ color: 'var(--color-danger)' }}>*</span>
+                {t('companies.label_office_addresses', '📍 Danh sách địa chỉ văn phòng')} <span style={{ color: 'var(--color-danger)' }}>*</span>
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                 {addresses.map((addr, idx) => (
@@ -469,7 +471,7 @@ export const CompanyEditPage: React.FC = () => {
                         fontWeight: 'bold'
                       }}
                     >
-                      Xóa
+                      {t('common.delete', 'Xóa')}
                     </button>
                   </div>
                 ))}
@@ -489,7 +491,7 @@ export const CompanyEditPage: React.FC = () => {
                   fontSize: 'var(--font-size-sm)'
                 }}
               >
-                + Thêm địa điểm
+                {t('companies.btn_add_address', '+ Thêm địa điểm')}
               </button>
             </div>
           </div>
@@ -505,7 +507,7 @@ export const CompanyEditPage: React.FC = () => {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
             <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
-              🌟 Thương hiệu & Cổng Tuyển Dụng (Employer Branding & Careers Portal)
+              {t('companies.card_branding_portal', '🌟 Thương hiệu & Cổng Tuyển Dụng')}
             </h3>
             {companyId && (
               <a 
@@ -514,7 +516,7 @@ export const CompanyEditPage: React.FC = () => {
                 rel="noreferrer"
                 style={{ fontSize: '13px', color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }}
               >
-                🚀 Xem Cổng Tuyển Dụng Thực Tế ↗
+                🚀 {t('companies.btn_explore_careers', 'Xem Cổng Tuyển Dụng Thực Tế')} ↗
               </a>
             )}
           </div>
@@ -522,7 +524,7 @@ export const CompanyEditPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                🎥 Video giới thiệu văn hóa công ty (YouTube / MP4 URL)
+                {t('companies.label_video_url', '🎥 Video giới thiệu văn hóa công ty (YouTube / MP4 URL)')}
               </label>
               <input
                 type="text"
@@ -538,14 +540,11 @@ export const CompanyEditPage: React.FC = () => {
                   boxSizing: 'border-box'
                 }}
               />
-              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'block' }}>
-                Video xuất hiện trang trọng ở mục Tiêu điểm văn hóa giúp tăng 40-60% tỷ lệ nộp đơn.
-              </span>
             </div>
 
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                🖼️ Hình ảnh văn phòng & Môi trường làm việc (Mỗi dòng một link URL ảnh)
+                {t('companies.label_office_gallery', '🖼️ Hình ảnh văn phòng & Môi trường làm việc (Mỗi dòng một link URL ảnh)')}
               </label>
               <textarea
                 placeholder="https://example.com/office-1.jpg&#10;https://example.com/pantry-2.jpg&#10;https://example.com/teambuilding.jpg"
@@ -562,14 +561,11 @@ export const CompanyEditPage: React.FC = () => {
                   resize: 'vertical'
                 }}
               />
-              <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', display: 'block' }}>
-                Hình ảnh không gian làm việc thực tế, góc pantry, phòng họp sáng tạo và hoạt động teambuilding.
-              </span>
             </div>
 
             <div>
               <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                🎁 Lợi ích & Chế độ đãi ngộ bổ sung (Benefits)
+                {t('companies.label_benefits', '🎁 Lợi ích & Chế độ đãi ngộ bổ sung (Benefits)')}
               </label>
               <textarea
                 placeholder="Ví dụ: Thưởng tháng 13, Gói bảo hiểm sức khỏe Bảo Việt, Khám sức khỏe định kỳ, Du lịch 5 sao..."
@@ -608,7 +604,7 @@ export const CompanyEditPage: React.FC = () => {
               opacity: saving ? 0.7 : 1
             }}
           >
-            {saving ? 'Đang lưu thông tin...' : 'Lưu thông tin trang'}
+            {saving ? t('companies.saving_company', 'Đang lưu thông tin...') : t('companies.btn_save_company', 'Lưu thông tin trang')}
           </button>
         </div>
       </form>

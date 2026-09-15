@@ -1,5 +1,13 @@
 import api from '../../../core/services/api.service';
 
+export interface AppliedJobItem {
+  applicationId: number;
+  jobId: number;
+  jobTitle: string;
+  status: string;
+  appliedAt: string;
+}
+
 export interface ConversationItem {
   id: number;
   applicationId?: number;
@@ -17,6 +25,7 @@ export interface ConversationItem {
   lastMessageContent: string;
   lastSenderId?: number;
   unreadCount: number;
+  appliedJobs?: AppliedJobItem[];
 }
 
 export interface ChatMessageItem {

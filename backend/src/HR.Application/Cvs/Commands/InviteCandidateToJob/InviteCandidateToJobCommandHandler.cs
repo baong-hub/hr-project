@@ -114,10 +114,11 @@ public class InviteCandidateToJobCommandHandler : IRequestHandler<InviteCandidat
         // 6. Tự động mở Conversation kèm tin nhắn lời mời để hai bên có thể chat trực tiếp
         var candidateUserId = candidate.User?.Id ?? candidate.Id;
         var convo = await _context.Conversations
-            .FirstOrDefaultAsync(c => c.DeletedAt == null && 
-                                     c.CandidateUserId == candidateUserId && 
-                                     c.EmployerUserId == employerUserId &&
-                                     c.JobId == job.Id, cancellationToken);
+            .Where(c => c.DeletedAt == null && 
+                        c.CandidateUserId == candidateUserId && 
+                        c.EmployerUserId == employerUserId)
+            .OrderByDescending(c => c.LastMessageAt)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (convo == null)
         {
@@ -135,18 +136,26 @@ public class InviteCandidateToJobCommandHandler : IRequestHandler<InviteCandidat
             };
             _context.Conversations.Add(convo);
             await _context.SaveChangesAsync(cancellationToken);
-
-            var chatMsg = new ChatMessage
-            {
-                ConversationId = convo.Id,
-                SenderId = employerUserId,
-                Content = $"[Lời mời ứng tuyển vị trí {job.Title}]\n\n{invitationText}\n\n👉 Chi tiết công việc: /jobs/{job.Id}",
-                IsRead = false,
-                SentAt = DateTime.Now
-            };
-            _context.ChatMessages.Add(chatMsg);
-            await _context.SaveChangesAsync(cancellationToken);
         }
+        else
+        {
+            convo.JobId = job.Id;
+            convo.LastMessageAt = DateTime.Now;
+            convo.LastMessageContent = invitationText;
+            convo.LastSenderId = employerUserId;
+            convo.CandidateUnreadCount += 1;
+        }
+
+        var chatMsg = new ChatMessage
+        {
+            ConversationId = convo.Id,
+            SenderId = employerUserId,
+            Content = $"[Lời mời ứng tuyển vị trí: {job.Title}]\n\n{invitationText}\n\n👉 Chi tiết công việc: /jobs/{job.Id}",
+            IsRead = false,
+            SentAt = DateTime.Now
+        };
+        _context.ChatMessages.Add(chatMsg);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return true;
     }

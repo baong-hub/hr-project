@@ -65,14 +65,14 @@ export const NotificationsPage: React.FC = () => {
       setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, isRead: true } : n)
       );
-      toast.success(t('notifications.markedRead', 'Đã đánh dấu là đã đọc'));
+      toast.success(t('notifications.marked_read', 'Đã đánh dấu là đã đọc'));
       
       if (redirectUrl) {
         navigate(redirectUrl);
       }
     } catch (err) {
       console.error('Failed to mark as read', err);
-      toast.error(t('notifications.markReadFailed', 'Đánh dấu đọc thất bại'));
+      toast.error(t('notifications.mark_read_failed', 'Đánh dấu đọc thất bại'));
     }
   };
 
@@ -80,10 +80,10 @@ export const NotificationsPage: React.FC = () => {
     try {
       await notificationService.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      toast.success(t('notifications.markedAllRead', 'Đã đánh dấu tất cả là đã đọc'));
+      toast.success(t('notifications.marked_all_read', 'Đã đánh dấu tất cả là đã đọc'));
     } catch (err) {
       console.error('Failed to mark all as read', err);
-      toast.error(t('notifications.markAllReadFailed', 'Thao tác thất bại'));
+      toast.error(t('notifications.mark_all_read_failed', 'Thao tác thất bại'));
     }
   };
 
@@ -102,7 +102,7 @@ export const NotificationsPage: React.FC = () => {
 
   const getFormattedTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString('vi-VN', {
+    return date.toLocaleString(t('common.locale', 'vi-VN'), {
       hour: '2-digit',
       minute: '2-digit',
       day: '2-digit',
@@ -118,12 +118,12 @@ export const NotificationsPage: React.FC = () => {
       <div className={styles.titleArea}>
         <h1>
           <Bell size={24} style={{ verticalAlign: 'middle', marginRight: 8, color: 'var(--color-brand-primary)' }} />
-          {t('notifications.centerTitle', 'Trung tâm thông báo')}
+          {t('notifications.title', 'Trung tâm thông báo')}
         </h1>
         {hasUnread && (
           <button className={styles.btnSecondary} onClick={handleMarkAllAsRead}>
             <Check size={16} />
-            {t('notifications.markAllRead', 'Đánh dấu tất cả đã đọc')}
+            {t('notifications.mark_all_read', 'Đánh dấu tất cả đã đọc')}
           </button>
         )}
       </div>
@@ -138,7 +138,7 @@ export const NotificationsPage: React.FC = () => {
           <div className={styles.stateContainer}>
             <AlertCircle size={40} className={styles.errorIcon} />
             <p className={styles.stateText_error}>
-              {t('notifications.loadFailed', 'Không thể tải danh sách thông báo.')}
+              {t('notifications.load_failed', 'Không thể tải danh sách thông báo.')}
             </p>
             <button className={styles.btnRetry} onClick={() => fetchNotifications(page, pageSize)}>
               <RefreshCw size={16} />
@@ -148,9 +148,9 @@ export const NotificationsPage: React.FC = () => {
         ) : notifications.length === 0 ? (
           <div className={styles.stateContainer}>
             <Bell size={48} className={styles.emptyIcon} />
-            <h2>{t('notifications.noNotificationsTitle', 'Hộp thư trống')}</h2>
+            <h2>{t('notifications.empty_title', 'Hộp thư trống')}</h2>
             <p className={styles.stateText_empty}>
-              {t('notifications.noNotificationsDesc', 'Bạn không có thông báo nào vào lúc này.')}
+              {t('notifications.empty', 'Bạn không có thông báo nào vào lúc này.')}
             </p>
           </div>
         ) : (
@@ -192,7 +192,7 @@ export const NotificationsPage: React.FC = () => {
                   <option value={20}>20</option>
                   <option value={50}>50</option>
                 </select>{' '}
-                / {totalItems} {t('notifications.records', 'thông báo')}
+                / {totalItems} {t('notifications.records_label', 'thông báo')}
               </div>
               <div className={styles.paginationButtons}>
                 <button
@@ -203,7 +203,7 @@ export const NotificationsPage: React.FC = () => {
                   ‹
                 </button>
                 <span className={styles.pageIndicator}>
-                  {t('common.page', 'Trang')} {page} / {totalPages || 1}
+                  {t('notifications.page_label', { current: page, total: totalPages || 1, defaultValue: `Trang ${page} / ${totalPages || 1}` })}
                 </span>
                 <button
                   className={styles.pageBtn}

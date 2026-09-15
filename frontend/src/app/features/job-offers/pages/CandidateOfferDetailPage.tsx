@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   FileText,
   Building,
@@ -10,9 +11,11 @@ import { jobOfferService } from '../../../core/services/job-offer.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobOffer } from '../../../core/models/job-offer.model';
 import { CandidateOfferModal } from '../components/CandidateOfferModal';
+import styles from './CandidateOfferDetailPage.module.scss';
 
 export const CandidateOfferDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
+  const { t } = useTranslation();
 
   const [offers, setOffers] = useState<JobOffer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +30,7 @@ export const CandidateOfferDetailPage: React.FC = () => {
           setSelectedOffer(res.data.data);
           setOffers([res.data.data]);
         } else {
-          toast.error('Không tìm thấy thư mời nhận việc.');
+          toast.error(t('error.NOT_FOUND', 'Không tìm thấy thư mời nhận việc.'));
         }
       } else {
         const res = await jobOfferService.getCandidateOffers();
@@ -40,7 +43,7 @@ export const CandidateOfferDetailPage: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi tải thông tin thư mời nhận việc.');
+      toast.error(t('error.SERVER_ERROR', 'Lỗi khi tải thông tin thư mời nhận việc.'));
     } finally {
       setLoading(false);
     }
@@ -51,155 +54,111 @@ export const CandidateOfferDetailPage: React.FC = () => {
   }, [id]);
 
   const formatMoney = (val: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    return new Intl.NumberFormat(t('common.locale', 'vi-VN'), { style: 'currency', currency: 'VND' }).format(val);
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACCEPTED':
-        return { text: 'Đã nhận việc (Hired)', bg: '#ecfdf5', color: '#059669', border: '#a7f3d0' };
+        return { text: t('offers.status_hired', 'Đã nhận việc (Hired)'), bg: 'rgba(5, 150, 105, 0.15)', color: '#10b981', border: 'rgba(16, 185, 129, 0.3)' };
       case 'NEGOTIATING':
-        return { text: 'Đang thương lượng', bg: '#fffbeb', color: '#d97706', border: '#fde68a' };
+        return { text: t('offers.status_negotiating', 'Đang thương lượng'), bg: 'rgba(217, 119, 6, 0.15)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' };
       case 'DECLINED':
-        return { text: 'Đã từ chối', bg: '#fef2f2', color: '#dc2626', border: '#fecaca' };
+        return { text: t('offers.status_declined', 'Đã từ chối'), bg: 'rgba(220, 38, 38, 0.15)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.3)' };
       case 'EXPIRED':
-        return { text: 'Hết hạn', bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' };
+        return { text: t('offers.status_expired', 'Hết hạn'), bg: 'var(--color-bg-subtle)', color: 'var(--color-text-muted)', border: 'var(--color-border-default)' };
       case 'CANCELLED':
-        return { text: 'Đã thu hồi', bg: '#f1f5f9', color: '#64748b', border: '#cbd5e1' };
+        return { text: t('offers.status_cancelled', 'Đã thu hồi'), bg: 'var(--color-bg-subtle)', color: 'var(--color-text-muted)', border: 'var(--color-border-default)' };
       default:
-        return { text: 'Chờ bạn phản hồi', bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' };
+        return { text: t('offers.status_pending', 'Chờ bạn phản hồi'), bg: 'rgba(37, 99, 235, 0.15)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' };
     }
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 20px' }}>
+    <div className={styles.pageContainer}>
       {/* Top Header Bar */}
-      <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+      <div className={styles.headerBanner}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', margin: '0 0 8px 0' }}>
-            Danh Sách Thư Mời Nhận Việc (Job Offers)
+          <h1 className={styles.title}>
+            {t('offers.title', 'Danh Sách Thư Mời Nhận Việc (Job Offers)')}
           </h1>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
-            Xem chi tiết các đề xuất tuyển dụng chính thức, thương lượng mức lương hoặc ký duyệt chấp nhận gia nhập công ty.
+          <p className={styles.subtitle}>
+            {t('offers.subtitle', 'Xem chi tiết các đề xuất tuyển dụng chính thức, thương lượng mức lương hoặc ký duyệt chấp nhận gia nhập công ty.')}
           </p>
         </div>
 
-        <span style={{
-          fontSize: '0.875rem',
-          color: '#64748b',
-          background: '#f1f5f9',
-          padding: '6px 14px',
-          borderRadius: '8px',
-          fontWeight: 500
-        }}>
-          Quản lý Thư Mời Nhận Việc & Ký Duyệt Trực Tuyến
+        <span className={styles.badgeTop}>
+          ✨ {t('offers.badge_top', 'Quản lý Thư Mời Nhận Việc & Ký Duyệt Trực Tuyến')}
         </span>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--color-text-secondary)' }}>
           <div className="spinner" style={{ marginBottom: '12px' }} />
-          Đang tải thông tin thư mời nhận việc...
+          {t('offers.loading', 'Đang tải thông tin thư mời nhận việc...')}
         </div>
       ) : offers.length === 0 ? (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '60px 24px',
-            background: '#ffffff',
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-          }}
-        >
-          <Inbox size={48} color="#94a3b8" style={{ margin: '0 auto 16px auto' }} />
-          <h3 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>Chưa có Thư Mời Nhận Việc nào</h3>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
-            Khi nhà tuyển dụng hoàn tất đánh giá phỏng vấn và gửi đề xuất, bạn sẽ nhận được thông báo tại đây.
+        <div className={styles.emptyState}>
+          <Inbox size={56} color="var(--color-text-muted)" style={{ margin: '0 auto 16px auto', opacity: 0.7 }} />
+          <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-text-primary)', fontSize: '1.25rem' }}>{t('offers.empty_title', 'Chưa có Thư Mời Nhận Việc nào')}</h3>
+          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
+            {t('offers.empty_desc', 'Khi nhà tuyển dụng hoàn tất đánh giá phỏng vấn và gửi đề xuất, bạn sẽ nhận được thông báo tại đây.')}
           </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className={styles.offersList}>
           {offers.map((item) => {
             const badge = getStatusBadge(item.status);
             return (
-              <div
-                key={item.id}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '16px',
-                  border: '1px solid #e2e8f0',
-                  padding: '24px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: '20px',
-                  flexWrap: 'wrap'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '18px', minWidth: '280px' }}>
-                  <div
-                    style={{
-                      width: '56px',
-                      height: '56px',
-                      borderRadius: '12px',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden'
-                    }}
-                  >
+              <div key={item.id} className={styles.offerCard}>
+                {/* Column 1: Company Logo + Position Title */}
+                <div className={styles.colCompany}>
+                  <div className={styles.logo}>
                     {item.companyLogo ? (
                       <img
                         src={item.companyLogo}
                         alt={item.companyName}
-                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                       />
                     ) : (
-                      <Building size={28} color="#0284c7" />
+                      <Building size={26} color="var(--color-brand-primary, #0284c7)" />
                     )}
                   </div>
 
-                  <div>
-                    <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>
+                  <div className={styles.companyInfo}>
+                    <h3 className={styles.positionTitle} title={item.positionTitle}>
                       {item.positionTitle}
                     </h3>
-                    <div style={{ fontSize: '0.9rem', color: '#475569', fontWeight: 500 }}>
+                    <div className={styles.companyName} title={item.companyName}>
                       🏢 {item.companyName}
                     </div>
                   </div>
                 </div>
 
-                {/* Salary & Start Date info */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>
-                      Thu nhập chính thức
-                    </div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#059669', marginTop: '2px' }}>
-                      {formatMoney(item.totalSalary)} / tháng
-                    </div>
+                {/* Column 2: Official Salary */}
+                <div className={styles.colSalary}>
+                  <div className={styles.label}>
+                    {t('offers.salary_official', 'Thu nhập chính thức')}
                   </div>
-
-                  <div>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase' }}>
-                      Ngày nhận việc
-                    </div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#1e293b', marginTop: '2px' }}>
-                      {new Date(item.startDate).toLocaleDateString('vi-VN')}
-                    </div>
+                  <div className={styles.value}>
+                    {formatMoney(item.totalSalary)} {t('offers.per_month', '/ tháng')}
                   </div>
+                </div>
 
-                  {/* Status Badge */}
+                {/* Column 3: Start Date */}
+                <div className={styles.colDate}>
+                  <div className={styles.label}>
+                    {t('offers.start_date', 'Ngày nhận việc')}
+                  </div>
+                  <div className={styles.value}>
+                    {new Date(item.startDate).toLocaleDateString(t('common.locale', 'vi-VN'))}
+                  </div>
+                </div>
+
+                {/* Column 4: Status Badge */}
+                <div className={styles.colStatus}>
                   <span
+                    className={styles.badge}
                     style={{
-                      padding: '6px 14px',
-                      borderRadius: '20px',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
                       background: badge.bg,
                       color: badge.color,
                       border: `1px solid ${badge.border}`
@@ -209,26 +168,15 @@ export const CandidateOfferDetailPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Open Modal Button */}
-                <button
-                  onClick={() => setSelectedOffer(item)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 20px',
-                    background: item.status === 'PENDING' ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' : '#f8fafc',
-                    color: item.status === 'PENDING' ? '#ffffff' : '#0f172a',
-                    border: item.status === 'PENDING' ? 'none' : '1px solid #cbd5e1',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    boxShadow: item.status === 'PENDING' ? '0 4px 10px rgba(2,132,199,0.3)' : 'none'
-                  }}
-                >
-                  <FileText size={16} /> Xem Thư Mời & Phản Hồi <ChevronRight size={16} />
-                </button>
+                {/* Column 5: Action Button */}
+                <div className={styles.colAction}>
+                  <button
+                    onClick={() => setSelectedOffer(item)}
+                    className={`${styles.btnAction} ${item.status === 'PENDING' ? styles.btnPending : styles.btnDefault}`}
+                  >
+                    <FileText size={16} /> {t('offers.btn_view_respond', 'Xem Thư Mời & Phản Hồi')} <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             );
           })}

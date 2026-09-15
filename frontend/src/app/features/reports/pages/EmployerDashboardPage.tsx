@@ -123,7 +123,7 @@ export const EmployerDashboardPage: React.FC = () => {
   const interviewCount = stages.find(s => s.stage === 'INTERVIEW')?.count || 0;
   const offerCount = stages.find(s => s.stage === 'OFFER')?.count || 0;
   const hiredCount = stages.find(s => s.stage === 'HIRED')?.count || 0;
-  const rejectedCount = stages.find(s => s.stage === 'REJECTED')?.count || 0;
+
 
   // Use appliedCount as the base (cumulative - all applications passed through Applied)
   const baseCount = Math.max(1, appliedCount);

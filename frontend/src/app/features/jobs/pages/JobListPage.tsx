@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MapPin, Briefcase, DollarSign, Clock, Heart } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { applicationsService } from '../../../core/services/applications.service';
@@ -12,6 +13,7 @@ import { CITY_OPTIONS } from '../../../core/utils/city.utils';
 import styles from './JobsPage.module.scss';
 
 export const JobListPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
@@ -44,6 +46,13 @@ export const JobListPage: React.FC = () => {
 
   // Applied Jobs (prevent duplicate applications)
   const [appliedJobIds, setAppliedJobIds] = useState<Set<number>>(new Set());
+
+  // Track job view impressions for accurate analytics
+  useEffect(() => {
+    if (activeJob?.id) {
+      jobsService.trackJobView(activeJob.id).catch(() => {});
+    }
+  }, [activeJob?.id]);
 
   const fetchJobs = async (overrideParams?: { search?: string; city?: string; salaryFrom?: string }) => {
     setLoading(true);
@@ -236,20 +245,22 @@ export const JobListPage: React.FC = () => {
   };
 
   const formatSalary = (from?: number, to?: number) => {
-    if (!from && !to) return 'Thỏa thuận';
-    const fmt = (n: number) => (n / 1000000).toFixed(0) + ' triệu';
-    if (from && to) return `${fmt(from)} - ${fmt(to)}`;
-    if (from) return `Từ ${fmt(from)}`;
-    return `Đến ${fmt(to!)}`;
+    if (!from && !to) return t('jobs.salary_negotiable', 'Thỏa thuận');
+    const isEn = i18n.language === 'en';
+    const unit = isEn ? 'M VND' : ' triệu';
+    const fmt = (n: number) => (n / 1000000).toFixed(0) + unit;
+    if (from && to) return `${(from / 1000000).toFixed(0)} - ${fmt(to)}`;
+    if (from) return (isEn ? `From ` : `Từ `) + fmt(from);
+    return (isEn ? `Up to ` : `Đến `) + fmt(to!);
   };
 
   return (
     <div className={styles.jobsPage}>
       <div className={styles.titleArea}>
         <div>
-          <h1>Khám phá Cơ hội Việc làm IT</h1>
+          <h1>{t('jobs.title', 'Khám phá Cơ hội Việc làm IT')}</h1>
           <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
-            Tìm kiếm và ứng tuyển trực tiếp nhanh chóng
+            {t('jobs.subtitle', 'Tìm kiếm và ứng tuyển trực tiếp nhanh chóng')}
           </p>
         </div>
         {!isCandidate && (
@@ -260,7 +271,7 @@ export const JobListPage: React.FC = () => {
               className={styles.btnSecondary}
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              Quản lý tin của tôi
+              {t('jobs.manage_my_jobs', 'Quản lý tin của tôi')}
             </button>
             <button 
               type="button" 
@@ -268,7 +279,7 @@ export const JobListPage: React.FC = () => {
               className={styles.btnPrimary}
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              + Đăng tin mới
+              {t('jobs.post_new_job', '+ Đăng tin mới')}
             </button>
           </div>
         )}
@@ -291,7 +302,7 @@ export const JobListPage: React.FC = () => {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '0.9rem' }}>
-              <strong>Khu vực Ứng viên:</strong> Theo dõi tiến độ hồ sơ, Thư mời nhận việc (Job Offers) và các bài kiểm tra năng lực của bạn.
+              <strong>{t('jobs.candidate_zone', 'Khu vực Ứng viên')}:</strong> {t('jobs.candidate_zone_desc', 'Theo dõi tiến độ hồ sơ, Thư mời nhận việc (Job Offers) và các bài kiểm tra năng lực của bạn.')}
             </span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -300,14 +311,14 @@ export const JobListPage: React.FC = () => {
               onClick={() => navigate('/candidate/offers')}
               style={{ padding: '6px 12px', borderRadius: '6px', background: '#ffffff', color: '#065f46', border: 'none', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' }}
             >
-              Thư mời nhận việc
+              {t('jobs.btn_offers', 'Thư mời nhận việc')}
             </button>
             <button
               type="button"
               onClick={() => navigate('/candidate/applications')}
               style={{ padding: '6px 12px', borderRadius: '6px', background: 'rgba(255,255,255,0.2)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' }}
             >
-              Lịch sử ứng tuyển
+              {t('jobs.btn_app_history', 'Lịch sử ứng tuyển')}
             </button>
           </div>
         </div>
@@ -318,7 +329,7 @@ export const JobListPage: React.FC = () => {
         <div className={styles.searchInputs} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
           <input
             type="text"
-            placeholder="Tìm theo tiêu đề công việc, kỹ năng..."
+            placeholder={t('jobs.search_placeholder', 'Tìm theo tiêu đề công việc, kỹ năng...')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -331,7 +342,9 @@ export const JobListPage: React.FC = () => {
             }}
           >
             {CITY_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.value === '' ? t('jobs.all_locations', opt.label) : opt.label}
+              </option>
             ))}
           </select>
           <select 
@@ -342,19 +355,19 @@ export const JobListPage: React.FC = () => {
               fetchJobs({ salaryFrom: val });
             }}
           >
-            <option value="">Tất cả mức lương</option>
-            <option value="10000000">Trên 10 triệu</option>
-            <option value="20000000">Trên 20 triệu</option>
-            <option value="30000000">Trên 30 triệu</option>
-            <option value="40000000">Trên 40 triệu</option>
+            <option value="">{t('jobs.all_salaries', 'Tất cả mức lương')}</option>
+            <option value="10000000">{i18n.language === 'en' ? 'Above 10M VND' : 'Trên 10 triệu'}</option>
+            <option value="20000000">{i18n.language === 'en' ? 'Above 20M VND' : 'Trên 20 triệu'}</option>
+            <option value="30000000">{i18n.language === 'en' ? 'Above 30M VND' : 'Trên 30 triệu'}</option>
+            <option value="40000000">{i18n.language === 'en' ? 'Above 40M VND' : 'Trên 40 triệu'}</option>
           </select>
         </div>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
           <button type="submit" className={styles.btnPrimary}>
-            Tìm kiếm
+            {t('jobs.btn_search', 'Tìm kiếm')}
           </button>
           <button type="button" onClick={handleClearFilters} className={styles.btnSecondary}>
-            Xóa bộ lọc
+            {t('jobs.btn_clear_filter', 'Xóa bộ lọc')}
           </button>
         </div>
       </form>
@@ -362,7 +375,7 @@ export const JobListPage: React.FC = () => {
       {/* Main Content (Split Layout) */}
       {loading ? (
         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-          Đang tải danh sách công việc...
+          {t('common.loading', 'Đang tải danh sách công việc...')}
         </div>
       ) : error ? (
         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-error)' }}>
@@ -370,7 +383,7 @@ export const JobListPage: React.FC = () => {
         </div>
       ) : jobs.length === 0 ? (
         <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-          Không tìm thấy cơ hội việc làm nào phù hợp.
+          {t('jobs.no_jobs_found', 'Không tìm thấy cơ hội việc làm nào phù hợp.')}
         </div>
       ) : (
         <div className={styles.jobBoardLayout}>
@@ -401,12 +414,12 @@ export const JobListPage: React.FC = () => {
                   </div>
                 </div>
                 <div className={styles.cardFooter}>
-                  <span>Hạn nộp: {new Date(job.expiredAt).toLocaleDateString('vi-VN')}</span>
+                  <span>{t('jobs.deadline', { date: new Date(job.expiredAt).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'vi-VN'), defaultValue: `Hạn nộp: ${new Date(job.expiredAt).toLocaleDateString('vi-VN')}` })}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {isCandidate && (
                       <button
                         onClick={(e) => toggleSaveJob(job.id, e)}
-                        title={savedJobIds.has(job.id) ? 'Bỏ lưu việc làm' : 'Lưu việc làm'}
+                        title={savedJobIds.has(job.id) ? t('jobs.btn_saved', 'Đã lưu') : t('jobs.btn_save', 'Lưu việc làm')}
                         disabled={togglingJobId === job.id}
                         style={{
                           background: 'none',
@@ -445,7 +458,7 @@ export const JobListPage: React.FC = () => {
                             border: '1px solid #a7f3d0',
                           }}
                         >
-                          Đã ứng tuyển
+                          {t('jobs.btn_applied', 'Đã ứng tuyển')}
                         </span>
                       ) : (
                         <button
@@ -453,7 +466,7 @@ export const JobListPage: React.FC = () => {
                           className={styles.btnPrimary}
                           style={{ padding: '4px 10px', fontSize: '11px', borderRadius: 'var(--radius-sm)' }}
                         >
-                          Ứng tuyển
+                          {t('jobs.btn_apply_now', 'Ứng tuyển')}
                         </button>
                       )
                     )}
@@ -483,8 +496,7 @@ export const JobListPage: React.FC = () => {
                       </span>
                     </div>
                     <div className={styles.metaItem}>
-                      <Clock size={14} /> Hạn nộp:{' '}
-                      {new Date(activeJob.expiredAt).toLocaleDateString('vi-VN')}
+                      <Clock size={14} /> {t('jobs.deadline', { date: new Date(activeJob.expiredAt).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'vi-VN'), defaultValue: `Hạn nộp: ${new Date(activeJob.expiredAt).toLocaleDateString('vi-VN')}` })}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -504,11 +516,11 @@ export const JobListPage: React.FC = () => {
                             opacity: 0.9,
                           }}
                         >
-                          Đã ứng tuyển
+                          {t('jobs.btn_applied', 'Đã ứng tuyển')}
                         </button>
                       ) : (
                         <button onClick={(e) => openApplyModal(activeJob, e)} className={styles.btnPrimary}>
-                          Ứng tuyển ngay
+                          {t('jobs.btn_apply_now', 'Ứng tuyển ngay')}
                         </button>
                       )
                     )}
@@ -527,11 +539,11 @@ export const JobListPage: React.FC = () => {
                           transition: 'all 0.2s ease',
                         }}
                       >
-                        {savedJobIds.has(activeJob.id) ? 'Đã lưu' : 'Lưu việc làm'}
+                        {savedJobIds.has(activeJob.id) ? t('jobs.btn_saved', 'Đã lưu') : t('jobs.btn_save', 'Lưu việc làm')}
                       </button>
                     )}
-                    <button onClick={() => navigate(`/jobs/${activeJob.id}`)} className={styles.btnSecondary}>
-                      Xem chi tiết đầy đủ
+                    <button onClick={() => navigate(`/jobs/${activeJob.id}`, { state: { fromQuickView: true } })} className={styles.btnSecondary}>
+                      {t('jobs.view_full', 'Xem chi tiết đầy đủ')}
                     </button>
                     <button
                       type="button"
@@ -540,29 +552,29 @@ export const JobListPage: React.FC = () => {
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        color: '#4f46e5',
-                        borderColor: '#c7d2fe',
-                        background: '#eef2ff',
+                        color: 'var(--color-brand-primary, #4f46e5)',
+                        borderColor: 'var(--color-border-default)',
+                        background: 'var(--color-bg-subtle, #eef2ff)',
                         fontWeight: 600
                       }}
                       title="Xem ảnh văn phòng, video văn hóa & quyền lợi đặc quyền của công ty này"
                     >
-                      Cổng Careers Công Ty
+                      {t('jobs.careers_page', 'Cổng Careers Công Ty')}
                     </button>
                   </div>
                 </div>
                 <div className={styles.detailBody}>
                   <div className={styles.detailSection}>
-                    <h3>Mô tả công việc</h3>
+                    <h3>{t('jobs.job_desc', 'Mô tả công việc')}</h3>
                     <p>{activeJob.description}</p>
                   </div>
                   <div className={styles.detailSection}>
-                    <h3>Yêu cầu ứng viên</h3>
+                    <h3>{t('jobs.job_req', 'Yêu cầu ứng viên')}</h3>
                     <p>{activeJob.requirements}</p>
                   </div>
                   {activeJob.benefits && (
                     <div className={styles.detailSection}>
-                      <h3>Quyền lợi phúc lợi</h3>
+                      <h3>{t('jobs.job_benefits', 'Quyền lợi phúc lợi')}</h3>
                       <p>{activeJob.benefits}</p>
                     </div>
                   )}
@@ -571,7 +583,7 @@ export const JobListPage: React.FC = () => {
             ) : (
               <div className={styles.noJobSelected}>
                 <Briefcase size={48} />
-                <p>Chọn một công việc để xem chi tiết</p>
+                <p>{t('jobs.select_job_to_view', 'Chọn một công việc để xem chi tiết')}</p>
               </div>
             )}
           </div>

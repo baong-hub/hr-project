@@ -117,11 +117,11 @@ export const NotificationBell: React.FC = () => {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'Vừa xong';
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays === 1) return 'Hôm qua';
-    return date.toLocaleDateString('vi-VN');
+    if (diffMins < 1) return t('notifications.just_now', 'Vừa xong');
+    if (diffMins < 60) return t('notifications.mins_ago', { count: diffMins, defaultValue: `${diffMins} phút trước` });
+    if (diffHours < 24) return t('notifications.hours_ago', { count: diffHours, defaultValue: `${diffHours} giờ trước` });
+    if (diffDays === 1) return t('notifications.yesterday', 'Hôm qua');
+    return date.toLocaleDateString(t('common.locale', 'vi-VN'));
   };
 
   return (
@@ -143,7 +143,7 @@ export const NotificationBell: React.FC = () => {
             <span className={styles.dropdown__title}>{t('notifications.title', 'Thông báo')}</span>
             {unreadCount > 0 && (
               <button className={styles.readAllBtn} onClick={handleMarkAllAsRead}>
-                {t('notifications.markAllRead', 'Đánh dấu tất cả đã đọc')}
+                {t('notifications.mark_all_read', 'Đánh dấu tất cả đã đọc')}
               </button>
             )}
           </div>
@@ -157,7 +157,7 @@ export const NotificationBell: React.FC = () => {
             ) : notifications.length === 0 ? (
               <div className={styles.stateContainer}>
                 <p className={styles.stateText_empty}>
-                  {t('notifications.noNotifications', 'Không có thông báo nào')}
+                  {t('notifications.empty', 'Không có thông báo nào')}
                 </p>
               </div>
             ) : (
@@ -188,7 +188,7 @@ export const NotificationBell: React.FC = () => {
               className={styles.viewAllBtn} 
               onClick={() => { navigate('/notifications'); setIsOpen(false); }}
             >
-              {t('notifications.viewAll', 'Xem tất cả thông báo')}
+              {t('notifications.view_all', 'Xem tất cả thông báo')}
             </button>
           </div>
         </div>
