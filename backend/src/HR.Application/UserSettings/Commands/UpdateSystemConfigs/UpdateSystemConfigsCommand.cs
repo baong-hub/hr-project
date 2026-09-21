@@ -9,9 +9,13 @@ public record UpdateSystemConfigItemDto(string ConfigKey, string ConfigValue);
 
 public record UpdateSystemConfigsCommand(List<UpdateSystemConfigItemDto> Items) : IRequest<ApiResponse<Dictionary<string, string>>>;
 
-public class UpdateSystemConfigsCommandHandler(IApplicationDbContext context)
+public class UpdateSystemConfigsCommandHandler(IApplicationDbContext context, IEncryptionService encryptionService)
     : IRequestHandler<UpdateSystemConfigsCommand, ApiResponse<Dictionary<string, string>>>
 {
+    private static bool IsSensitiveKey(string key) =>
+        key.Contains("password", StringComparison.OrdinalIgnoreCase) ||
+        key.Contains("secret", StringComparison.OrdinalIgnoreCase);
+
     public async Task<ApiResponse<Dictionary<string, string>>> Handle(UpdateSystemConfigsCommand request, CancellationToken cancellationToken)
     {
         if (request.Items == null || request.Items.Count == 0)
@@ -30,8 +34,19 @@ public class UpdateSystemConfigsCommandHandler(IApplicationDbContext context)
             var config = existingConfigs.FirstOrDefault(c => c.ConfigKey == item.ConfigKey);
             if (config != null)
             {
-                config.ConfigValue = item.ConfigValue;
-                config.UpdatedAt = now;
+                if (IsSensitiveKey(item.ConfigKey))
+                {
+                    if (!string.IsNullOrWhiteSpace(item.ConfigValue) && item.ConfigValue != "******")
+                    {
+                        config.ConfigValue = encryptionService.Encrypt(item.ConfigValue);
+                        config.UpdatedAt = now;
+                    }
+                }
+                else
+                {
+                    config.ConfigValue = item.ConfigValue;
+                    config.UpdatedAt = now;
+                }
             }
         }
 
@@ -39,7 +54,7 @@ public class UpdateSystemConfigsCommandHandler(IApplicationDbContext context)
 
         var allConfigs = await context.SettingConfigs
             .AsNoTracking()
-            .ToDictionaryAsync(s => s.ConfigKey, s => s.ConfigValue, cancellationToken);
+            .ToDictionaryAsync(s => s.ConfigKey, s => IsSensitiveKey(s.ConfigKey) ? "******" : s.ConfigValue, cancellationToken);
 
         return ApiResponse<Dictionary<string, string>>.Ok(allConfigs);
     }

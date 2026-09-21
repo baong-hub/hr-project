@@ -30,13 +30,13 @@ public class GetSystemConfigsGroupedQueryHandler(IApplicationDbContext context)
             .OrderBy(s => s.Group)
             .ThenBy(s => s.ConfigKey)
             .Select(s => new SystemConfigDto(
-                s.Id,
-                s.ConfigKey,
-                s.ConfigValue,
-                string.IsNullOrWhiteSpace(s.Group) ? "Khác" : s.Group,
-                s.Description,
-                s.UpdatedAt
-            ))
+                 s.Id,
+                 s.ConfigKey,
+                 (s.ConfigKey.Contains("password") || s.ConfigKey.Contains("secret")) ? "******" : s.ConfigValue,
+                 string.IsNullOrWhiteSpace(s.Group) ? "Khác" : s.Group,
+                 s.Description,
+                 s.UpdatedAt
+             ))
             .ToListAsync(cancellationToken);
 
         var grouped = allConfigs

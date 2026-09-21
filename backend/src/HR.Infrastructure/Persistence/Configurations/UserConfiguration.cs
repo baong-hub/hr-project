@@ -74,6 +74,30 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasDefaultValue(HR.Domain.Enums.UserStatus.ACTIVE)
             .IsRequired();
 
+        builder.Property(x => x.IsEmailVerified)
+            .HasColumnName("is_email_verified")
+            .HasDefaultValue(false);
+
+        builder.Property(x => x.EmailVerificationToken)
+            .HasColumnName("email_verification_token")
+            .HasMaxLength(255);
+
+        builder.Property(x => x.EmailVerificationTokenExpiresAt)
+            .HasColumnName("email_verification_token_expires_at")
+            .HasColumnType("datetime(6)");
+
+        builder.Property(x => x.PasswordResetToken)
+            .HasColumnName("password_reset_token")
+            .HasMaxLength(255);
+
+        builder.Property(x => x.PasswordResetTokenExpiresAt)
+            .HasColumnName("password_reset_token_expires_at")
+            .HasColumnType("datetime(6)");
+
+        builder.Property(x => x.GoogleId)
+            .HasColumnName("google_id")
+            .HasMaxLength(100);
+
         // Audit columns
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")

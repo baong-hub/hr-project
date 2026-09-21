@@ -108,6 +108,28 @@ export const authService = {
     return response.data;
   },
 
+
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (data: { email: string; token: string; newPassword: string }) => {
+    const response = await api.post('/auth/reset-password', data);
+    return response.data;
+  },
+
+  verifyEmail: async (token: string) => {
+    const response = await api.post('/auth/verify-email', { token });
+    return response.data;
+  },
+
+  resendVerificationEmail: async (email: string) => {
+    const response = await api.post('/auth/resend-verification', { email });
+    return response.data;
+  },
+
   refreshToken: async () => {
     const token = localStorage.getItem('refreshToken');
     if (!token) return { success: false, error: 'No refresh token stored' };
@@ -153,12 +175,13 @@ export const authService = {
     }
   },
 
-  googleLogin: async (data: { email?: string; password?: string; googleToken?: string }) => {
-    const response = await api.post('/auth/google-login', data);
-    if (response.data.success && response.data.data.token) {
-      const { token, user, systemConfigs } = response.data.data;
+  googleLogin: async (data: { email?: string; password?: string; googleToken?: string; fullName?: string; avatarUrl?: string }) => {
+    const response = await api.post('/auth/google', data);
+    if (response.data.success && (response.data.data.accessToken || response.data.data.token)) {
+      const { accessToken, token, refreshToken, user, systemConfigs } = response.data.data;
       const normalizedUser = normalizeUser(user);
-      localStorage.setItem('token', token);
+      localStorage.setItem('token', accessToken || token);
+      if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('user', JSON.stringify(normalizedUser));
       if (normalizedUser.subordinateUserIds) {
         localStorage.setItem('subordinate_user_ids', JSON.stringify(normalizedUser.subordinateUserIds));
@@ -166,7 +189,9 @@ export const authService = {
       if (systemConfigs) {
         localStorage.setItem('systemConfigs', JSON.stringify(systemConfigs));
       }
-      localStorage.setItem('workingSiteId', normalizedUser.siteId.toString());
+      if (normalizedUser.siteId) {
+        localStorage.setItem('workingSiteId', normalizedUser.siteId.toString());
+      }
       window.dispatchEvent(new CustomEvent('app-auth-changed'));
     }
     return response.data;

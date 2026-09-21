@@ -55,6 +55,47 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<LoginResultDto>.Ok(result));
     }
 
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] HR.Application.Auth.Commands.ForgotPassword.ForgotPasswordCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] HR.Application.Auth.Commands.ResetPasswordWithToken.ResetPasswordWithTokenCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    [HttpPost("verify-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VerifyEmail([FromBody] HR.Application.Auth.Commands.VerifyEmail.VerifyEmailCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    [HttpPost("resend-verification")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendVerification([FromBody] HR.Application.Auth.Commands.ResendVerificationEmail.ResendVerificationEmailCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(ApiResponse<bool>.Ok(result));
+    }
+
+    [HttpPost("google")]
+    [HttpPost("google-login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GoogleLogin([FromBody] HR.Application.Auth.Commands.GoogleLogin.GoogleLoginCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(ApiResponse<LoginResultDto>.Ok(result));
+    }
+
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout([FromBody] LogoutRequest request)

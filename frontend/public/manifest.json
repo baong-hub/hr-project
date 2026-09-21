@@ -1,0 +1,22 @@
+{
+  "short_name": "HR Portal",
+  "name": "HR Portal - Nền Tảng Tuyển Dụng & Quản Trị Nhân Sự Thông Minh",
+  "description": "Nền tảng tuyển dụng thông minh tích hợp AI, kết nối nhân tài và doanh nghiệp hàng đầu tại Việt Nam.",
+  "icons": [
+    {
+      "src": "/hr.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/hr.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "display": "standalone",
+  "orientation": "portrait"
+}

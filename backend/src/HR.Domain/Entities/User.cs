@@ -20,6 +20,14 @@ public class User : BaseEntity
     public int RoleId { get; set; }
     public UserStatus Status { get; set; } = UserStatus.ACTIVE;
 
+    // Authentication & Verification
+    public bool IsEmailVerified { get; set; } = false;
+    public string? EmailVerificationToken { get; set; }
+    public DateTime? EmailVerificationTokenExpiresAt { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; set; }
+    public string? GoogleId { get; set; }
+
     // Navigation
     public Role Role { get; set; } = null!;
     public Site Site { get; set; } = null!;

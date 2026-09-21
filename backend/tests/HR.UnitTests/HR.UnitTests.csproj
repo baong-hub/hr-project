@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\HR.Application\HR.Application.csproj" />
     <ProjectReference Include="..\..\src\HR.Infrastructure\HR.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\HR.API\HR.API.csproj" />
   </ItemGroup>
 
 </Project>
