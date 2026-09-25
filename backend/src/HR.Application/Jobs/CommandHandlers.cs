@@ -38,6 +38,28 @@ public class UpdateJobCommandHandler(IApplicationDbContext context, ICurrentUser
         job.City = request.City;
         job.ExpiredAt = request.ExpiredAt;
 
+        if (!string.IsNullOrWhiteSpace(request.Department)) job.Department = request.Department;
+        if (!string.IsNullOrWhiteSpace(request.Category)) job.Category = request.Category;
+        if (!string.IsNullOrWhiteSpace(request.EmploymentType)) job.EmploymentType = request.EmploymentType;
+        if (!string.IsNullOrWhiteSpace(request.District)) job.District = request.District;
+        if (!string.IsNullOrWhiteSpace(request.Office)) job.Office = request.Office;
+        if (!string.IsNullOrWhiteSpace(request.Country)) job.Country = request.Country;
+        if (!string.IsNullOrWhiteSpace(request.ExperienceLevel)) job.ExperienceLevel = request.ExperienceLevel;
+        if (request.ExperienceYearsMin.HasValue) job.ExperienceYearsMin = request.ExperienceYearsMin;
+        if (!string.IsNullOrWhiteSpace(request.Education)) job.Education = request.Education;
+        if (!string.IsNullOrWhiteSpace(request.ProbationDuration)) job.ProbationDuration = request.ProbationDuration;
+        if (request.Openings.HasValue && request.Openings.Value > 0) job.Openings = request.Openings.Value;
+
+        if (!string.IsNullOrWhiteSpace(request.WorkMode) && Enum.TryParse<HR.Domain.Enums.WorkMode>(request.WorkMode, true, out var wm))
+        {
+            job.WorkMode = wm;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.SalaryType) && Enum.TryParse<HR.Domain.Enums.SalaryType>(request.SalaryType, true, out var st))
+        {
+            job.SalaryType = st;
+        }
+
         await context.SaveChangesAsync(cancellationToken);
         return true;
     }

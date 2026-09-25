@@ -155,7 +155,8 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
       'module:user-role': ['user-role:view', 'user-role:manage', 'user-role:assign'],
       'module:site': ['site:view'],
       'module:master-data': ['master-data:view', 'master-data:create', 'master-data:update'],
-      'module:organization': ['organization:view', 'organization:create', 'organization:update']
+      'module:organization': ['organization:view', 'organization:create', 'organization:update'],
+      'module:moderation': ['job:manage', 'system:view', 'job:post']
     };
 
     if (code && permMap[code]) {

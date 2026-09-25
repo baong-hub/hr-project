@@ -44,7 +44,22 @@ public class GetJobByIdQueryHandler(IApplicationDbContext context, ICurrentUserS
             j.UrgentUntil,
             j.RiskScore,
             j.FraudWarningFlags,
-            j.ModerationStatus
+            j.ModerationStatus,
+            j.CompanyId,
+            j.Department,
+            j.Category,
+            j.EmploymentType,
+            j.Country,
+            j.District,
+            j.Office,
+            j.WorkMode.ToString(),
+            j.SalaryType.ToString(),
+            j.ExperienceLevel,
+            j.ExperienceYearsMin,
+            j.Education,
+            j.ProbationDuration,
+            j.Openings,
+            j.HiredCount
         );
     }
 }

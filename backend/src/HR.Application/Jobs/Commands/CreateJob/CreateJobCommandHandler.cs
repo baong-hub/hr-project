@@ -58,19 +58,35 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
             request.Benefits,
             request.SalaryFrom,
             request.SalaryTo,
-            null);
+            request.ExperienceLevel);
+
+        var workMode = Enum.TryParse<WorkMode>(request.WorkMode, true, out var wm) ? wm : WorkMode.ONSITE;
+        var salaryType = Enum.TryParse<SalaryType>(request.SalaryType, true, out var st) ? st : SalaryType.NEGOTIABLE;
 
         var job = new Job
         {
             CompanyId = employer.CompanyId.Value,
             EmployerId = employer.Id,
             Title = request.Title,
+            Department = request.Department,
+            Category = request.Category ?? string.Empty,
+            EmploymentType = request.EmploymentType ?? "Full-time",
+            Country = request.Country ?? "VIETNAM",
+            City = request.City,
+            District = request.District,
+            Office = request.Office,
+            WorkMode = workMode,
+            SalaryType = salaryType,
+            ExperienceLevel = request.ExperienceLevel ?? string.Empty,
+            ExperienceYearsMin = request.ExperienceYearsMin,
+            Education = request.Education,
+            ProbationDuration = request.ProbationDuration,
+            Openings = request.Openings ?? 1,
             Description = request.Description,
             Requirements = request.Requirements,
             Benefits = request.Benefits,
             SalaryFrom = request.SalaryFrom,
             SalaryTo = request.SalaryTo,
-            City = request.City,
             Status = scanResult.IsHighRisk ? JobStatus.REJECTED : JobStatus.PENDING_REVIEW,
             RiskScore = scanResult.RiskScore,
             FraudWarningFlags = scanResult.DetectedFlags.Count > 0 ? string.Join(", ", scanResult.DetectedFlags) : null,
@@ -97,7 +113,29 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
             job.City,
             job.Status.ToString(),
             job.ExpiredAt,
-            job.CreatedAt
+            job.CreatedAt,
+            job.IsFeatured,
+            job.FeaturedUntil,
+            job.IsUrgent,
+            job.UrgentUntil,
+            job.RiskScore,
+            job.FraudWarningFlags,
+            job.ModerationStatus,
+            job.CompanyId,
+            job.Department,
+            job.Category,
+            job.EmploymentType,
+            job.Country,
+            job.District,
+            job.Office,
+            job.WorkMode.ToString(),
+            job.SalaryType.ToString(),
+            job.ExperienceLevel,
+            job.ExperienceYearsMin,
+            job.Education,
+            job.ProbationDuration,
+            job.Openings,
+            job.HiredCount
         );
     }
 }

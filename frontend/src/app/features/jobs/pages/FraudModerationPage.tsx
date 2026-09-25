@@ -497,7 +497,7 @@ export const FraudModerationPage: React.FC = () => {
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 border border-blue-200 dark:border-blue-900/50 rounded-full text-xs font-bold">
-                  3 Mẫu đang hoạt động
+                  {zaloStatus?.activeTemplatesCount ?? zaloStatus?.availableTemplates?.length ?? 3} Mẫu đang hoạt động
                 </span>
               </div>
 
@@ -569,9 +569,19 @@ export const FraudModerationPage: React.FC = () => {
                     onChange={(e) => setSelectedTemplate(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="ZNS_INTERVIEW_INVITE_V1">Mời phỏng vấn & Nhắc lịch</option>
-                    <option value="ZNS_OFFER_ISSUED_V1">Thư mời nhận việc (Offer)</option>
-                    <option value="ZNS_APPLICATION_STATUS_V1">Cập nhật tiến độ ứng tuyển</option>
+                    {zaloStatus?.availableTemplates && zaloStatus.availableTemplates.length > 0 ? (
+                      zaloStatus.availableTemplates.map((t) => (
+                        <option key={t.templateId} value={t.templateId}>
+                          {t.templateName} ({t.templateId})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="ZNS_INTERVIEW_INVITE_V1">Mời phỏng vấn & Nhắc lịch (ZNS_INTERVIEW_INVITE_V1)</option>
+                        <option value="ZNS_OFFER_ISSUED_V1">Thư mời nhận việc (ZNS_OFFER_ISSUED_V1)</option>
+                        <option value="ZNS_APPLICATION_STATUS_V1">Cập nhật tiến độ ứng tuyển (ZNS_APPLICATION_STATUS_V1)</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
