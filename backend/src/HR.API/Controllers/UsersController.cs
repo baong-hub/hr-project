@@ -113,6 +113,30 @@ public class UsersController(IMediator mediator) : ControllerBase
         await mediator.Send(new AssignUserDirectPermissionsCommand(id, permissions));
         return Ok(ApiResponse<object>.Ok(new { message = "Gán quyền trực tiếp thành công." }));
     }
+
+    [HttpGet("me/export-data")]
+    public async Task<IActionResult> ExportMyData()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId) || userId == 0)
+            return Unauthorized();
+
+        var result = await mediator.Send(new HR.Application.Users.Commands.ExportUserDataQuery(userId));
+        return result is null ? NotFound(ApiResponse<object>.Fail("NOT_FOUND", "Không tìm thấy dữ liệu.")) : Ok(ApiResponse<HR.Application.Users.Commands.ExportUserDataResultDto>.Ok(result));
+    }
+
+    [HttpPost("me/anonymize")]
+    public async Task<IActionResult> AnonymizeMyAccount()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId) || userId == 0)
+            return Unauthorized();
+
+        var success = await mediator.Send(new HR.Application.Users.Commands.AnonymizeUserCommand(userId));
+        return success 
+            ? Ok(ApiResponse<object>.Ok(new { message = "Tài khoản của bạn đã được ẩn danh hoá và xoá theo Nghị định 13/2023/NĐ-CP." }))
+            : BadRequest(ApiResponse<object>.Fail("ERROR", "Không thể thực hiện yêu cầu xoá dữ liệu."));
+    }
 }
 
 

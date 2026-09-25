@@ -55,6 +55,7 @@ public interface IApplicationDbContext
     DbSet<Department> Departments { get; }
     DbSet<Conversation> Conversations { get; }
     DbSet<ChatMessage> ChatMessages { get; }
+    DbSet<Article> Articles { get; }
 
     Microsoft.EntityFrameworkCore.Infrastructure.DatabaseFacade Database { get; }
 

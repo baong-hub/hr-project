@@ -6,6 +6,8 @@ import { ToastContainer } from './shared/ui/Toast/ToastContainer';
 import { TopProgressBar } from './shared/ui/TopProgressBar/TopProgressBar';
 import { ErrorBoundary } from './shared/ui/ErrorBoundary/ErrorBoundary';
 
+import { CookieConsentBanner } from './shared/components/CookieConsentBanner';
+
 function App() {
   return (
     <HelmetProvider>
@@ -15,6 +17,7 @@ function App() {
           <ToastContainer />
           <Router>
             <AppRoutes />
+            <CookieConsentBanner />
           </Router>
         </ThemeProvider>
       </ErrorBoundary>

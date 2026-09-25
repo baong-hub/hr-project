@@ -54,6 +54,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CandidateCertificate> CandidateCertificates => Set<CandidateCertificate>();
     public DbSet<Skill> Skills => Set<Skill>();
     public DbSet<CandidateSkill> CandidateSkills => Set<CandidateSkill>();
+    public DbSet<Article> Articles => Set<Article>();
 
     public DbSet<LogActivity> LogActivities => Set<LogActivity>();
     public DbSet<UserSession> UserSessions => Set<UserSession>();

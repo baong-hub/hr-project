@@ -22,6 +22,7 @@ public static class DataSeeder
         await SeedJobViewLogsAsync(context);
         await SeedMasterDataAsync(context);
         await SeedDepartmentsAsync(context);
+        await SeedArticlesAsync(context);
         await context.SaveChangesAsync();
     }
 
@@ -763,6 +764,106 @@ public static class DataSeeder
         }
 
         context.JobViewLogs.AddRange(logs);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedArticlesAsync(ApplicationDbContext context)
+    {
+        if (await context.Articles.AnyAsync()) return;
+
+        var articles = new List<Article>
+        {
+            new()
+            {
+                Title = "Bí quyết viết CV chuẩn ATS chinh phục mọi nhà tuyển dụng năm 2026",
+                Slug = "bi-quyet-viet-cv-chuan-ats-chinh-phuc-nha-tuyen-dung-2026",
+                Summary = "Tìm hiểu hệ thống theo dõi ứng viên (ATS) hoạt động như thế nào, cách chọn từ khoá và định dạng CV giúp bạn vượt qua 95% vòng quét tự động.",
+                Category = "Bí quyết viết CV",
+                Tags = "CV, ATS, Tìm việc, Kinh nghiệm ứng tuyển, Tuyển dụng",
+                AuthorName = "Chuyên gia Tuyển dụng HR",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&auto=format&fit=crop&q=80",
+                ReadingTimeMinutes = 6,
+                ViewCount = 1420,
+                IsPublished = true,
+                PublishedAt = DateTime.UtcNow.AddDays(-15),
+                SeoTitle = "Bí quyết viết CV chuẩn ATS 2026 - Tăng 300% cơ hội gọi phỏng vấn",
+                SeoDescription = "Hướng dẫn chi tiết cách viết CV chuẩn ATS: bố cục, từ khoá, định dạng file giúp CV của bạn lọt mắt xanh nhà tuyển dụng và hệ thống lọc hồ sơ tự động.",
+                SeoKeywords = "viết cv, cv chuẩn ats, mẫu cv đẹp, kinh nghiệm xin việc 2026",
+                ContentHtml = @"
+                    <h2>1. Hệ thống ATS (Applicant Tracking System) là gì?</h2>
+                    <p>ATS là phần mềm quản lý hồ sơ ứng viên được hơn 90% doanh nghiệp lớn và công ty công nghệ sử dụng để tự động phân loại, trích xuất dữ liệu và chấm điểm CV trước khi chuyển tới tay HR.</p>
+                    <h2>2. Các lỗi phổ biến khiến CV bị ATS đánh rớt ngay lập tức</h2>
+                    <ul>
+                        <li><strong>Dùng biểu bảng (Tables) hoặc đồ hoạ phức tạp:</strong> Các bot ATS thường không đọc được chữ nằm trong table hoặc ảnh.</li>
+                        <li><strong>Thiếu từ khoá (Keywords) từ Job Description:</strong> Nếu JD yêu cầu 'React, TypeScript, Agile' mà CV chỉ ghi 'Frontend Developer chung chung', điểm khớp lệnh sẽ rất thấp.</li>
+                        <li><strong>Tên tiêu đề mục không chuẩn:</strong> Nên dùng các tiêu đề chuẩn như 'Kinh nghiệm làm việc', 'Kỹ năng chuyên môn', 'Học vấn' thay vì từ ngữ cách điệu.</li>
+                    </ul>
+                    <h2>3. Chiến lược tối ưu CV 1 trang hiệu quả</h2>
+                    <p>Hãy áp dụng công thức <strong>STAR (Situation - Task - Action - Result)</strong> hoặc mô hình <em>X-Y-Z của Google</em>: 'Đạt được thành tích X, đo lường bằng con số Y, thông qua hành động Z'.</p>
+                    <p>Đừng quên tải CV định dạng PDF hoặc DOCX với dung lượng dưới 5MB để đảm bảo hệ thống đọc mượt mà nhất.</p>
+                "
+            },
+            new()
+            {
+                Title = "Top 10 câu hỏi phỏng vấn Frontend & React Developer phổ biến nhất",
+                Slug = "top-10-cau-hoi-phong-van-frontend-react-developer",
+                Summary = "Tổng hợp các câu hỏi phỏng vấn kỹ thuật React, Javascript ES6+, tối ưu hiệu năng và cách trả lời tạo ấn tượng mạnh với Tech Lead.",
+                Category = "Kinh nghiệm phỏng vấn",
+                Tags = "React, Frontend, Phỏng vấn IT, JavaScript, Web Development",
+                AuthorName = "Tech Advisory Board",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop&q=80",
+                ReadingTimeMinutes = 8,
+                ViewCount = 2850,
+                IsPublished = true,
+                PublishedAt = DateTime.UtcNow.AddDays(-10),
+                SeoTitle = "10 câu hỏi phỏng vấn ReactJS hay gặp nhất và cách trả lời chuẩn",
+                SeoDescription = "Trọn bộ câu hỏi phỏng vấn ReactJS từ cơ bản đến nâng cao: Virtual DOM, useEffect, Custom Hooks, Redux Toolkit, SSR kèm giải thích trực quan.",
+                SeoKeywords = "phỏng vấn reactjs, câu hỏi phỏng vấn frontend, react interview questions",
+                ContentHtml = @"
+                    <h2>1. Virtual DOM hoạt động như thế nào và Diffing Algorithm là gì?</h2>
+                    <p>React duy trì một cây DOM ảo trong bộ nhớ. Khi state thay đổi, React so sánh snapshot mới với snapshot cũ (quá trình Reconciliation) và chỉ cập nhật những node thực sự thay đổi trên Real DOM.</p>
+                    <h2>2. Khi nào nên dùng useMemo và useCallback?</h2>
+                    <p>Tránh lạm dụng! Chỉ nên dùng khi việc tính toán (computation) tốn kém hoặc khi truyền function/object làm prop cho một memoized child component (<code>React.memo</code>) để tránh re-render không cần thiết.</p>
+                    <h2>3. Quản lý State: Khi nào dùng Context API vs Redux/Zustand?</h2>
+                    <p>Context API tuyệt vời cho các state ít thay đổi nhưng dùng toàn cục (Theme, Ngôn ngữ, Auth User). Với các luồng dữ liệu nghiệp vụ phức tạp, tần suất cập nhật cao, Zustand hoặc Redux Toolkit mang lại hiệu năng cao hơn nhờ selective subscription.</p>
+                    <h2>4. Bí quyết thể hiện tư duy kiến trúc trong buổi phỏng vấn</h2>
+                    <p>Khi được hỏi, hãy giải thích cả <em>Ưu điểm</em>, <em>Nhược điểm</em> và <em>Tình huống thực tế</em> bạn đã xử lý thành công thay vì chỉ đọc thuộc định nghĩa lý thuyết.</p>
+                "
+            },
+            new()
+            {
+                Title = "Quy định về thời gian và mức lương thử việc theo Bộ luật Lao động mới nhất",
+                Slug = "quy-dinh-thoi-gian-va-luong-thu-viec-theo-luat-lao-dong",
+                Summary = "Người lao động cần nắm rõ: Thử việc tối đa bao nhiêu tháng? Lương thử việc tối thiểu bằng bao nhiêu % lương chính thức và quyền huỷ bỏ hợp đồng thử việc.",
+                Category = "Pháp luật lao động",
+                Tags = "Luật lao động, Lương thử việc, Quyền lợi ứng viên, Hợp đồng lao động",
+                AuthorName = "Ban Pháp chế & Nhân sự",
+                ThumbnailUrl = "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=800&auto=format&fit=crop&q=80",
+                ReadingTimeMinutes = 5,
+                ViewCount = 3120,
+                IsPublished = true,
+                PublishedAt = DateTime.UtcNow.AddDays(-5),
+                SeoTitle = "Quy định thời gian và mức lương thử việc 2026 - Người lao động cần biết",
+                SeoDescription = "Bộ luật Lao động quy định chi tiết về thời gian thử việc từng vị trí, mức lương tối thiểu 85% và quyền đơn phương chấm dứt thử việc không cần báo trước.",
+                SeoKeywords = "lương thử việc, thời gian thử việc, luật lao động thử việc, quyền lợi người lao động",
+                ContentHtml = @"
+                    <h2>1. Thời gian thử việc tối đa là bao lâu?</h2>
+                    <p>Theo Điều 25 Bộ luật Lao động, thời gian thử việc do hai bên thoả thuận nhưng chỉ được thử việc 01 lần đối với một công việc và bảo đảm điều kiện sau:</p>
+                    <ul>
+                        <li><strong>Không quá 180 ngày:</strong> Đối với công việc của người quản lý doanh nghiệp.</li>
+                        <li><strong>Không quá 60 ngày:</strong> Đối với công việc có chức danh nghề nghiệp cần trình độ chuyên môn, kỹ thuật từ cao đẳng trở lên.</li>
+                        <li><strong>Không quá 30 ngày:</strong> Đối với công việc có chức danh nghề nghiệp cần trình độ trung cấp, công nhân kỹ thuật.</li>
+                        <li><strong>Không quá 06 ngày làm việc:</strong> Đối với công việc khác.</li>
+                    </ul>
+                    <h2>2. Tiền lương trong thời gian thử việc</h2>
+                    <p>Tiền lương của người lao động trong thời gian thử việc do hai bên thoả thuận nhưng <strong>ít nhất phải bằng 85%</strong> mức lương của công việc đó.</p>
+                    <h2>3. Kết thúc thời gian thử việc</h2>
+                    <p>Khi kết thúc thời gian thử việc, người sử dụng lao động phải thông báo kết quả. Nếu đạt yêu cầu, doanh nghiệp phải tiếp tục giao kết hợp đồng lao động chính thức.</p>
+                "
+            }
+        };
+
+        context.Articles.AddRange(articles);
         await context.SaveChangesAsync();
     }
 }

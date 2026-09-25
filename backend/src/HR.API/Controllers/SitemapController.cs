@@ -39,6 +39,14 @@ public class SitemapController(ApplicationDbContext context, IConfiguration conf
             .Select(c => new { c.Id, c.UpdatedAt, c.CreatedAt })
             .ToListAsync();
 
+        var articles = await context.Articles
+            .AsNoTracking()
+            .Where(a => a.IsPublished && a.DeletedAt == null)
+            .OrderByDescending(a => a.PublishedAt ?? a.CreatedAt)
+            .Take(500)
+            .Select(a => new { a.Slug, a.UpdatedAt, a.CreatedAt, a.PublishedAt })
+            .ToListAsync();
+
         var sb = new StringBuilder();
         sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         sb.AppendLine("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
@@ -47,6 +55,8 @@ public class SitemapController(ApplicationDbContext context, IConfiguration conf
         sb.AppendLine($"  <url><loc>{baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>");
         sb.AppendLine($"  <url><loc>{baseUrl}/jobs</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>");
         sb.AppendLine($"  <url><loc>{baseUrl}/companies</loc><changefreq>daily</changefreq><priority>0.8</priority></url>");
+        sb.AppendLine($"  <url><loc>{baseUrl}/blog</loc><changefreq>daily</changefreq><priority>0.9</priority></url>");
+        sb.AppendLine($"  <url><loc>{baseUrl}/salary-insights</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>");
         sb.AppendLine($"  <url><loc>{baseUrl}/pricing</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>");
         sb.AppendLine($"  <url><loc>{baseUrl}/about</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>");
         sb.AppendLine($"  <url><loc>{baseUrl}/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>");
@@ -74,6 +84,18 @@ public class SitemapController(ApplicationDbContext context, IConfiguration conf
             sb.AppendLine($"    <lastmod>{lastMod}</lastmod>");
             sb.AppendLine($"    <changefreq>weekly</changefreq>");
             sb.AppendLine($"    <priority>0.7</priority>");
+            sb.AppendLine($"  </url>");
+        }
+
+        // Dynamic Article URLs (Career Hub)
+        foreach (var art in articles)
+        {
+            var lastMod = (art.UpdatedAt != default ? art.UpdatedAt : (art.PublishedAt ?? art.CreatedAt)).ToString("yyyy-MM-dd");
+            sb.AppendLine($"  <url>");
+            sb.AppendLine($"    <loc>{baseUrl}/blog/{art.Slug}</loc>");
+            sb.AppendLine($"    <lastmod>{lastMod}</lastmod>");
+            sb.AppendLine($"    <changefreq>weekly</changefreq>");
+            sb.AppendLine($"    <priority>0.8</priority>");
             sb.AppendLine($"  </url>");
         }
 

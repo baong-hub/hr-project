@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, Building, DollarSign, Menu, X, LogIn, UserPlus, Sparkles, LogOut } from 'lucide-react';
+import { Briefcase, Building, DollarSign, Menu, X, LogIn, UserPlus, Sparkles, LogOut, BookOpen, TrendingUp } from 'lucide-react';
 import { authService } from '../../core/services/auth.service';
 
 export const PublicNavbar: React.FC = () => {
@@ -97,6 +97,14 @@ export const PublicNavbar: React.FC = () => {
           <Link to="/companies" style={linkStyle('/companies')}>
             <Building size={17} color={isActive('/companies') ? '#059669' : '#10b981'} />
             Công ty
+          </Link>
+          <Link to="/blog" style={linkStyle('/blog')}>
+            <BookOpen size={17} color={isActive('/blog') ? '#7c3aed' : '#8b5cf6'} />
+            Cẩm nang
+          </Link>
+          <Link to="/salary-insights" style={linkStyle('/salary-insights')}>
+            <TrendingUp size={17} color={isActive('/salary-insights') ? '#0284c7' : '#0ea5e9'} />
+            Báo cáo lương
           </Link>
           <Link to="/pricing" style={linkStyle('/pricing')}>
             <DollarSign size={17} color={isActive('/pricing') ? '#d97706' : '#f59e0b'} />
@@ -241,6 +249,12 @@ export const PublicNavbar: React.FC = () => {
           </Link>
           <Link to="/companies" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/companies')}>
             <Building size={17} color="#059669" /> Công ty
+          </Link>
+          <Link to="/blog" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/blog')}>
+            <BookOpen size={17} color="#7c3aed" /> Cẩm nang
+          </Link>
+          <Link to="/salary-insights" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/salary-insights')}>
+            <TrendingUp size={17} color="#0284c7" /> Báo cáo lương
           </Link>
           <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/pricing')}>
             <DollarSign size={17} color="#d97706" /> Bảng giá dịch vụ

@@ -25,6 +25,11 @@ const CompanyListPage = React.lazy(() => import('./features/companies/pages/Comp
 const CompanyDetailPage = React.lazy(() => import('./features/companies/pages/CompanyDetailPage').then(m => ({ default: m.CompanyDetailPage })));
 const CompanyCareersPage = React.lazy(() => import('./features/companies/pages/CompanyCareersPage').then(m => ({ default: m.CompanyCareersPage })));
 
+// Career Hub & Salary Insights Public Pages
+const BlogListPage = React.lazy(() => import('./features/blog/pages/BlogListPage').then(m => ({ default: m.BlogListPage })));
+const BlogDetailPage = React.lazy(() => import('./features/blog/pages/BlogDetailPage').then(m => ({ default: m.BlogDetailPage })));
+const SalaryInsightsPage = React.lazy(() => import('./features/salary/pages/SalaryInsightsPage').then(m => ({ default: m.SalaryInsightsPage })));
+
 // Protected App Features
 const EmployerJobListPage = React.lazy(() => import('./features/jobs/pages/EmployerJobListPage').then(m => ({ default: m.EmployerJobListPage })));
 const JobFormPage = React.lazy(() => import('./features/jobs/pages/JobFormPage').then(m => ({ default: m.JobFormPage })));
@@ -226,6 +231,25 @@ export const AppRoutes: React.FC = () => {
         } />
         {/* Canonical redirect: /company/:id/careers -> /companies/:id/careers */}
         <Route path="/company/:id/careers" element={<CompanyCareersRedirect />} />
+
+        {/* Cẩm nang nghề nghiệp & Blog SEO */}
+        <Route path="/blog" element={
+          <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải cẩm nang...</div>}>
+            <BlogListPage />
+          </React.Suspense>
+        } />
+        <Route path="/blog/:slug" element={
+          <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải bài viết...</div>}>
+            <BlogDetailPage />
+          </React.Suspense>
+        } />
+
+        {/* Báo cáo thị trường lương 2026 */}
+        <Route path="/salary-insights" element={
+          <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải báo cáo lương...</div>}>
+            <SalaryInsightsPage />
+          </React.Suspense>
+        } />
 
         {/* Bảng giá dịch vụ tuyển dụng */}
         <Route path="/pricing" element={

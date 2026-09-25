@@ -42,6 +42,8 @@ export const PublicFooter: React.FC = () => {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem' }}>
             <li><Link to="/jobs" style={{ color: '#94a3b8', textDecoration: 'none' }}>Tìm kiếm việc làm</Link></li>
             <li><Link to="/companies" style={{ color: '#94a3b8', textDecoration: 'none' }}>Danh sách công ty</Link></li>
+            <li><Link to="/blog" style={{ color: '#94a3b8', textDecoration: 'none' }}>Cẩm nang nghề nghiệp & CV</Link></li>
+            <li><Link to="/salary-insights" style={{ color: '#94a3b8', textDecoration: 'none' }}>Báo cáo mức lương 2026</Link></li>
             <li><Link to="/auth/register/candidate" style={{ color: '#94a3b8', textDecoration: 'none' }}>Tạo hồ sơ ứng viên</Link></li>
             <li><Link to="/candidate/cvs" style={{ color: '#94a3b8', textDecoration: 'none' }}>Quản lý CV trực tuyến</Link></li>
           </ul>
