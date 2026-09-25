@@ -57,6 +57,7 @@ const ProfilePage = React.lazy(() => import('./features/profile/pages/ProfilePag
 const MasterDataPage = React.lazy(() => import('./features/master-data/pages/MasterDataPage/MasterDataPage').then(m => ({ default: m.MasterDataPage })));
 const OrganizationPage = React.lazy(() => import('./features/organization/pages/OrganizationPage/OrganizationPage').then(m => ({ default: m.OrganizationPage })));
 const MessagesPage = React.lazy(() => import('./features/messages/pages/MessagesPage').then(m => ({ default: m.MessagesPage })));
+const FraudModerationPage = React.lazy(() => import('./features/jobs/pages/FraudModerationPage').then(m => ({ default: m.FraudModerationPage })));
 
 // Dynamic dispatcher for /reports route based on user roles
 const ReportsDispatcherPage: React.FC = () => {
@@ -468,6 +469,14 @@ export const AppRoutes: React.FC = () => {
         } />
 
         {/* Quản Trị Hệ Thống */}
+        <Route path="admin/moderation" element={
+          <PermissionRoute code="job:manage">
+            <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải trung tâm kiểm duyệt...</div>}>
+              <FraudModerationPage />
+            </React.Suspense>
+          </PermissionRoute>
+        } />
+        <Route path="admin/fraud-detection" element={<Navigate to="/admin/moderation" replace />} />
         <Route path="users" element={
           <PermissionRoute code="user:view">
             <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>

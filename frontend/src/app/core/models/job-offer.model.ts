@@ -52,6 +52,11 @@ export interface JobOffer {
   candidateDesiredSalary?: number;
   declineReason?: string;
   isExpired: boolean;
+
+  // Chữ ký điện tử
+  candidateSignature?: string;
+  signedAt?: string;
+  signerFullName?: string;
 }
 
 export interface CreateJobOfferRequest {
@@ -86,6 +91,8 @@ export interface RespondJobOfferRequest {
   desiredSalary?: number;
   note?: string;
   declineReason?: string;
+  signatureData?: string;
+  signerFullName?: string;
 }
 
 export interface CancelJobOfferRequest {

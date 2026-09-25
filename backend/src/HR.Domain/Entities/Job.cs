@@ -38,6 +38,13 @@ public class Job : BaseEntity
     public DateTime? UrgentUntil { get; set; }
     public int PriorityOrder { get; set; } = 0;
 
+    // Fraud Detection & AI / Rule-based Moderation
+    public int RiskScore { get; set; } = 0; // 0 - 100
+    public string? FraudWarningFlags { get; set; }
+    public string ModerationStatus { get; set; } = "APPROVED"; // APPROVED, FLAGGED_RISK, PENDING_REVIEW, REJECTED_FRAUD
+    public string? ModerationNotes { get; set; }
+    public DateTime? ModeratedAt { get; set; }
+
     // Navigation
     public Company Company { get; set; } = null!;
     public Employer Employer { get; set; } = null!;

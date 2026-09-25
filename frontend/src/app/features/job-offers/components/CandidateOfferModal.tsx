@@ -12,11 +12,15 @@ import {
   MapPin,
   Building,
   AlertTriangle,
-  Award
+  Award,
+  ShieldCheck,
+  Printer,
+  PenTool
 } from 'lucide-react';
 import { jobOfferService } from '../../../core/services/job-offer.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobOffer } from '../../../core/models/job-offer.model';
+import { DigitalSignatureModal } from './DigitalSignatureModal';
 import styles from './CandidateOfferModal.module.scss';
 
 interface CandidateOfferModalProps {
@@ -41,8 +45,9 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
   const [declineReason, setDeclineReason] = useState<string>('Đã nhận được offer khác phù hợp hơn');
   const [declineNote, setDeclineNote] = useState<string>('');
 
-  // Submitting
+  // Submitting & E-Signature
   const [submitting, setSubmitting] = useState(false);
+  const [isSignModalOpen, setIsSignModalOpen] = useState(false);
 
   const formatMoney = (val: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
@@ -65,22 +70,26 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
   const daysLeft = getDaysLeft();
   const canRespond = offer.status === 'PENDING' || offer.status === 'NEGOTIATING';
 
-  // Handle Accept
-  const handleAccept = async () => {
-    if (!window.confirm(`Bạn có chắc chắn muốn KÝ DUYỆT CHẤP NHẬN Thư mời nhận việc cho vị trí ${offer.positionTitle} tại ${offer.companyName}?`)) {
-      return;
-    }
+  // Handle launch E-signature modal
+  const handleOpenSignatureModal = () => {
+    setIsSignModalOpen(true);
+  };
 
+  // Handle confirm E-signature submission
+  const handleConfirmSignature = async (signatureData: string, signerFullName: string) => {
     setSubmitting(true);
     try {
       const res = await jobOfferService.respondOffer(offer.id, {
         action: 'ACCEPT',
-        note: 'Ứng viên đã chính thức ký duyệt chấp nhận thư mời nhận việc.'
+        signatureData,
+        signerFullName,
+        note: `Ứng viên ${signerFullName} đã ký điện tử chấp nhận thư mời nhận việc.`
       });
 
       if (res.data?.success && res.data.data) {
-        toast.success('Chúc mừng bạn! Bạn đã chấp nhận Thư mời nhận việc thành công.');
+        toast.success('🎉 Chúc mừng bạn! Bạn đã hoàn tất ký điện tử và chấp nhận Thư mời nhận việc.');
         setOffer(res.data.data);
+        setIsSignModalOpen(false);
         onOfferUpdated(res.data.data);
       } else {
         toast.error(res.data?.error?.message || 'Không thể gửi phản hồi.');
@@ -364,6 +373,60 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
             </div>
           )}
 
+          {/* Verified E-Signature Certificate Stamp */}
+          {offer.status === 'ACCEPTED' && (
+            <div className="mt-4 p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-300 dark:border-emerald-700/60 shadow-lg">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-200 dark:border-emerald-800/50 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="inline-block text-[11px] font-bold tracking-wider text-emerald-700 dark:text-emerald-300 uppercase">
+                      Chứng thực chữ ký điện tử hợp lệ (Verified E-Signature)
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Thư Mời Nhận Việc Đã Được Ký Duyệt Chính Thức
+                    </h4>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 rounded-lg text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-700 shadow-sm transition-colors"
+                >
+                  <Printer className="w-3.5 h-3.5" /> In Thư Mời Đã Ký
+                </button>
+              </div>
+
+              <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Người ký xác nhận:</p>
+                  <p className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-0.5">
+                    {offer.signerFullName || offer.candidateName}
+                  </p>
+                  <p className="text-slate-500 dark:text-slate-400 mt-2">Thời điểm ký kết:</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300 mt-0.5">
+                    {offer.signedAt ? new Date(offer.signedAt).toLocaleString('vi-VN') : formatDate(offer.issuedAt)}
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-center sm:items-end justify-center">
+                  <span className="text-[10px] text-slate-400 mb-1">Chữ ký điện tử của ứng viên:</span>
+                  {offer.candidateSignature ? (
+                    <div className="p-2 bg-white rounded-lg border border-emerald-200 dark:border-emerald-800 shadow-inner max-w-[200px]">
+                      <img src={offer.candidateSignature} alt="Chữ ký ứng viên" className="h-14 object-contain" />
+                    </div>
+                  ) : (
+                    <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 rounded-lg font-serif italic text-base">
+                      {offer.signerFullName || offer.candidateName}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Drawer: Negotiate */}
           {activeAction === 'NEGOTIATE' && (
             <form onSubmit={handleSubmitNegotiate} className={styles.negotiateDrawer}>
@@ -483,15 +546,28 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
               <button
                 type="button"
                 className={styles.acceptBtn}
-                onClick={handleAccept}
+                onClick={handleOpenSignatureModal}
                 disabled={submitting}
               >
-                Ký Duyệt & Chấp Nhận Offer (Accept)
+                <PenTool size={16} style={{ display: 'inline', marginRight: 6 }} />
+                Ký Duyệt & Chấp Nhận Offer (E-Sign)
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Digital Signature Pad Modal */}
+      {isSignModalOpen && (
+        <DigitalSignatureModal
+          candidateDefaultName={offer.candidateName}
+          positionTitle={offer.positionTitle}
+          companyName={offer.companyName}
+          onConfirm={handleConfirmSignature}
+          onClose={() => setIsSignModalOpen(false)}
+          submitting={submitting}
+        />
+      )}
     </div>
   );
 };

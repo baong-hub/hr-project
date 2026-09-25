@@ -48,6 +48,11 @@ public class JobOfferDto
     public decimal? CandidateDesiredSalary { get; set; }
     public string? DeclineReason { get; set; }
 
+    // Chữ ký điện tử
+    public string? CandidateSignature { get; set; }
+    public DateTime? SignedAt { get; set; }
+    public string? SignerFullName { get; set; }
+
     public bool IsExpired => Status == JobOfferStatus.PENDING && DateTime.Now > ExpiryDate;
 
     public static JobOfferDto FromEntity(HR.Domain.Entities.JobOffer offer)
@@ -86,7 +91,10 @@ public class JobOfferDto
             Status = offer.Status,
             CandidateResponseNote = offer.CandidateResponseNote,
             CandidateDesiredSalary = offer.CandidateDesiredSalary,
-            DeclineReason = offer.DeclineReason
+            DeclineReason = offer.DeclineReason,
+            CandidateSignature = offer.CandidateSignature,
+            SignedAt = offer.SignedAt,
+            SignerFullName = offer.SignerFullName
         };
     }
 }
@@ -128,4 +136,8 @@ public class RespondJobOfferRequest
     public decimal? DesiredSalary { get; set; }
     public string? Note { get; set; }
     public string? DeclineReason { get; set; }
+
+    // Chữ ký điện tử khi chấp nhận Offer
+    public string? SignatureData { get; set; }
+    public string? SignerFullName { get; set; }
 }

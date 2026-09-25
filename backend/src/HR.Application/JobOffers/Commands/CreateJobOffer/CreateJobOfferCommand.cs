@@ -17,7 +17,8 @@ public class CreateJobOfferCommandHandler(
     IApplicationDbContext context,
     ICurrentUserService currentUserService,
     IEmailService emailService,
-    INotificationSender notificationSender) : IRequestHandler<CreateJobOfferCommand, JobOfferDto>
+    INotificationSender notificationSender,
+    IZaloZnsService zaloZnsService) : IRequestHandler<CreateJobOfferCommand, JobOfferDto>
 {
     public async Task<JobOfferDto> Handle(CreateJobOfferCommand command, CancellationToken cancellationToken)
     {
@@ -143,6 +144,19 @@ public class CreateJobOfferCommandHandler(
                 offer.WorkLocation,
                 offer.Benefits,
                 offer.OfferLetterFileUrl,
+                cancellationToken);
+        }
+
+        var candidatePhone = application.Candidate.User?.Phone ?? application.Candidate.User?.PhoneNumber;
+        if (!string.IsNullOrWhiteSpace(candidatePhone))
+        {
+            _ = zaloZnsService.SendOfferIssuedZnsAsync(
+                candidatePhone,
+                candidateName,
+                offer.PositionTitle,
+                companyName,
+                offer.ExpiryDate,
+                offer.BasicSalary + offer.Allowance,
                 cancellationToken);
         }
 

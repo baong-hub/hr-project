@@ -15,11 +15,16 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IFraudScannerService _fraudScanner;
 
-    public CreateJobCommandHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public CreateJobCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        IFraudScannerService fraudScanner)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _fraudScanner = fraudScanner;
     }
 
     public async Task<JobDto> Handle(CreateJobCommand request, CancellationToken cancellationToken)
@@ -45,6 +50,16 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
             throw new ForbiddenException("JOB_EMPLOYER_NOT_ACTIVE", "Tài khoản doanh nghiệp chưa được duyệt (VERIFIED).");
         }
 
+        // Scan for potential fraud / scam triggers
+        var scanResult = _fraudScanner.ScanJob(
+            request.Title,
+            request.Description,
+            request.Requirements,
+            request.Benefits,
+            request.SalaryFrom,
+            request.SalaryTo,
+            null);
+
         var job = new Job
         {
             CompanyId = employer.CompanyId.Value,
@@ -56,7 +71,10 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
             SalaryFrom = request.SalaryFrom,
             SalaryTo = request.SalaryTo,
             City = request.City,
-            Status = JobStatus.PENDING_REVIEW, // Wait for admin review
+            Status = scanResult.IsHighRisk ? JobStatus.REJECTED : JobStatus.PENDING_REVIEW,
+            RiskScore = scanResult.RiskScore,
+            FraudWarningFlags = scanResult.DetectedFlags.Count > 0 ? string.Join(", ", scanResult.DetectedFlags) : null,
+            ModerationStatus = scanResult.IsHighRisk ? "FLAGGED_RISK" : (scanResult.RiskScore > 0 ? "PENDING_REVIEW" : "APPROVED"),
             ExpiredAt = request.ExpiredAt,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now

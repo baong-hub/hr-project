@@ -19,7 +19,8 @@ public class ScheduleInterviewCommandHandler(
     ICurrentUserService currentUserService,
     IDateTimeProvider dateTime,
     INotificationSender notificationSender,
-    IEmailService emailService)
+    IEmailService emailService,
+    IZaloZnsService zaloZnsService)
     : IRequestHandler<ScheduleInterviewCommand, InterviewDto>
 {
     public async Task<InterviewDto> Handle(ScheduleInterviewCommand request, CancellationToken cancellationToken)
@@ -81,7 +82,7 @@ public class ScheduleInterviewCommandHandler(
 
         await context.SaveChangesAsync(cancellationToken);
 
-        // 8. Trigger real-time notification and email to Candidate
+        // 8. Trigger real-time notification, email, and Zalo ZNS to Candidate
         var candidateUserId = app.Candidate.UserId > 0 ? app.Candidate.UserId : (app.Candidate.User?.Id ?? 0);
         var candidateEmail = app.Candidate.User?.Email ?? string.Empty;
 
@@ -108,6 +109,19 @@ public class ScheduleInterviewCommandHandler(
                 interview.InterviewType.ToString(),
                 interview.LocationOrLink,
                 interview.Notes,
+                cancellationToken);
+        }
+
+        var candidatePhone = app.Candidate?.User?.Phone ?? app.Candidate?.User?.PhoneNumber;
+        if (!string.IsNullOrWhiteSpace(candidatePhone))
+        {
+            _ = zaloZnsService.SendInterviewInvitationZnsAsync(
+                candidatePhone,
+                app.Candidate!.FullName,
+                app.Job.Title,
+                app.Job.Company.Name,
+                interview.StartTime,
+                interview.LocationOrLink,
                 cancellationToken);
         }
 

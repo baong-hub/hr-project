@@ -71,13 +71,30 @@ public class RespondJobOfferCommandHandler(
                 offer.Application.Status = ApplicationStatus.HIRED;
                 offer.Application.UpdatedAt = DateTime.Now;
 
+                // Lưu chữ ký điện tử & Dấu thời gian pháp lý
+                offer.CandidateSignature = command.Request.SignatureData?.Trim();
+                offer.SignedAt = DateTime.Now;
+                offer.SignerFullName = !string.IsNullOrWhiteSpace(command.Request.SignerFullName) 
+                    ? command.Request.SignerFullName.Trim() 
+                    : candidateName;
+
+                // Ghi nhận Audit Log
+                context.LogActivities.Add(new HR.Domain.Entities.LogActivity
+                {
+                    ModuleName = "JobOffers",
+                    EntityId = offer.Id,
+                    Action = "OFFER_E_SIGNED",
+                    UserId = currentUserService.UserId > 0 ? currentUserService.UserId : null,
+                    AfterValue = $"Chấp nhận và ký điện tử bởi {offer.SignerFullName} lúc {offer.SignedAt:yyyy-MM-dd HH:mm:ss}"
+                });
+
                 // Thông báo NTD
                 if (offer.CreatedByEmployer?.UserId > 0)
                 {
                     await notificationSender.SendNotificationAsync(
                         offer.CreatedByEmployer.UserId,
-                        "🎉 Ứng viên ĐỒNG Ý nhận việc (Offer Accepted)!",
-                        $"Ứng viên {candidateName} đã chính thức ký duyệt chấp nhận Offer cho vị trí {jobTitle}. Trạng thái hồ sơ đã chuyển sang HIRED.",
+                        "🎉 Ứng viên ĐÃ KÝ ĐIỆN TỬ & ĐỒNG Ý nhận việc!",
+                        $"Ứng viên {candidateName} đã hoàn tất ký điện tử và chấp nhận Offer cho vị trí {jobTitle}. Trạng thái hồ sơ đã chuyển sang HIRED.",
                         NotificationType.OFFER_ACCEPTED,
                         $"/employer/applications",
                         cancellationToken);
@@ -93,7 +110,7 @@ public class RespondJobOfferCommandHandler(
                         companyName,
                         "ACCEPT",
                         null,
-                        offer.CandidateResponseNote,
+                        offer.CandidateResponseNote ?? "Ứng viên đã hoàn tất ký nhận Offer điện tử.",
                         null,
                         cancellationToken);
                 }

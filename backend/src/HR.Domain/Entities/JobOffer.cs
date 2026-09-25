@@ -47,6 +47,12 @@ public class JobOffer : BaseEntity
     public decimal? CandidateDesiredSalary { get; set; }
     public string? DeclineReason { get; set; }
 
+    // Chữ ký điện tử (E-Signature) & Tính pháp lý
+    public string? CandidateSignature { get; set; } // Base64 data URL của chữ ký vẽ tay hoặc ký số
+    public DateTime? SignedAt { get; set; }
+    public string? SignerFullName { get; set; }
+    public string? SignerIpAddress { get; set; }
+
     // Navigation
     public Application Application { get; set; } = null!;
     public Job Job { get; set; } = null!;

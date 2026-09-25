@@ -22,6 +22,7 @@ public class JobOffersHandlerTests : IDisposable
     private readonly ICurrentUserService _currentUserService;
     private readonly IEmailService _emailService;
     private readonly INotificationSender _notificationSender;
+    private readonly IZaloZnsService _zaloZnsService;
 
     public JobOffersHandlerTests()
     {
@@ -33,6 +34,7 @@ public class JobOffersHandlerTests : IDisposable
         _currentUserService = Substitute.For<ICurrentUserService>();
         _emailService = Substitute.For<IEmailService>();
         _notificationSender = Substitute.For<INotificationSender>();
+        _zaloZnsService = Substitute.For<IZaloZnsService>();
     }
 
     public void Dispose()
@@ -63,7 +65,7 @@ public class JobOffersHandlerTests : IDisposable
         _context.Applications.Add(application);
         await _context.SaveChangesAsync();
 
-        var handler = new CreateJobOfferCommandHandler(_context, _currentUserService, _emailService, _notificationSender);
+        var handler = new CreateJobOfferCommandHandler(_context, _currentUserService, _emailService, _notificationSender, _zaloZnsService);
 
         var request = new CreateJobOfferRequest
         {

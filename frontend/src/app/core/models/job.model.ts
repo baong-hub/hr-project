@@ -33,7 +33,12 @@ export interface JobDto {
   featuredUntil?: string;
   isUrgent?: boolean;
   urgentUntil?: string;
+  riskScore?: number;
+  fraudWarningFlags?: string;
+  moderationStatus?: string;
 }
+
+export type Job = JobDto;
 
 export type JobStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'PAUSED' | 'REJECTED' | 'EXPIRED' | 'CLOSED';
 export type WorkMode = 'ONSITE' | 'HYBRID' | 'REMOTE';

@@ -18,6 +18,7 @@ public class CreateJobHandlerTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IFraudScannerService _fraudScanner;
     private readonly CreateJobCommandHandler _handler;
 
     public CreateJobHandlerTests()
@@ -28,7 +29,10 @@ public class CreateJobHandlerTests : IDisposable
 
         _context = new ApplicationDbContext(options);
         _currentUserService = Substitute.For<ICurrentUserService>();
-        _handler = new CreateJobCommandHandler(_context, _currentUserService);
+        _fraudScanner = Substitute.For<IFraudScannerService>();
+        _fraudScanner.ScanJob(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<decimal?>(), Arg.Any<decimal?>(), Arg.Any<string?>())
+            .Returns(new FraudScanResult { RiskScore = 0, Recommendation = "APPROVED" });
+        _handler = new CreateJobCommandHandler(_context, _currentUserService, _fraudScanner);
     }
 
     public void Dispose()

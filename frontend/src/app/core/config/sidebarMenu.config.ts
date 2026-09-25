@@ -113,6 +113,7 @@ export const SIDEBAR_MENU: SidebarItem[] = [
     icon: 'Settings',
     code: 'menu:system',
     children: [
+      { label: 'Kiểm duyệt & Phòng chống gian lận', shortName: 'Kiểm duyệt', icon: 'ShieldAlert', route: '/admin/moderation', code: 'module:moderation' },
       { label: 'Cấu hình hệ thống', shortName: 'Cấu hình', icon: 'Sliders', route: '/user-settings/system-configs', code: 'module:system-setting' },
       { label: 'Tài khoản', shortName: 'Tài khoản', icon: 'UserCog', route: '/users', code: 'module:user' },
       { label: 'Phân quyền', shortName: 'Phân quyền', icon: 'ShieldCheck', route: '/user-roles', code: 'module:user-role' },

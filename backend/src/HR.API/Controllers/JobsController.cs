@@ -134,4 +134,26 @@ public class JobsController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(new HR.Application.Jobs.Commands.PromoteJob.PromoteJobCommand(id, dto));
         return Ok(ApiResponse<HR.Application.Jobs.Commands.PromoteJob.PromoteJobResultDto>.Ok(result));
     }
+
+    /// <summary>
+    /// Dashboard kiểm duyệt & phòng chống gian lận dành cho Quản trị viên
+    /// </summary>
+    [HttpGet("moderation-dashboard")]
+    [RequirePermission("job:moderate", "job:manage", "user-role:view")]
+    public async Task<IActionResult> GetModerationDashboard()
+    {
+        var result = await mediator.Send(new HR.Application.Jobs.Queries.GetFraudModerationDashboard.GetFraudModerationDashboardQuery());
+        return Ok(ApiResponse<HR.Application.Jobs.Queries.GetFraudModerationDashboard.FraudModerationDashboardDto>.Ok(result));
+    }
+
+    /// <summary>
+    /// Kiểm duyệt tin tuyển dụng (Duyệt, Khoá vi phạm, Đánh dấu rủi ro)
+    /// </summary>
+    [HttpPost("{id:int}/moderate")]
+    [RequirePermission("job:moderate", "job:manage", "user-role:manage")]
+    public async Task<IActionResult> ModerateJob(int id, [FromBody] HR.Application.Jobs.Commands.ModerateJob.ModerateJobRequest request)
+    {
+        var result = await mediator.Send(new HR.Application.Jobs.Commands.ModerateJob.ModerateJobCommand(id, request));
+        return Ok(ApiResponse<bool>.Ok(result));
+    }
 }

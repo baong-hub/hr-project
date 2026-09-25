@@ -41,7 +41,10 @@ public class GetJobByIdQueryHandler(IApplicationDbContext context, ICurrentUserS
             j.IsFeatured && (j.FeaturedUntil == null || j.FeaturedUntil > now),
             j.FeaturedUntil,
             j.IsUrgent && (j.UrgentUntil == null || j.UrgentUntil > now),
-            j.UrgentUntil
+            j.UrgentUntil,
+            j.RiskScore,
+            j.FraudWarningFlags,
+            j.ModerationStatus
         );
     }
 }

@@ -20,5 +20,8 @@ public record JobDto(
     bool IsFeatured = false,
     DateTime? FeaturedUntil = null,
     bool IsUrgent = false,
-    DateTime? UrgentUntil = null
+    DateTime? UrgentUntil = null,
+    int RiskScore = 0,
+    string? FraudWarningFlags = null,
+    string ModerationStatus = "APPROVED"
 );

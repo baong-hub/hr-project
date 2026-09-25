@@ -131,6 +131,21 @@ public class JobOfferConfiguration : IEntityTypeConfiguration<JobOffer>
             .HasColumnName("decline_reason")
             .HasMaxLength(500);
 
+        builder.Property(x => x.CandidateSignature)
+            .HasColumnName("candidate_signature")
+            .HasColumnType("longtext");
+
+        builder.Property(x => x.SignedAt)
+            .HasColumnName("signed_at");
+
+        builder.Property(x => x.SignerFullName)
+            .HasColumnName("signer_full_name")
+            .HasMaxLength(255);
+
+        builder.Property(x => x.SignerIpAddress)
+            .HasColumnName("signer_ip_address")
+            .HasMaxLength(100);
+
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
             .HasColumnType("datetime(6)")

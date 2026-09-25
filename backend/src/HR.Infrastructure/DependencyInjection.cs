@@ -58,6 +58,8 @@ public static class DependencyInjection
         services.AddScoped<IActivityLogService, HR.Infrastructure.Services.ActivityLogService>();
         services.AddScoped<ISettingService, HR.Infrastructure.Services.SettingService>();
         services.AddScoped<IEmailService, HR.Infrastructure.Services.EmailService>();
+        services.AddScoped<IZaloZnsService, HR.Infrastructure.Services.ZaloZnsService>();
+        services.AddScoped<IFraudScannerService, HR.Infrastructure.Services.FraudScannerService>();
         services.AddScoped<IAiService, HR.Infrastructure.Services.GeminiAiService>();
         services.AddHttpClient();
         services.AddMemoryCache();
