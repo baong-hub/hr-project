@@ -16,6 +16,7 @@ public class AiController(
     public class AnalyzeJobFitRequest
     {
         public int JobId { get; set; }
+        public int? CandidateId { get; set; }
     }
 
     public class GenerateJdRequest
@@ -36,14 +37,22 @@ public class AiController(
         public int CandidateId { get; set; }
     }
 
+    public class RankCandidatesRequest
+    {
+        public int JobId { get; set; }
+    }
+
     /// <summary>
-    /// Phân tích mức độ phù hợp giữa CV của ứng viên đang đăng nhập và một công việc cụ thể
+    /// Phân tích mức độ phù hợp giữa CV của ứng viên và một công việc cụ thể
     /// </summary>
     [HttpPost("analyze-job-fit")]
     public async Task<IActionResult> AnalyzeJobFit([FromBody] AnalyzeJobFitRequest request)
     {
-        var userId = currentUserService.UserId;
-        var result = await aiService.AnalyzeJobFitAsync(userId, request.JobId);
+        var targetCandidateId = request.CandidateId.HasValue && request.CandidateId.Value > 0
+            ? request.CandidateId.Value
+            : currentUserService.UserId;
+
+        var result = await aiService.AnalyzeJobFitAsync(targetCandidateId, request.JobId);
         return Ok(ApiResponse<JobFitAnalysisResult>.Ok(result));
     }
 
@@ -92,5 +101,32 @@ public class AiController(
         var result = await aiService.GenerateInterviewQuestionsAsync(request.JobId, request.CandidateId);
         return Ok(ApiResponse<InterviewQuestionsResult>.Ok(result));
     }
+
+    /// <summary>
+    /// Gợi ý các công việc phù hợp nhất cho ứng viên đang đăng nhập dựa trên CV & kỹ năng
+    /// </summary>
+    [HttpGet("recommended-jobs")]
+    public async Task<IActionResult> GetRecommendedJobs([FromQuery] int limit = 6)
+    {
+        var candidateUserId = currentUserService.UserId;
+        var result = await aiService.GetRecommendedJobsAsync(candidateUserId, limit);
+        return Ok(ApiResponse<System.Collections.Generic.List<JobRecommendationResult>>.Ok(result));
+    }
+
+    /// <summary>
+    /// Tự động chấm điểm & xếp hạng danh sách ứng viên đã nộp theo JD công việc
+    /// </summary>
+    [HttpPost("rank-candidates")]
+    public async Task<IActionResult> RankCandidates([FromBody] RankCandidatesRequest request)
+    {
+        if (request.JobId <= 0)
+        {
+            return BadRequest(ApiResponse<System.Collections.Generic.List<CandidateRankResult>>.Fail("INVALID_JOB_ID", "Vui lòng cung cấp mã công việc hợp lệ."));
+        }
+
+        var result = await aiService.RankCandidatesForJobAsync(request.JobId);
+        return Ok(ApiResponse<System.Collections.Generic.List<CandidateRankResult>>.Ok(result));
+    }
 }
+
 

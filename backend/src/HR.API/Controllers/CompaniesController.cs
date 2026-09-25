@@ -58,4 +58,14 @@ public class CompaniesController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(new FollowCompanyCommand(id));
         return Ok(ApiResponse<FollowResultDto>.Ok(result));
     }
+
+    [HttpPost("{id:int}/verify")]
+    [RequirePermission("company:update", "user-role:manage")]
+    public async Task<IActionResult> Verify(int id, [FromBody] VerifyCompanyRequest request)
+    {
+        var result = await mediator.Send(new HR.Application.Companies.Commands.VerifyCompany.VerifyCompanyCommand(id, request.Action, request.TaxCode));
+        return Ok(ApiResponse<CompanyDto>.Ok(result));
+    }
 }
+
+public record VerifyCompanyRequest(string Action, string? TaxCode = null);

@@ -6,14 +6,17 @@ namespace HR.Infrastructure.Persistence;
 
 public static class DataSeeder
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(
+        ApplicationDbContext context, 
+        Microsoft.Extensions.Configuration.IConfiguration? configuration = null, 
+        Microsoft.Extensions.Hosting.IHostEnvironment? environment = null)
     {
         await context.Database.MigrateAsync();
         await SeedCompaniesAsync(context);
         await SeedSitesAsync(context);
         await SeedRoleLevelsAsync(context);
         await SeedRolesAndPermissionsAsync(context);
-        await SeedAdminUserAsync(context);
+        await SeedAdminUserAsync(context, configuration, environment);
         await SeedSettingConfigsAsync(context);
         await SeedJobsAsync(context);
         await SeedJobViewLogsAsync(context);
@@ -453,7 +456,10 @@ public static class DataSeeder
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedAdminUserAsync(ApplicationDbContext context)
+    private static async Task SeedAdminUserAsync(
+        ApplicationDbContext context,
+        Microsoft.Extensions.Configuration.IConfiguration? configuration,
+        Microsoft.Extensions.Hosting.IHostEnvironment? environment)
     {
         // Clean up any legacy id=0 user/relations if present in database to avoid EF Core key tracking conflict
         await context.Database.ExecuteSqlRawAsync("DELETE FROM `user_permissions` WHERE `user_id` = 0;");
@@ -465,12 +471,25 @@ public static class DataSeeder
         var adminRole = await context.Roles.FirstAsync(r => r.Name == "Super Admin");
         var candidateRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Ứng viên") ?? adminRole;
 
-        if (!await context.Users.AnyAsync(u => u.Username == "admin"))
+        var isProduction = environment != null && string.Equals(environment.EnvironmentName, "Production", StringComparison.OrdinalIgnoreCase);
+        var configuredAdminPassword = configuration?["AdminSeed:Password"] 
+            ?? configuration?["ADMIN_SEED_PASSWORD"];
+
+        // Ở môi trường Production: chỉ seed admin nếu có biến môi trường ADMIN_SEED_PASSWORD cụ thể
+        if (isProduction && string.IsNullOrWhiteSpace(configuredAdminPassword))
         {
+            Console.WriteLine("[SECURITY] Môi trường Production phát hiện không có ADMIN_SEED_PASSWORD cấu hình; bỏ qua việc seed tài khoản admin mặc định.");
+        }
+        else if (!await context.Users.AnyAsync(u => u.Username == "admin"))
+        {
+            var adminPassword = !string.IsNullOrWhiteSpace(configuredAdminPassword) 
+                ? configuredAdminPassword 
+                : "Hamo@123";
+
             var admin = new User
             {
                 Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Hamo@123"),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
                 FullName = "Quản trị viên HR",
                 Email = "admin@hr.local",
                 SiteId = site.Id,
@@ -484,9 +503,11 @@ public static class DataSeeder
             context.UserRoles.Add(new UserRole { UserId = admin.Id, RoleId = adminRole.Id });
             context.UserSites.Add(new UserSite { UserId = admin.Id, SiteId = site.Id });
             await context.SaveChangesAsync();
+            Console.WriteLine("[SECURITY] Đã khởi tạo tài khoản quản trị viên Super Admin.");
         }
 
-        if (!await context.Users.AnyAsync(u => u.Username == "user"))
+        // Chỉ seed tài khoản ứng viên test trong môi trường Non-Production (Development/Staging)
+        if (!isProduction && !await context.Users.AnyAsync(u => u.Username == "user"))
         {
             var testUser = new User
             {

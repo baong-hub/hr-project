@@ -290,7 +290,7 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ với cấu trúc sau (khôn
     public async Task<GenerateJdResult> GenerateJobDescriptionAsync(string title, string? keywords, CancellationToken cancellationToken = default)
     {
         var prompt = $@"
-Bạn là Giám đốc Tuyển dụng Nhân sự cấp cao. Hãy soạn thảo một bản Mô tả công việc (Job Description) hoàn chỉnh, chuyên nghiệp và thu hút cho vị trí sau:
+Bạn là Giám đốc Tuyển dụng Nhân sự cấp cao. Hãy soạn thảo một bản Mô tả công việc (Job Description) hoàn chỉnh, chuyên nghiệp và gợi ý mức lương thị trường (Salary Benchmark) phù hợp tại Việt Nam cho vị trí sau:
 - Vị trí: {title}
 - Từ khóa/Yêu cầu bổ sung: {keywords ?? "Chuyên môn vững, làm việc nhóm tốt, mức lương cạnh tranh"}
 
@@ -299,7 +299,10 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ với cấu trúc sau (khôn
 {{
   ""description"": ""<Mô tả công việc chi tiết từ 4-6 gạch đầu dòng>"",
   ""requirements"": ""<Yêu cầu ứng viên từ 4-6 gạch đầu dòng về kỹ năng, số năm kinh nghiệm, học vấn>"",
-  ""benefits"": ""<Chế độ đãi ngộ, phúc lợi và môi trường làm việc từ 4-5 gạch đầu dòng>""
+  ""benefits"": ""<Chế độ đãi ngộ, phúc lợi và môi trường làm việc từ 4-5 gạch đầu dòng>"",
+  ""suggestedSalaryFrom"": <Mức lương tối thiểu số nguyên tính bằng VNĐ, ví dụ 15000000>,
+  ""suggestedSalaryTo"": <Mức lương tối đa số nguyên tính bằng VNĐ, ví dụ 25000000>,
+  ""salaryReason"": ""<Lý do ngắn gọn đề xuất mức lương theo chuẩn thị trường>""
 }}
 ";
 
@@ -346,7 +349,11 @@ Trả về DUY NHẤT một chuỗi JSON hợp lệ với cấu trúc sau (khôn
             Benefits = @"• Mức thu nhập cạnh tranh, thỏa thuận theo năng lực + Thưởng hiệu suất dự án hấp dẫn.
 • Thưởng tháng lương thứ 13, thưởng các dịp Lễ, Tết và đánh giá tăng lương định kỳ 1-2 lần/năm.
 • Đầy đủ chế độ BHXH, BHYT, BHTN theo quy định nhà nước + Gói bảo hiểm sức khỏe cao cấp.
-• Môi trường làm việc trẻ trung, năng động, khuyến khích sáng tạo và lộ trình thăng tiến rõ ràng."
+• Môi trường làm việc trẻ trung, năng động, khuyến khích sáng tạo và lộ trình thăng tiến rõ ràng.",
+
+            SuggestedSalaryFrom = 15000000,
+            SuggestedSalaryTo = 25000000,
+            SalaryReason = "Mức lương thị trường tham khảo cho vị trí kỹ thuật cấp độ Middle tại các thị trường lớn."
         };
     }
 
@@ -1033,4 +1040,227 @@ BẠN BẮT BUỘC CHỈ ĐƯỢC TRẢ VỀ JSON THUẦN TÚY KHÔNG KÈM MARKD
 
         return list.Take(count).ToList();
     }
+
+    public async Task<List<JobRecommendationResult>> GetRecommendedJobsAsync(
+        int candidateUserId,
+        int limit = 6,
+        CancellationToken cancellationToken = default)
+    {
+        // 1. Fetch Candidate details
+        var candidate = await _context.Candidates
+            .Include(c => c.User)
+            .Include(c => c.CandidateSkills).ThenInclude(cs => cs.Skill)
+            .Include(c => c.Experiences)
+            .FirstOrDefaultAsync(c => c.Id == candidateUserId && c.DeletedAt == null, cancellationToken);
+
+        var candidateSkills = candidate?.CandidateSkills?
+            .Select(s => s.Skill?.SkillName ?? "")
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList() ?? new List<string>();
+
+        var candidateTitle = candidate?.Objective ?? candidate?.ExperienceSummary ?? "";
+        var candidateCity = candidate?.User?.Address ?? "";
+
+        // 2. Fetch Active Jobs
+        var jobs = await _context.Jobs
+            .Include(j => j.Company)
+            .Where(j => j.DeletedAt == null && j.Status == HR.Domain.Enums.JobStatus.PUBLISHED)
+            .OrderByDescending(j => j.CreatedAt)
+            .Take(50)
+            .ToListAsync(cancellationToken);
+
+
+        if (jobs.Count == 0) return new List<JobRecommendationResult>();
+
+        var results = new List<JobRecommendationResult>();
+
+        foreach (var job in jobs)
+        {
+            var jobText = $"{job.Title} {job.Requirements} {job.Description}".ToLower();
+            var matchingSkills = new List<string>();
+
+            foreach (var skill in candidateSkills)
+            {
+                if (!string.IsNullOrWhiteSpace(skill) && jobText.Contains(skill.ToLower()))
+                {
+                    matchingSkills.Add(skill);
+                }
+            }
+
+            int score = 50; // base score
+            if (matchingSkills.Count >= 3) score += 35;
+            else if (matchingSkills.Count == 2) score += 25;
+            else if (matchingSkills.Count == 1) score += 15;
+
+            // Match by title keywords
+            if (!string.IsNullOrWhiteSpace(candidateTitle))
+            {
+                var titleWords = candidateTitle.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (titleWords.Any(w => w.Length > 2 && jobText.Contains(w)))
+                {
+                    score += 10;
+                }
+            }
+
+            // Match by City
+            if (!string.IsNullOrWhiteSpace(candidateCity) && !string.IsNullOrWhiteSpace(job.City))
+            {
+                if (job.City.Contains(candidateCity, StringComparison.OrdinalIgnoreCase) || candidateCity.Contains(job.City, StringComparison.OrdinalIgnoreCase))
+                {
+                    score += 5;
+                }
+            }
+
+            score = Math.Min(98, Math.Max(40, score));
+
+            string matchReason;
+            if (matchingSkills.Count > 0)
+            {
+                matchReason = $"Phù hợp với các kỹ năng của bạn: {string.Join(", ", matchingSkills.Take(3))}";
+            }
+            else if (!string.IsNullOrWhiteSpace(candidateTitle))
+            {
+                matchReason = $"Định hướng nghề nghiệp tương đồng với vị trí {job.Title}";
+            }
+            else
+            {
+                matchReason = "Công việc nổi bật phù hợp để mở rộng cơ hội nghề nghiệp";
+            }
+
+            results.Add(new JobRecommendationResult
+            {
+                JobId = job.Id,
+                Title = job.Title,
+                CompanyName = job.Company?.Name ?? "Doanh nghiệp",
+                CompanyLogo = job.Company?.LogoUrl,
+                City = job.City,
+                SalaryFrom = job.SalaryFrom,
+                SalaryTo = job.SalaryTo,
+                MatchScore = score,
+                MatchReason = matchReason,
+                MatchingSkills = matchingSkills
+            });
+        }
+
+        return results.OrderByDescending(r => r.MatchScore).Take(limit).ToList();
+    }
+
+    public async Task<List<CandidateRankResult>> RankCandidatesForJobAsync(
+        int jobId,
+        CancellationToken cancellationToken = default)
+    {
+        var job = await _context.Jobs
+            .Include(j => j.Company)
+            .FirstOrDefaultAsync(j => j.Id == jobId && j.DeletedAt == null, cancellationToken);
+
+        if (job == null) return new List<CandidateRankResult>();
+
+        var applications = await _context.Applications
+            .Include(a => a.Candidate).ThenInclude(c => c.User)
+            .Include(a => a.Candidate).ThenInclude(c => c.CandidateSkills).ThenInclude(cs => cs.Skill)
+            .Include(a => a.Candidate).ThenInclude(c => c.Experiences)
+            .Where(a => a.JobId == jobId && a.DeletedAt == null && a.Status != HR.Domain.Enums.ApplicationStatus.WITHDRAWN)
+            .ToListAsync(cancellationToken);
+
+        if (applications.Count == 0) return new List<CandidateRankResult>();
+
+        var jobText = $"{job.Title} {job.Requirements} {job.Description}".ToLower();
+        var commonTechs = new List<string>
+        {
+            "c#", ".net", "react", "reactjs", "typescript", "javascript", "sql", "mysql", "sql server",
+            "docker", "kubernetes", "aws", "azure", "git", "ci/cd", "rest api", "python", "java", "spring", "golang", "nodejs", "angular", "vue"
+        };
+
+        var jobRequiredTechs = commonTechs.Where(t => jobText.Contains(t)).ToList();
+        var rankedList = new List<CandidateRankResult>();
+
+        foreach (var app in applications)
+        {
+            var candidate = app.Candidate;
+            var candidateSkills = candidate?.CandidateSkills?
+                .Select(s => s.Skill?.SkillName ?? "")
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList() ?? new List<string>();
+
+            var matched = new List<string>();
+            var missing = new List<string>();
+
+            foreach (var tech in jobRequiredTechs)
+            {
+                if (candidateSkills.Any(s => s.ToLower().Contains(tech)))
+                {
+                    matched.Add(tech.ToUpper());
+                }
+                else
+                {
+                    missing.Add(tech.ToUpper());
+                }
+            }
+
+            int expCount = candidate?.Experiences?.Count ?? 0;
+            int score = 60;
+            if (matched.Count >= 3) score += 25;
+            else if (matched.Count == 2) score += 18;
+            else if (matched.Count == 1) score += 10;
+
+            if (expCount >= 3) score += 10;
+            else if (expCount >= 1) score += 5;
+
+            score = Math.Min(98, Math.Max(45, score));
+
+            string matchLevel;
+            string recommendation;
+            if (score >= 85)
+            {
+                matchLevel = "Rất phù hợp";
+                recommendation = "⭐ Ứng viên sáng giá — Khuyến nghị gửi lời mời phỏng vấn ngay!";
+            }
+            else if (score >= 72)
+            {
+                matchLevel = "Phù hợp";
+                recommendation = "👍 Đáp ứng tốt yêu cầu chính — Cân nhắc mời phỏng vấn vòng 1.";
+            }
+            else if (score >= 60)
+            {
+                matchLevel = "Tiềm năng";
+                recommendation = "⚡ Ứng viên tiềm năng — Nên kiểm tra thêm kỹ năng qua bài test.";
+            }
+            else
+            {
+                matchLevel = "Cần cân nhắc";
+                recommendation = "Chưa đáp ứng đủ các công nghệ trọng tâm trong JD.";
+            }
+
+            var strengths = new List<string>();
+            if (matched.Count > 0)
+            {
+                strengths.Add($"Thành thạo công nghệ trọng tâm: {string.Join(", ", matched.Take(3))}");
+            }
+            strengths.Add($"Đã tham gia {expCount} dự án/công ty trước đây");
+
+            rankedList.Add(new CandidateRankResult
+            {
+                ApplicationId = app.Id,
+                CandidateId = candidate?.Id ?? 0,
+                CandidateName = candidate?.FullName ?? candidate?.User?.FullName ?? "Ứng viên",
+                CandidateEmail = candidate?.User?.Email,
+                CandidateAvatar = candidate?.AvatarUrl,
+                MatchScore = score,
+                MatchLevel = matchLevel,
+                Recommendation = recommendation,
+                Strengths = strengths,
+                MissingSkills = missing.Take(3).ToList()
+            });
+        }
+
+        // Sort descending by score and assign Rank 1, 2, 3...
+        var sorted = rankedList.OrderByDescending(r => r.MatchScore).ToList();
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            sorted[i].Rank = i + 1;
+        }
+
+        return sorted;
+    }
 }
+

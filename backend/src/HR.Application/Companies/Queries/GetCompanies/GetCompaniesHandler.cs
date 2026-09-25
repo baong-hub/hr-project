@@ -90,7 +90,8 @@ public class GetCompaniesHandler : IRequestHandler<GetCompaniesQuery, PagedResul
                 company.SocialLinks,
                 company.VerificationStatus.ToString(),
                 followersCount,
-                isFollowing
+                isFollowing,
+                company.IsVerified || company.VerificationStatus == CompanyVerificationStatus.VERIFIED
             ));
         }
 

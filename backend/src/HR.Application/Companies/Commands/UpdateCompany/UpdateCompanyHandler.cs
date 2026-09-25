@@ -5,6 +5,7 @@ using HR.Application.Common.Exceptions;
 using HR.Application.Common.Interfaces;
 using HR.Application.Companies.Dtos;
 using HR.Domain.Entities;
+using HR.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -102,6 +103,7 @@ public class UpdateCompanyHandler : IRequestHandler<UpdateCompanyCommand, Compan
             company.VerificationStatus.ToString(),
             followersCount,
             isFollowing,
+            company.IsVerified || company.VerificationStatus == CompanyVerificationStatus.VERIFIED,
             company.VideoUrl,
             company.OfficeGallery,
             company.CultureHighlights,

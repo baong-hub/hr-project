@@ -18,6 +18,7 @@ export interface CompanyTestimonial {
 }
 
 export interface CompanyDto {
+  coverImageUrl: string;
   id: number;
   name: string;
   logoUrl?: string;
@@ -33,6 +34,7 @@ export interface CompanyDto {
   contact?: string;
   socialLinks?: string; // JSON string
   verificationStatus: CompanyVerificationStatus;
+  isVerified?: boolean;
   followersCount: number;
   isFollowing?: boolean;
   videoUrl?: string;

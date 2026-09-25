@@ -1,17 +1,30 @@
 User-agent: *
 Allow: /
 Allow: /jobs
+Allow: /jobs/*
 Allow: /companies
+Allow: /companies/*
+Allow: /company/*
+Allow: /pricing
 Allow: /about
 Allow: /contact
-Allow: /pricing
 Allow: /terms
 Allow: /privacy
+
+# Private & Authenticated Portals
 Disallow: /admin/
 Disallow: /employer/
 Disallow: /candidate/
 Disallow: /user-roles/
 Disallow: /user-settings/
+Disallow: /master-data
+Disallow: /organization
+Disallow: /messages
+Disallow: /notifications
+Disallow: /interviews
+Disallow: /cvs
 Disallow: /api/
 
+Sitemap: https://tuyendung.hamo.vn/sitemap.xml
+Sitemap: /sitemap.xml
 Sitemap: /api/v1/sitemap.xml

@@ -59,7 +59,8 @@ public class SubscriptionsController(IMediator mediator) : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> PaymentWebhook([FromBody] PaymentWebhookRequest request)
     {
-        var result = await mediator.Send(new HandlePaymentWebhookCommand(request));
+        var secretHeader = Request.Headers["X-Webhook-Secret"].ToString();
+        var result = await mediator.Send(new HandlePaymentWebhookCommand(request, string.IsNullOrWhiteSpace(secretHeader) ? null : secretHeader));
         return Ok(new { success = result, message = result ? "Giao dịch xử lý thành công." : "Giao dịch bị từ chối." });
     }
 }

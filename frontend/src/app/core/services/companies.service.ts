@@ -20,4 +20,7 @@ export const companiesService = {
 
   followCompany: (id: number): Promise<AxiosResponse<ApiResponse<FollowResultDto>>> =>
     api.post(`/companies/${id}/follow`),
+
+  verifyCompany: (id: number, action: 'REQUEST' | 'APPROVE' | 'REJECT', taxCode?: string): Promise<AxiosResponse<ApiResponse<CompanyDto>>> =>
+    api.post(`/companies/${id}/verify`, { action, taxCode }),
 };

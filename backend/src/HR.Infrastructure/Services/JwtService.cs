@@ -13,7 +13,12 @@ public class JwtService(IConfiguration configuration) : IJwtService
         IEnumerable<int> allowedSiteIds, int minRoleLevel, IEnumerable<string> roles, IEnumerable<string> permissions, int? staffId = null, string? sessionId = null, string? accountType = null)
     {
         var jwtConfig = configuration.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig["Key"]!));
+        var secretKey = !string.IsNullOrEmpty(jwtConfig["Key"]) 
+            ? jwtConfig["Key"]! 
+            : (!string.IsNullOrEmpty(configuration["JWT_KEY"]) 
+                ? configuration["JWT_KEY"]! 
+                : "hr_portal_development_jwt_secret_key_minimum_256_bits_for_hmac_sha256!");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var dbChoice = "crm";

@@ -16,10 +16,11 @@ namespace HR.API.Controllers;
 public class SitemapController(ApplicationDbContext context, IConfiguration configuration) : ControllerBase
 {
     [HttpGet("sitemap.xml")]
+    [HttpGet("api/v1/sitemap.xml")]
     [Produces("application/xml")]
     public async Task<IActionResult> GetSitemap()
     {
-        var baseUrl = configuration["App:FrontendUrl"] ?? "https://tuyendung.hamo.vn";
+        var baseUrl = configuration["Frontend:BaseUrl"] ?? configuration["App:FrontendUrl"] ?? "https://tuyendung.hamo.vn";
         if (baseUrl.EndsWith('/')) baseUrl = baseUrl.TrimEnd('/');
 
         var jobs = await context.Jobs

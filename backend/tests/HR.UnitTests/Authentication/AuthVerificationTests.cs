@@ -20,6 +20,7 @@ public class AuthVerificationTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
 
     public AuthVerificationTests()
     {
@@ -30,6 +31,7 @@ public class AuthVerificationTests : IDisposable
         _context = new ApplicationDbContext(options);
         _emailService = Substitute.For<IEmailService>();
         _passwordHasher = Substitute.For<IPasswordHasher>();
+        _configuration = Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>();
     }
 
     public void Dispose()
@@ -101,7 +103,7 @@ public class AuthVerificationTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        var handler = new ForgotPasswordCommandHandler(_context, _emailService);
+        var handler = new ForgotPasswordCommandHandler(_context, _emailService, _configuration);
 
         // Act
         var result = await handler.Handle(new ForgotPasswordCommand("forgot@example.com"), CancellationToken.None);

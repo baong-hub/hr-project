@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authService } from '../../../../core/services/auth.service';
 import styles from './LoginPage.module.scss';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +36,12 @@ export const LoginPage: React.FC = () => {
         const user = authService.getUser();
         const role = user?.role || '';
         
+        const redirectUrl = searchParams.get('redirect');
+        if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('/auth/')) {
+          navigate(redirectUrl, { replace: true });
+          return;
+        }
+
         // Redirect according to Redirect Flow
         if (role === 'CANDIDATE') {
           navigate('/jobs');

@@ -114,6 +114,8 @@ public class SubmitApplicationHandler(
             createdApp?.Candidate?.Skills ?? candidate.Skills,
             createdApp?.Candidate?.ExperienceSummary ?? candidate.ExperienceSummary);
 
+        var timeline = GetApplicationsQueryHandler.BuildTimeline(createdApp?.Status ?? application.Status, createdApp?.AppliedAt ?? application.AppliedAt, createdApp?.ViewedAt);
+
         var dto = new ApplicationDto(
             createdApp?.Id ?? application.Id,
             createdApp?.JobId ?? application.JobId,
@@ -122,13 +124,20 @@ public class SubmitApplicationHandler(
             createdApp?.CandidateId ?? application.CandidateId,
             createdApp?.Candidate?.User?.FullName ?? createdApp?.Candidate?.FullName ?? candidate.FullName ?? "Ứng viên",
             createdApp?.Candidate?.User?.Email ?? string.Empty,
+            createdApp?.Candidate?.User?.AvatarUrl ?? createdApp?.Candidate?.AvatarUrl,
             createdApp?.CandidateCvId ?? application.CandidateCvId,
             createdApp?.CandidateCv?.CvTitle ?? cv.CvTitle,
             createdApp?.CandidateCv?.FileUrl ?? cv.FileUrl ?? string.Empty,
             createdApp?.CoverLetter ?? application.CoverLetter,
             (createdApp?.Status ?? application.Status).ToString(),
             createdApp?.AppliedAt ?? application.AppliedAt,
-            score
+            createdApp?.ViewedAt,
+            score,
+            createdApp?.AiSummary,
+            null,
+            null,
+            createdApp?.AiEvaluatedAt,
+            timeline
         );
 
         return ApiResponse<ApplicationDto>.Ok(dto);

@@ -19,6 +19,9 @@ public class GenerateJdResult
     public string Description { get; set; } = string.Empty;
     public string Requirements { get; set; } = string.Empty;
     public string Benefits { get; set; } = string.Empty;
+    public decimal? SuggestedSalaryFrom { get; set; }
+    public decimal? SuggestedSalaryTo { get; set; }
+    public string? SalaryReason { get; set; }
 }
 
 /// <summary>
@@ -57,6 +60,35 @@ public class AssessmentQuestionItem
     public string Difficulty { get; set; } = "Medium"; // Easy, Medium, Hard
 }
 
+public class JobRecommendationResult
+{
+    public int JobId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string CompanyName { get; set; } = string.Empty;
+    public string? CompanyLogo { get; set; }
+    public string? City { get; set; }
+    public decimal? SalaryFrom { get; set; }
+    public decimal? SalaryTo { get; set; }
+    public int MatchScore { get; set; }
+    public string MatchReason { get; set; } = string.Empty;
+    public List<string> MatchingSkills { get; set; } = new();
+}
+
+public class CandidateRankResult
+{
+    public int ApplicationId { get; set; }
+    public int CandidateId { get; set; }
+    public string CandidateName { get; set; } = string.Empty;
+    public string? CandidateEmail { get; set; }
+    public string? CandidateAvatar { get; set; }
+    public int Rank { get; set; }
+    public int MatchScore { get; set; }
+    public string MatchLevel { get; set; } = string.Empty;
+    public string Recommendation { get; set; } = string.Empty;
+    public List<string> Strengths { get; set; } = new();
+    public List<string> MissingSkills { get; set; } = new();
+}
+
 public interface IAiService
 {
     Task<JobFitAnalysisResult> AnalyzeJobFitAsync(int candidateUserId, int jobId, CancellationToken cancellationToken = default);
@@ -72,4 +104,15 @@ public interface IAiService
     /// AI sinh bộ câu hỏi trắc nghiệm đánh giá năng lực theo JD và loại đề thi
     /// </summary>
     Task<List<AssessmentQuestionItem>> GenerateAssessmentQuestionsAsync(int jobId, string testType, int totalQuestions, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gợi ý các công việc phù hợp nhất cho ứng viên dựa trên CV & kỹ năng
+    /// </summary>
+    Task<List<JobRecommendationResult>> GetRecommendedJobsAsync(int candidateUserId, int limit = 6, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Tự động chấm điểm & xếp hạng danh sách ứng viên cho 1 tin tuyển dụng cụ thể
+    /// </summary>
+    Task<List<CandidateRankResult>> RankCandidatesForJobAsync(int jobId, CancellationToken cancellationToken = default);
 }
+

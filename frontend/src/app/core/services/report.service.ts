@@ -10,6 +10,6 @@ export const reportService = {
   getEmployerFunnel: (params?: { from?: string; to?: string }): Promise<AxiosResponse<ApiResponse<RecruitmentFunnel>>> =>
     api.get('/reports/employer/funnel', { params }),
 
-  getAdminSummary: (): Promise<AxiosResponse<ApiResponse<AdminSummary>>> =>
-    api.get('/reports/admin/summary'),
+  getAdminSummary: (params?: { from?: string; to?: string; range?: string }): Promise<AxiosResponse<ApiResponse<AdminSummary>>> =>
+    api.get('/reports/admin/summary', { params }),
 };

@@ -58,6 +58,7 @@ public class GetCompanyByIdHandler : IRequestHandler<GetCompanyByIdQuery, Compan
             company.VerificationStatus.ToString(),
             followersCount,
             isFollowing,
+            company.IsVerified || company.VerificationStatus == Domain.Enums.CompanyVerificationStatus.VERIFIED,
             company.VideoUrl,
             company.OfficeGallery,
             company.CultureHighlights,

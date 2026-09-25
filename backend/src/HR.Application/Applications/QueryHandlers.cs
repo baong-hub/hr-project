@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using HR.Application.Common.Interfaces;
@@ -91,7 +92,11 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
             .ToListAsync(cancellationToken);
 
         var list = rawList.Select(a => {
-            var score = CalculateMatchScore(a.Job?.Title ?? string.Empty, a.Job?.Requirements ?? string.Empty, a.Candidate?.Skills, a.Candidate?.ExperienceSummary);
+            var score = a.MatchScore ?? CalculateMatchScore(a.Job?.Title ?? string.Empty, a.Job?.Requirements ?? string.Empty, a.Candidate?.Skills, a.Candidate?.ExperienceSummary);
+            var strengths = !string.IsNullOrEmpty(a.AiStrengthsJson) ? JsonSerializer.Deserialize<List<string>>(a.AiStrengthsJson) : null;
+            var gaps = !string.IsNullOrEmpty(a.AiGapsJson) ? JsonSerializer.Deserialize<List<string>>(a.AiGapsJson) : null;
+            var timeline = BuildTimeline(a.Status, a.AppliedAt, a.ViewedAt);
+
             return new ApplicationDto(
                 a.Id,
                 a.JobId,
@@ -100,13 +105,20 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
                 a.CandidateId,
                 a.Candidate?.User?.FullName ?? a.Candidate?.FullName ?? "Ứng viên",
                 a.Candidate?.User?.Email ?? string.Empty,
+                a.Candidate?.User?.AvatarUrl ?? a.Candidate?.AvatarUrl,
                 a.CandidateCvId,
                 a.CandidateCv?.CvTitle ?? string.Empty,
                 a.CandidateCv?.FileUrl ?? string.Empty,
                 a.CoverLetter,
                 a.Status.ToString(),
                 a.AppliedAt,
-                score
+                a.ViewedAt,
+                score,
+                a.AiSummary,
+                strengths,
+                gaps,
+                a.AiEvaluatedAt,
+                timeline
             );
         }).ToList();
 
@@ -115,7 +127,7 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
 
     public static int CalculateMatchScore(string jobTitle, string requirements, string? candidateSkills, string? candidateExperience)
     {
-        if (string.IsNullOrWhiteSpace(candidateSkills)) return new Random(jobTitle.GetHashCode()).Next(35, 55);
+        if (string.IsNullOrWhiteSpace(candidateSkills)) return new Random(jobTitle.GetHashCode()).Next(45, 65);
 
         var reqKeywords = (requirements + " " + jobTitle)
             .ToLower()
@@ -136,14 +148,12 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
         var matches = reqKeywords.Intersect(candidateKeywords).Count();
         var score = (int)Math.Min(100, Math.Round((double)matches / reqKeywords.Count * 100));
 
-        // Boosting logic for visualization
         if (score > 0)
         {
-            score = Math.Min(96, score + 45); // Shift into a premium matching visual range
+            score = Math.Min(96, score + 45);
         }
         else
         {
-            // Give a baseline matching score based on standard IT keywords
             var commonIT = candidateKeywords.Intersect(new[] { "react", "typescript", "node", "net", "c#", "java", "sql", "docker", "azure", "aws", "php", "laravel", "python" }).Count();
             if (commonIT > 0)
             {
@@ -151,11 +161,70 @@ public class GetApplicationsQueryHandler(IApplicationDbContext context, ICurrent
             }
             else
             {
-                score = new Random(jobTitle.GetHashCode() + candidateSkills.GetHashCode()).Next(45, 65);
+                score = new Random(jobTitle.GetHashCode() + candidateSkills.GetHashCode()).Next(50, 70);
             }
         }
 
         return Math.Min(98, score);
+    }
+
+    public static List<ApplicationTimelineItemDto> BuildTimeline(ApplicationStatus status, DateTime appliedAt, DateTime? viewedAt)
+    {
+        var stages = new[]
+        {
+            (ApplicationStatus.APPLIED, "Nộp hồ sơ"),
+            (ApplicationStatus.SCREENING, "Sàng lọc CV"),
+            (ApplicationStatus.SHORTLISTED, "Hồ sơ tiềm năng"),
+            (ApplicationStatus.INTERVIEW, "Phỏng vấn"),
+            (ApplicationStatus.OFFER, "Mời nhận việc"),
+            (ApplicationStatus.HIRED, "Nhận việc thành công")
+        };
+
+        var timeline = new List<ApplicationTimelineItemDto>();
+        int currentStageIndex = Array.FindIndex(stages, s => s.Item1 == status);
+
+        for (int i = 0; i < stages.Length; i++)
+        {
+            var stageEnum = stages[i].Item1;
+            var stageName = stages[i].Item2;
+            bool isCompleted = (currentStageIndex >= 0 && currentStageIndex >= i);
+            bool isCurrent = (currentStageIndex == i);
+
+            DateTime? achievedAt = null;
+            if (stageEnum == ApplicationStatus.APPLIED) achievedAt = appliedAt;
+            else if (stageEnum == ApplicationStatus.SCREENING && viewedAt.HasValue) achievedAt = viewedAt;
+
+            timeline.Add(new ApplicationTimelineItemDto(
+                stageEnum.ToString(),
+                stageName,
+                achievedAt,
+                isCompleted,
+                isCurrent
+            ));
+        }
+
+        if (status == ApplicationStatus.REJECTED)
+        {
+            timeline.Add(new ApplicationTimelineItemDto(
+                "REJECTED",
+                "Chưa phù hợp",
+                null,
+                true,
+                true
+            ));
+        }
+        else if (status == ApplicationStatus.WITHDRAWN)
+        {
+            timeline.Add(new ApplicationTimelineItemDto(
+                "WITHDRAWN",
+                "Đã rút ứng tuyển",
+                null,
+                true,
+                true
+            ));
+        }
+
+        return timeline;
     }
 }
 
@@ -170,12 +239,14 @@ public class GetApplicationByIdQueryHandler(IApplicationDbContext context)
             .Include(a => a.Candidate)
                 .ThenInclude(c => c.User)
             .Include(a => a.CandidateCv)
-            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
 
         if (a == null) return null;
 
-        var score = GetApplicationsQueryHandler.CalculateMatchScore(a.Job?.Title ?? string.Empty, a.Job?.Requirements ?? string.Empty, a.Candidate?.Skills, a.Candidate?.ExperienceSummary);
+        var score = a.MatchScore ?? GetApplicationsQueryHandler.CalculateMatchScore(a.Job?.Title ?? string.Empty, a.Job?.Requirements ?? string.Empty, a.Candidate?.Skills, a.Candidate?.ExperienceSummary);
+        var strengths = !string.IsNullOrEmpty(a.AiStrengthsJson) ? JsonSerializer.Deserialize<List<string>>(a.AiStrengthsJson) : null;
+        var gaps = !string.IsNullOrEmpty(a.AiGapsJson) ? JsonSerializer.Deserialize<List<string>>(a.AiGapsJson) : null;
+        var timeline = GetApplicationsQueryHandler.BuildTimeline(a.Status, a.AppliedAt, a.ViewedAt);
 
         return new ApplicationDto(
             a.Id,
@@ -185,13 +256,20 @@ public class GetApplicationByIdQueryHandler(IApplicationDbContext context)
             a.CandidateId,
             a.Candidate?.User?.FullName ?? a.Candidate?.FullName ?? "Ứng viên",
             a.Candidate?.User?.Email ?? string.Empty,
+            a.Candidate?.User?.AvatarUrl ?? a.Candidate?.AvatarUrl,
             a.CandidateCvId,
             a.CandidateCv?.CvTitle ?? string.Empty,
             a.CandidateCv?.FileUrl ?? string.Empty,
             a.CoverLetter,
             a.Status.ToString(),
             a.AppliedAt,
-            score
+            a.ViewedAt,
+            score,
+            a.AiSummary,
+            strengths,
+            gaps,
+            a.AiEvaluatedAt,
+            timeline
         );
     }
 }

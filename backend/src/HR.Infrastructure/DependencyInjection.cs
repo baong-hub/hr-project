@@ -67,8 +67,12 @@ public static class DependencyInjection
         services.AddTransient<IPasswordHasher, HR.Infrastructure.Services.PasswordHasher>();
 
         var jwtSection = configuration.GetSection("Jwt");
-        var secretKey = jwtSection["Key"];
-        var key = Encoding.ASCII.GetBytes(secretKey!);
+        var secretKey = jwtSection["Key"] ?? configuration["JWT_KEY"];
+        if (string.IsNullOrWhiteSpace(secretKey) || secretKey.Contains("REDACTED"))
+        {
+            secretKey = configuration["JWT_KEY"] ?? "hr_portal_development_jwt_secret_key_minimum_256_bits_for_hmac_sha256!";
+        }
+        var key = Encoding.ASCII.GetBytes(secretKey);
 
         services.AddAuthentication(x =>
         {
@@ -85,8 +89,8 @@ public static class DependencyInjection
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidIssuer = jwtSection["Issuer"],
-                ValidAudience = jwtSection["Audience"],
+                ValidIssuer = jwtSection["Issuer"] ?? "HR.API",
+                ValidAudience = jwtSection["Audience"] ?? "HR.Frontend",
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
             };
@@ -124,6 +128,9 @@ public static class DependencyInjection
         services.AddSingleton<IEncryptionService, HR.Infrastructure.Security.EncryptionService>();
         services.AddSingleton<IUserPresenceService, HR.Infrastructure.Services.UserPresenceService>();
         services.AddSingleton<ISessionValidationService, HR.Infrastructure.Services.SessionValidationService>();
+
+        // Background worker service replacing Hangfire
+        services.AddHostedService<HR.Infrastructure.Services.HRBackgroundWorkerService>();
 
         return services;
     }

@@ -13,7 +13,8 @@ public record ForgotPasswordCommand(string Email) : IRequest<bool>;
 
 public class ForgotPasswordCommandHandler(
     IApplicationDbContext context,
-    IEmailService emailService) : IRequestHandler<ForgotPasswordCommand, bool>
+    IEmailService emailService,
+    Microsoft.Extensions.Configuration.IConfiguration configuration) : IRequestHandler<ForgotPasswordCommand, bool>
 {
     public async Task<bool> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
@@ -39,7 +40,8 @@ public class ForgotPasswordCommandHandler(
 
         await context.SaveChangesAsync(cancellationToken);
 
-        var resetUrl = $"http://localhost:5173/auth/reset-password?token={resetToken}&email={Uri.EscapeDataString(user.Email)}";
+        var frontendBaseUrl = (configuration["Frontend:BaseUrl"] ?? configuration["FRONTEND_URL"] ?? "http://localhost:5173").TrimEnd('/');
+        var resetUrl = $"{frontendBaseUrl}/auth/reset-password?token={resetToken}&email={Uri.EscapeDataString(user.Email)}";
         var htmlBody = $@"
             <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;"">
                 <div style=""border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px;"">

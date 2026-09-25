@@ -16,7 +16,8 @@ public record CreateCheckoutCommand(CreateCheckoutRequest Request) : IRequest<Ch
 
 public class CreateCheckoutCommandHandler(
     IApplicationDbContext context,
-    ICurrentUserService currentUserService) : IRequestHandler<CreateCheckoutCommand, CheckoutResultDto>
+    ICurrentUserService currentUserService,
+    Microsoft.Extensions.Configuration.IConfiguration configuration) : IRequestHandler<CreateCheckoutCommand, CheckoutResultDto>
 {
     public async Task<CheckoutResultDto> Handle(CreateCheckoutCommand command, CancellationToken cancellationToken)
     {
@@ -50,8 +51,17 @@ public class CreateCheckoutCommandHandler(
         var description = $"Thanh toan goi {request.Plan} cong ty {employer.Company.Name}";
         if (description.Length > 50) description = description.Substring(0, 50);
 
+        var secret = configuration["Payment:WebhookSecret"] 
+                     ?? configuration["PAYMENT_WEBHOOK_SECRET"] 
+                     ?? "hr_portal_payment_webhook_secret_key_secure_2026_super_safe";
+
+        var rawData = $"{orderId}|{totalAmount:0}|PAID";
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+        var signature = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawData))).ToLowerInvariant();
+
+        var frontendBaseUrl = (configuration["Frontend:BaseUrl"] ?? configuration["FRONTEND_URL"] ?? "http://localhost:5173").TrimEnd('/');
         var qrCodeUrl = $"https://img.vietqr.io/image/{bankBin}-{accountNumber}-compact2.png?amount={totalAmount}&addInfo={Uri.EscapeDataString(orderId)}&accountName={Uri.EscapeDataString(accountName)}";
-        var paymentUrl = $"http://localhost:5173/employer/subscription/payment-gateway?orderId={orderId}&amount={totalAmount}&plan={request.Plan}&qr={Uri.EscapeDataString(qrCodeUrl)}";
+        var paymentUrl = $"{frontendBaseUrl}/employer/subscription/payment-gateway?orderId={orderId}&amount={totalAmount}&plan={request.Plan}&signature={signature}&qr={Uri.EscapeDataString(qrCodeUrl)}";
 
         return new CheckoutResultDto
         {
@@ -60,7 +70,8 @@ public class CreateCheckoutCommandHandler(
             PaymentUrl = paymentUrl,
             QrCodeUrl = qrCodeUrl,
             Description = description,
-            ExpireAt = DateTime.UtcNow.AddMinutes(30)
+            ExpireAt = DateTime.UtcNow.AddMinutes(30),
+            Signature = signature
         };
     }
 }

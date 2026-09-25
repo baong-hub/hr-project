@@ -351,6 +351,27 @@ export const CompanyListPage: React.FC = () => {
                         textOverflow: 'ellipsis'
                       }}>
                         {company.name}
+                        {(company.isVerified || company.verificationStatus === 'VERIFIED') && (
+                          <span
+                            title="Doanh nghiệp đã xác minh (KYC Verified)"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: '#2563eb',
+                              color: '#ffffff',
+                              borderRadius: '50%',
+                              width: '18px',
+                              height: '18px',
+                              fontSize: '11px',
+                              marginLeft: '6px',
+                              verticalAlign: 'middle',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            ✓
+                          </span>
+                        )}
                       </h3>
 
                       <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-2)', flexWrap: 'wrap' }}>

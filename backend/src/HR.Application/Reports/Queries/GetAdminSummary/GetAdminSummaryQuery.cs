@@ -3,4 +3,8 @@ using MediatR;
 
 namespace HR.Application.Reports.Queries.GetAdminSummary;
 
-public record GetAdminSummaryQuery : IRequest<AdminSummaryDto>;
+public record GetAdminSummaryQuery(
+    string? From = null,
+    string? To = null,
+    string? Range = null
+) : IRequest<AdminSummaryDto>;

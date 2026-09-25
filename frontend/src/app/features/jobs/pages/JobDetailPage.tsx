@@ -9,6 +9,7 @@ import { authService } from '../../../core/services/auth.service';
 import { aiService, type JobFitAnalysisResult } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobDto } from '../../../core/models/job.model';
+import { SeoHead } from '../../../shared/components/SeoHead';
 import styles from './JobsPage.module.scss';
 
 export const JobDetailPage: React.FC = () => {
@@ -17,10 +18,11 @@ export const JobDetailPage: React.FC = () => {
   const location = useLocation();
   const fromQuickView = (location.state as any)?.fromQuickView;
   const user = authService.getUser();
+  const isAuthenticated = authService.isAuthenticated();
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
-  const isEmployer = roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN';
-  const isCandidate = !isEmployer;
+  const isEmployer = isAuthenticated && (roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN');
+  const isCandidate = isAuthenticated && !isEmployer;
 
   // State
   const [job, setJob] = useState<JobDto | null>(null);
@@ -47,6 +49,11 @@ export const JobDetailPage: React.FC = () => {
   const [hasApplied, setHasApplied] = useState(false);
 
   const handleAnalyzeJobFit = async () => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để AI phân tích độ phù hợp giữa CV của bạn và công việc này.');
+      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
     if (!job) return;
     setShowAiModal(true);
     setAnalyzingAi(true);
@@ -190,6 +197,11 @@ export const JobDetailPage: React.FC = () => {
   }, [id, isEmployer]);
 
   const toggleSaveJob = async () => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập tài khoản ứng viên để lưu việc làm.');
+      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
     if (!job || !isCandidate) return;
     setTogglingSave(true);
     const wasSaved = isSaved;
@@ -206,6 +218,20 @@ export const JobDetailPage: React.FC = () => {
     } finally {
       setTogglingSave(false);
     }
+  };
+
+  const handleOpenApplyModal = () => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập tài khoản ứng viên để nộp đơn ứng tuyển.');
+      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+    if (isEmployer) {
+      toast.error('Tài khoản nhà tuyển dụng không thể nộp đơn ứng tuyển.');
+      return;
+    }
+    setShowApplyModal(true);
+    fetchCvs();
   };
 
   if (loading) {
@@ -227,8 +253,55 @@ export const JobDetailPage: React.FC = () => {
     );
   }
 
+  const jobPostingJsonLd = job ? {
+    '@context': 'https://schema.org/',
+    '@type': 'JobPosting',
+    title: job.title,
+    description: `${job.description}${job.requirements ? `\n\nYêu cầu công việc:\n${job.requirements}` : ''}`,
+    identifier: {
+      '@type': 'PropertyValue',
+      name: 'HR Portal',
+      value: job.id.toString()
+    },
+    datePosted: job.createdAt,
+    validThrough: job.expiredAt,
+    employmentType: job.employmentType === 'PART_TIME' ? 'PART_TIME' : (job.employmentType === 'INTERNSHIP' ? 'INTERN' : 'FULL_TIME'),
+    hiringOrganization: {
+      '@type': 'Organization',
+      name: job.companyName,
+      logo: job.companyLogoUrl || (typeof window !== 'undefined' ? `${window.location.origin}/hr.png` : undefined)
+    },
+    jobLocation: {
+      '@type': 'Place',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: job.city || 'Toàn quốc',
+        addressCountry: 'VN'
+      }
+    },
+    ...(job.salaryFrom || job.salaryTo ? {
+      baseSalary: {
+        '@type': 'MonetaryAmount',
+        currency: 'VND',
+        value: {
+          '@type': 'QuantitativeValue',
+          minValue: job.salaryFrom || undefined,
+          maxValue: job.salaryTo || undefined,
+          unitText: 'MONTH'
+        }
+      }
+    } : {})
+  } : undefined;
+
   return (
     <div className={styles.jobsPage} style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <SeoHead
+        title={`${job.title} — ${job.companyName} | HR Portal`}
+        description={`Tuyển dụng ${job.title} tại ${job.companyName} (${job.city}). Mức lương: ${formatSalary(job.salaryFrom, job.salaryTo)}. Hạn nộp: ${new Date(job.expiredAt).toLocaleDateString('vi-VN')}. Nộp đơn ứng tuyển ngay trên HR Portal!`}
+        ogType="article"
+        ogImage={job.companyLogoUrl || '/hr.png'}
+        jsonLd={jobPostingJsonLd}
+      />
       <div style={{ marginBottom: '12px' }}>
         <button onClick={() => navigate(-1)} className={styles.btnSecondary}>
           Quay lại
@@ -288,7 +361,7 @@ export const JobDetailPage: React.FC = () => {
             >
               Phân tích độ phù hợp hồ sơ
             </button>
-            {isCandidate && (
+            {!isEmployer && (
               <button
                 type="button"
                 onClick={toggleSaveJob}
@@ -310,7 +383,7 @@ export const JobDetailPage: React.FC = () => {
                 {isSaved ? 'Đã lưu' : 'Lưu việc làm'}
               </button>
             )}
-            {isCandidate && (
+            {!isEmployer && (
               hasApplied ? (
                 <button 
                   disabled
@@ -334,13 +407,27 @@ export const JobDetailPage: React.FC = () => {
               ) : (
                 <button 
                   type="button"
-                  onClick={() => { setShowApplyModal(true); fetchCvs(); }} 
+                  onClick={handleOpenApplyModal} 
                   className={styles.btnPrimary} 
                   style={{ flex: '1 1 180px', justifyContent: 'center', padding: '12px' }}
                 >
                   Nộp đơn ứng tuyển ngay
                 </button>
               )
+            )}
+            {isEmployer && (
+              <div style={{
+                padding: '12px 20px',
+                backgroundColor: 'var(--color-bg-subtle, #f1f5f9)',
+                borderRadius: 'var(--radius-lg, 8px)',
+                color: 'var(--color-text-secondary, #475569)',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                Chế độ xem trước tin tuyển dụng
+              </div>
             )}
           </div>
         </div>

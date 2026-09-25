@@ -35,4 +35,12 @@ export interface AdminSummary {
   totalCandidates: number;
   totalJobs: number;
   totalApplications: number;
+  activeJobs?: number;
+  activeJobsRate?: number;
+  candidatesTrendPercentage?: number;
+  companiesTrendPercentage?: number;
+  jobsTrendPercentage?: number;
+  applicationsTrendPercentage?: number;
+  jobsTrendLabel?: string;
+  applicationsTrendLabel?: string;
 }

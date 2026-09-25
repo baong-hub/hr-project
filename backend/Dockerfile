@@ -5,11 +5,11 @@ WORKDIR /src
 COPY . .
 
 # Restore dependencies
-RUN dotnet restore "src/CRM.API/CRM.API.csproj"
+RUN dotnet restore "src/HR.API/HR.API.csproj"
 
 # Publish the application
-WORKDIR "/src/src/CRM.API"
-RUN dotnet publish "CRM.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+WORKDIR "/src/src/HR.API"
+RUN dotnet publish "HR.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 
 # Build runtime image
@@ -26,4 +26,4 @@ COPY --from=build /app/publish .
 # Ensure upload & recording directories exist with proper write permissions
 RUN mkdir -p /app/wwwroot/uploads /app/wwwroot/recordings && chmod -R 777 /app/wwwroot
 
-ENTRYPOINT ["dotnet", "CRM.API.dll"]
+ENTRYPOINT ["dotnet", "HR.API.dll"]

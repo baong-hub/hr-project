@@ -31,9 +31,22 @@ dist-ssr/
 .env
 .env.*.local
 
-# Logs
+# Logs & Debug files
 *.log
 logs/
+backend/*.txt
+log*.txt
+query_error.txt
+
+# Uploaded user files & CVs (Keep .gitkeep)
+backend/src/HR.API/wwwroot/uploads/*
+!backend/src/HR.API/wwwroot/uploads/**/.gitkeep
+backend/src/HR.API/wwwroot/uploads/cvs/*
+!backend/src/HR.API/wwwroot/uploads/cvs/.gitkeep
+backend/src/HR.API/wwwroot/uploads/offers/*
+!backend/src/HR.API/wwwroot/uploads/offers/.gitkeep
+backend/src/HR.API/wwwroot/recordings/*
+!backend/src/HR.API/wwwroot/recordings/.gitkeep
 
 # OS/Docker
 .dockerignore

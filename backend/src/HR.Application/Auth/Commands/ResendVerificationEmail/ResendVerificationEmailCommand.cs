@@ -12,7 +12,8 @@ public record ResendVerificationEmailCommand(string Email) : IRequest<bool>;
 
 public class ResendVerificationEmailCommandHandler(
     IApplicationDbContext context,
-    IEmailService emailService) : IRequestHandler<ResendVerificationEmailCommand, bool>
+    IEmailService emailService,
+    Microsoft.Extensions.Configuration.IConfiguration configuration) : IRequestHandler<ResendVerificationEmailCommand, bool>
 {
     public async Task<bool> Handle(ResendVerificationEmailCommand request, CancellationToken cancellationToken)
     {
@@ -42,7 +43,8 @@ public class ResendVerificationEmailCommandHandler(
 
         await context.SaveChangesAsync(cancellationToken);
 
-        var verifyUrl = $"http://localhost:5173/auth/verify-email?token={token}";
+        var frontendBaseUrl = (configuration["Frontend:BaseUrl"] ?? configuration["FRONTEND_URL"] ?? "http://localhost:5173").TrimEnd('/');
+        var verifyUrl = $"{frontendBaseUrl}/auth/verify-email?token={token}";
         var body = $@"
             <div style=""font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;"">
                 <h2 style=""color: #2563eb;"">Xác Thực Địa Chỉ Email - HR Portal</h2>

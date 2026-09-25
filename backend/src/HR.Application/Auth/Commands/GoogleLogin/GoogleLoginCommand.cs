@@ -26,42 +26,68 @@ public class GoogleLoginCommandHandler(
 {
     public async Task<LoginResultDto> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
     {
-        var email = request.Email?.Trim().ToLower();
-
-        // Nếu client truyền googleToken nhưng không có email trực tiếp, ta có thể giải mã payload jwt Google
-        if (string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(request.GoogleToken))
+        if (string.IsNullOrWhiteSpace(request.GoogleToken))
         {
-            try
+            throw new BadRequestException("GOOGLE_TOKEN_REQUIRED", "Google Token là bắt buộc để đăng nhập bằng Google.");
+        }
+
+        string email;
+        string? verifiedFullName = null;
+        string? verifiedAvatarUrl = null;
+
+        // Xác thực chữ ký và tính hợp lệ của token trực tiếp với Google OAuth2 API
+        try
+        {
+            using var httpClient = new System.Net.Http.HttpClient();
+            var response = await httpClient.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={Uri.EscapeDataString(request.GoogleToken.Trim())}", cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
             {
-                var parts = request.GoogleToken.Split('.');
-                if (parts.Length >= 2)
+                throw new UnauthorizedException("INVALID_GOOGLE_TOKEN", "Google Token không hợp lệ hoặc đã hết hạn.");
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            using var doc = System.Text.Json.JsonDocument.Parse(content);
+            var root = doc.RootElement;
+
+            if (!root.TryGetProperty("email", out var emailProp) || string.IsNullOrWhiteSpace(emailProp.GetString()))
+            {
+                throw new UnauthorizedException("INVALID_GOOGLE_TOKEN", "Không tìm thấy thông tin email đã xác thực từ Google.");
+            }
+
+            if (root.TryGetProperty("email_verified", out var verifiedProp))
+            {
+                var isVerified = verifiedProp.ValueKind == System.Text.Json.JsonValueKind.True 
+                    || (verifiedProp.ValueKind == System.Text.Json.JsonValueKind.String && verifiedProp.GetString()?.ToLower() == "true");
+                if (!isVerified)
                 {
-                    var payload = parts[1];
-                    // Pad base64
-                    switch (payload.Length % 4)
-                    {
-                        case 2: payload += "=="; break;
-                        case 3: payload += "="; break;
-                    }
-                    var bytes = Convert.FromBase64String(payload);
-                    var json = System.Text.Encoding.UTF8.GetString(bytes);
-                    using var doc = System.Text.Json.JsonDocument.Parse(json);
-                    if (doc.RootElement.TryGetProperty("email", out var emailProp))
-                    {
-                        email = emailProp.GetString()?.Trim().ToLower();
-                    }
+                    throw new UnauthorizedException("UNVERIFIED_GOOGLE_EMAIL", "Email Google chưa được xác thực.");
                 }
             }
-            catch
+
+            email = emailProp.GetString()!.Trim().ToLower();
+
+            if (root.TryGetProperty("name", out var nameProp))
             {
-                // Fallback nếu token không phải dạng JWT
+                verifiedFullName = nameProp.GetString();
+            }
+
+            if (root.TryGetProperty("picture", out var picProp))
+            {
+                verifiedAvatarUrl = picProp.GetString();
             }
         }
-
-        if (string.IsNullOrEmpty(email))
+        catch (UnauthorizedException)
         {
-            throw new BadRequestException("INVALID_GOOGLE_TOKEN", "Không thể xác thực thông tin tài khoản Google.");
+            throw;
         }
+        catch (Exception ex)
+        {
+            throw new UnauthorizedException("GOOGLE_AUTH_FAILED", $"Lỗi xác thực với Google: {ex.Message}");
+        }
+
+        var fullName = !string.IsNullOrWhiteSpace(verifiedFullName) ? verifiedFullName : request.FullName;
+        var avatarUrl = !string.IsNullOrWhiteSpace(verifiedAvatarUrl) ? verifiedAvatarUrl : request.AvatarUrl;
 
         var user = await context.Users
             .Include(u => u.Role)
@@ -90,8 +116,8 @@ public class GoogleLoginCommandHandler(
                 Email = email,
                 PasswordHash = passwordHasher.Hash(Guid.NewGuid().ToString("N")),
                 PhoneNumber = "0000000000",
-                FullName = string.IsNullOrWhiteSpace(request.FullName) ? email.Split('@')[0] : request.FullName.Trim(),
-                AvatarUrl = request.AvatarUrl,
+                FullName = string.IsNullOrWhiteSpace(fullName) ? email.Split('@')[0] : fullName.Trim(),
+                AvatarUrl = avatarUrl,
                 RoleId = role.Id,
                 SiteId = siteId,
                 AccountType = AccountType.User,
@@ -106,7 +132,7 @@ public class GoogleLoginCommandHandler(
             {
                 Id = user.Id,
                 FullName = user.FullName,
-                AvatarUrl = request.AvatarUrl
+                AvatarUrl = avatarUrl
             };
             context.Candidates.Add(candidate);
             context.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = role.Id });

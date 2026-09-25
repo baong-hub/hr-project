@@ -20,6 +20,7 @@ public record CompanyDto(
     string VerificationStatus,
     int FollowersCount,
     bool? IsFollowing = null,
+    bool IsVerified = false,
     string? VideoUrl = null,
     string? OfficeGallery = null,
     string? CultureHighlights = null,

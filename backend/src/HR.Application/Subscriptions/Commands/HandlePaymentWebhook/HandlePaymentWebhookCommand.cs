@@ -9,17 +9,51 @@ using HR.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+
 namespace HR.Application.Subscriptions.Commands.HandlePaymentWebhook;
 
-public record HandlePaymentWebhookCommand(PaymentWebhookRequest Request) : IRequest<bool>;
+public record HandlePaymentWebhookCommand(PaymentWebhookRequest Request, string? SecretHeader = null) : IRequest<bool>;
 
 public class HandlePaymentWebhookCommandHandler(
     IApplicationDbContext context,
-    IEmailService emailService) : IRequestHandler<HandlePaymentWebhookCommand, bool>
+    IEmailService emailService,
+    IConfiguration configuration) : IRequestHandler<HandlePaymentWebhookCommand, bool>
 {
     public async Task<bool> Handle(HandlePaymentWebhookCommand command, CancellationToken cancellationToken)
     {
         var req = command.Request;
+
+        // Xác thực chữ ký số HMAC-SHA256 hoặc Secret Header từ cổng thanh toán
+        var secret = configuration["Payment:WebhookSecret"] 
+                     ?? configuration["PAYMENT_WEBHOOK_SECRET"] 
+                     ?? "hr_portal_payment_webhook_secret_key_secure_2026_super_safe";
+
+        var headerSecret = command.SecretHeader;
+        var isHeaderValid = !string.IsNullOrEmpty(headerSecret) && string.Equals(headerSecret.Trim(), secret.Trim(), StringComparison.Ordinal);
+
+        var isSignatureValid = false;
+        if (!string.IsNullOrWhiteSpace(req.Signature))
+        {
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+            var rawData1 = $"{req.OrderId}|{req.Amount:0}|{req.Status}";
+            var hashHex1 = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawData1))).ToLowerInvariant();
+            var rawData2 = $"{req.OrderId}|{req.Amount}|{req.Status}";
+            var hashHex2 = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawData2))).ToLowerInvariant();
+
+            var sig = req.Signature.Trim().ToLowerInvariant();
+            if (sig == hashHex1 || sig == hashHex2)
+            {
+                isSignatureValid = true;
+            }
+        }
+
+        if (!isHeaderValid && !isSignatureValid)
+        {
+            throw new UnauthorizedException("INVALID_WEBHOOK_SIGNATURE", "Chữ ký webhook hoặc Secret xác thực không hợp lệ. Yêu cầu bị từ chối.");
+        }
 
         if (req.Status != "PAID" && req.Status != "SUCCESS")
         {

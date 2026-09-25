@@ -93,10 +93,28 @@ api.interceptors.response.use(
     const skipErrorToast = error.config?.headers?.['X-Skip-Error-Toast'] === 'true' || (error.config as any)?.skipErrorToast;
     if (error.response) {
       if (error.response.status === 401) {
+        const token = authService.getToken();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+        window.dispatchEvent(new Event('app-auth-changed'));
+
+        const pathname = window.location.pathname;
+        const isPublicPath = 
+          pathname === '/' ||
+          pathname === '/jobs' ||
+          pathname.startsWith('/jobs/') ||
+          pathname === '/companies' ||
+          pathname.startsWith('/companies/') ||
+          pathname.startsWith('/company/') ||
+          pathname === '/pricing' ||
+          pathname === '/about' ||
+          pathname === '/contact' ||
+          pathname === '/privacy' ||
+          pathname === '/terms' ||
+          pathname.startsWith('/auth/');
+
+        if (token && !isPublicPath && pathname !== '/auth/login' && pathname !== '/login') {
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(pathname + window.location.search)}`;
         }
       } else if (!skipErrorToast) {
         const errorMsg = getErrorMessage(error.response.data);

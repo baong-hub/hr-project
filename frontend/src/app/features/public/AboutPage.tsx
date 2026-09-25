@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { 
   Target, HeartHandshake, Shield, Sparkles, Globe 
 } from 'lucide-react';
-import { PublicNavbar } from './PublicNavbar';
-import { PublicFooter } from './PublicFooter';
+import { SeoHead } from '../../shared/components/SeoHead';
 
 export const AboutPage: React.FC = () => {
   const values = [
@@ -46,8 +45,12 @@ export const AboutPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', color: '#0f172a' }}>
-      <PublicNavbar />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <SeoHead
+        title="Về Chúng Tôi — Nền Tảng HR Portal | Sứ Mệnh & Tầm Nhìn"
+        description="Khám phá sứ mệnh, giá trị cốt lõi và lộ trình phát triển của HR Portal — Giải pháp công nghệ nhân sự kết nối nhân tài và doanh nghiệp bằng AI."
+        ogType="website"
+      />
 
       {/* Hero */}
       <section style={{
@@ -193,7 +196,6 @@ export const AboutPage: React.FC = () => {
         </div>
       </section>
 
-      <PublicFooter />
     </div>
   );
 };

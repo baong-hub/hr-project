@@ -12,8 +12,9 @@ public class EncryptionService : IEncryptionService
 
     public EncryptionService(IConfiguration configuration)
     {
-        var keyString = configuration["Security:EncryptionKey"] 
-                        ?? throw new InvalidOperationException("Encryption Key is not configured.");
+        var configuredKey = configuration["Security:EncryptionKey"];
+        var keyString = (!string.IsNullOrEmpty(configuredKey) ? configuredKey : configuration["ENCRYPTION_KEY"])
+                        ?? "dev_f83f4899d91b4237350474b5c921a4757a87d06679ec37143b56ad6a4ded97d9";
         
         // Ensure key is 32 bytes
         var keyBytes = Encoding.UTF8.GetBytes(keyString);

@@ -9,11 +9,13 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _environment;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment environment)
     {
         _next = next;
         _logger = logger;
+        _environment = environment;
     }
 
     public async Task Invoke(HttpContext context)
@@ -25,7 +27,7 @@ public class ExceptionHandlingMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception has occurred.");
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context, ex, _environment);
         }
     }
 
@@ -88,26 +90,29 @@ public class ExceptionHandlingMiddleware
         return translations.TryGetValue(msg, out var translated) ? translated : msg;
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static Task HandleExceptionAsync(HttpContext context, Exception exception, IHostEnvironment environment)
     {
         var lang = GetLanguage(context);
         var code = HttpStatusCode.InternalServerError;
         var defaultMsg = lang == "en" ? "An unexpected error occurred." : "Có lỗi xảy ra trên hệ thống.";
         var result = ApiResponse<object>.Fail("SERVER_ERROR", defaultMsg);
 
-        // Bổ sung chi tiết lỗi để debug (trong môi trường dev)
-        var errorDetails = new List<ApiErrorDetail>
+        // Chỉ hiển thị stack trace và chi tiết exception trong môi trường Development
+        if (environment.IsDevelopment())
         {
-            new ApiErrorDetail { Field = "Exception", Message = TranslateMessage(exception.Message, lang) },
-            new ApiErrorDetail { Field = "StackTrace", Message = exception.StackTrace ?? "" }
-        };
+            var errorDetails = new List<ApiErrorDetail>
+            {
+                new ApiErrorDetail { Field = "Exception", Message = TranslateMessage(exception.Message, lang) },
+                new ApiErrorDetail { Field = "StackTrace", Message = exception.StackTrace ?? "" }
+            };
 
-        if (exception.InnerException != null)
-        {
-            errorDetails.Add(new ApiErrorDetail { Field = "InnerException", Message = TranslateMessage(exception.InnerException.Message, lang) });
+            if (exception.InnerException != null)
+            {
+                errorDetails.Add(new ApiErrorDetail { Field = "InnerException", Message = TranslateMessage(exception.InnerException.Message, lang) });
+            }
+
+            result.Error!.Details = errorDetails;
         }
-        
-        result.Error!.Details = errorDetails;
 
         switch (exception)
         {

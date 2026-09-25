@@ -5,15 +5,26 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: hr_portal
-      MYSQL_USER: hr_user
-      MYSQL_PASSWORD: hr_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-hr_portal}
+      MYSQL_USER: ${DB_USER:-hr_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-hr_password}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./hr_database_seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u $${MYSQL_USER:-hr_user} -p$${MYSQL_PASSWORD:-hr_password} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.50'
+          memory: 1024M
 
   adminer:
     image: adminer:latest
@@ -22,7 +33,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
   hr-api:
     build:
@@ -31,16 +43,40 @@ services:
     container_name: hr_api
     restart: always
     ports:
-      - "5000:80"
+      - "5000:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mysql;Database=hr_portal;User=hr_user;Password=hr_password;
-      - JWT__Key=this_is_a_very_secret_key_for_jwt_256_bits_long
-      - JWT__Issuer=HRPortal
-      - JWT__Audience=HRPortal
-      - Gemini__ApiKey=***REDACTED_GEMINI_KEY***
-      - Gemini__Model=gemini-flash-latest
+      - ConnectionStrings__DefaultConnection=Server=mysql;Database=${DB_NAME:-hr_portal};User=${DB_USER:-hr_user};Password=${DB_PASSWORD:-hr_password};Convert Zero Datetime=True;Allow Zero Datetime=True;Pooling=true;
+      - JWT__Key=${JWT_KEY:-}
+      - JWT__Issuer=${JWT_ISSUER:-HR.API}
+      - JWT__Audience=${JWT_AUDIENCE:-HR.Frontend}
+      - Security__EncryptionKey=${ENCRYPTION_KEY:-}
+      - Payment__WebhookSecret=${PAYMENT_WEBHOOK_SECRET:-}
+      - Frontend__BaseUrl=${FRONTEND_BASE_URL:-http://localhost}
+      - Gemini__ApiKey=${GEMINI_API_KEY:-}
+      - Gemini__Model=${GEMINI_MODEL:-gemini-flash-latest}
+      - Smtp__Host=${SMTP_HOST:-smtp.gmail.com}
+      - Smtp__Port=${SMTP_PORT:-587}
+      - Smtp__Username=${SMTP_USERNAME:-}
+      - Smtp__Password=${SMTP_PASSWORD:-}
+    networks:
+      default:
+        aliases:
+          - backend
+          - hr-api
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.50'
+          memory: 1024M
 
   hr-frontend:
     build:
@@ -50,8 +86,20 @@ services:
     restart: always
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - hr-api
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
 
 volumes:
   mysql_data:

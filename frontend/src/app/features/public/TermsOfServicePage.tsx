@@ -1,12 +1,9 @@
 import React from 'react';
-import { PublicNavbar } from './PublicNavbar';
-import { PublicFooter } from './PublicFooter';
 import { ShieldCheck, FileText } from 'lucide-react';
 
 export const TermsOfServicePage: React.FC = () => {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>
-      <PublicNavbar />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
 
       <main style={{ flex: 1, maxWidth: '900px', margin: '40px auto', padding: '0 20px', width: '100%' }}>
         <div style={{
@@ -88,7 +85,6 @@ export const TermsOfServicePage: React.FC = () => {
         </div>
       </main>
 
-      <PublicFooter />
     </div>
   );
 };

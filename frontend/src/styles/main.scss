@@ -22,3 +22,18 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+@media (max-width: 860px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  .visible-mobile {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 861px) {
+  .visible-mobile {
+    display: none !important;
+  }
+}

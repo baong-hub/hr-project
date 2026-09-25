@@ -207,7 +207,14 @@ export const JobFormPage: React.FC = () => {
         if (gen.description) setDescription(gen.description);
         if (gen.requirements) setRequirements(gen.requirements);
         if (gen.benefits) setBenefits(gen.benefits);
-        toast.success('AI đã tạo xong mô tả công việc thành công!');
+        if (gen.suggestedSalaryFrom && gen.suggestedSalaryTo) {
+          setIsNegotiable(false);
+          setSalaryFrom(gen.suggestedSalaryFrom.toString());
+          setSalaryTo(gen.suggestedSalaryTo.toString());
+          toast.success(`AI đã tạo JD & tự động gợi ý khung lương: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(gen.suggestedSalaryFrom)} - ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(gen.suggestedSalaryTo)}!`);
+        } else {
+          toast.success('AI đã tạo xong mô tả công việc thành công!');
+        }
         setShowAiJdModal(false);
       } else {
         toast.error(res.data?.error?.message || 'Không thể tạo JD tự động.');

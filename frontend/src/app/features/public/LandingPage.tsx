@@ -5,8 +5,7 @@ import {
   Sparkles, ArrowRight, CheckCircle2, TrendingUp,
   Cpu, BarChart3
 } from 'lucide-react';
-import { PublicNavbar } from './PublicNavbar';
-import { PublicFooter } from './PublicFooter';
+import { SeoHead } from '../../shared/components/SeoHead';
 
 export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,8 +44,13 @@ export const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', color: '#0f172a' }}>
-      <PublicNavbar />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <SeoHead
+        title="HR Portal — Nền tảng Tuyển dụng & Kết nối Nhân tài AI Hàng Đầu"
+        description="Khám phá hơn 10,000+ việc làm chất lượng cao từ các doanh nghiệp hàng đầu. AI Matching & Scoring tự động, bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP."
+        ogType="website"
+        ogImage="/hr.png"
+      />
 
       {/* Hero Section */}
       <section style={{
@@ -480,7 +484,6 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <PublicFooter />
     </div>
   );
 };

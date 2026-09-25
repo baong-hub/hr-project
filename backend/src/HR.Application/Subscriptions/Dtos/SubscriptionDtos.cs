@@ -49,6 +49,7 @@ public class CheckoutResultDto
     public string QrCodeUrl { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime ExpireAt { get; set; }
+    public string Signature { get; set; } = string.Empty;
 }
 
 public class PaymentWebhookRequest

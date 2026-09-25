@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Calendar, Download, X, RefreshCw, Sparkles, Brain, ChevronDown, ChevronUp, Copy, CheckCheck, CheckCircle2, XCircle, Award } from 'lucide-react';
+import { Edit2, Calendar, Download, X, RefreshCw, Sparkles, Brain, ChevronDown, ChevronUp, Copy, CheckCheck, CheckCircle2, XCircle, Award, Trophy, TrendingUp } from 'lucide-react';
 import { applicationsService } from '../../../core/services/applications.service';
 import { jobsService } from '../../../core/services/jobs.service';
 import { interviewsService } from '../../../core/services/interviews.service';
-import { aiService, type JobFitAnalysisResult, type InterviewQuestionsResult } from '../../../core/services/ai.service';
+import { aiService, type JobFitAnalysisResult, type InterviewQuestionsResult, type CandidateRankResult } from '../../../core/services/ai.service';
+
 import { technicalTestService } from '../../../core/services/technical-test.service';
 import { type TechnicalTestSummary, type TestDetailResult, type AssessmentQuestionReview } from '../../../core/models/technical-test.model';
 import { jobOfferService } from '../../../core/services/job-offer.service';
@@ -28,6 +29,7 @@ export const EmployerAppManagePage: React.FC = () => {
   const [selectedJobId, setSelectedJobId] = useState<number | ''>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [keyword, setKeyword] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'table' | 'kanban'>('kanban');
 
   // UI Interactive States
   const [selectedApp, setSelectedApp] = useState<ApplicationDto | null>(null);
@@ -42,6 +44,13 @@ export const EmployerAppManagePage: React.FC = () => {
   const [aiScoreCache, setAiScoreCache] = useState<Record<number, JobFitAnalysisResult>>({});
   const [batchAnalyzing, setBatchAnalyzing] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ done: 0, total: 0 });
+
+  // AI Candidate Ranking States
+  const [rankedCandidates, setRankedCandidates] = useState<CandidateRankResult[]>([]);
+  const [showRankingModal, setShowRankingModal] = useState(false);
+  const [rankingLoading, setRankingLoading] = useState(false);
+  const [sortByAiRank, setSortByAiRank] = useState(false);
+
 
   // AI Interview Questions States
   const [aiQuestionsApp, setAiQuestionsApp] = useState<ApplicationDto | null>(null);
@@ -176,7 +185,7 @@ export const EmployerAppManagePage: React.FC = () => {
 
   // Filtered applications for instant reactive search and sync
   const filteredApplications = React.useMemo(() => {
-    return applications.filter(app => {
+    let result = applications.filter(app => {
       // 1. Filter by Job ID
       if (selectedJobId && Number(app.jobId) !== Number(selectedJobId)) {
         return false;
@@ -205,7 +214,19 @@ export const EmployerAppManagePage: React.FC = () => {
       }
       return true;
     });
-  }, [applications, selectedJobId, selectedStatus, keyword]);
+
+    if (sortByAiRank) {
+      result = [...result].sort((a, b) => {
+        const scoreA = aiScoreCache[a.id]?.matchScore ?? a.matchScore ?? 0;
+        const scoreB = aiScoreCache[b.id]?.matchScore ?? b.matchScore ?? 0;
+        return scoreB - scoreA;
+      });
+    }
+
+    return result;
+  }, [applications, selectedJobId, selectedStatus, keyword, sortByAiRank, aiScoreCache]);
+
+
 
   const handleJobFilterChange = (jobIdVal: number | '') => {
     setSelectedJobId(jobIdVal);
@@ -287,7 +308,7 @@ export const EmployerAppManagePage: React.FC = () => {
     setAiAnalyzingId(app.id);
     setAiMatchApp(app);
     try {
-      const res = await aiService.analyzeJobFit(app.jobId);
+      const res = await aiService.analyzeJobFit(app.jobId, app.candidateId);
       if (res.data?.success && res.data.data) {
         const result = res.data.data;
         setAiMatchResult(result);
@@ -318,7 +339,7 @@ export const EmployerAppManagePage: React.FC = () => {
     for (let i = 0; i < unanalyzed.length; i++) {
       const app = unanalyzed[i];
       try {
-        const res = await aiService.analyzeJobFit(app.jobId);
+        const res = await aiService.analyzeJobFit(app.jobId, app.candidateId);
         if (res.data?.success && res.data.data) {
           setAiScoreCache(prev => ({ ...prev, [app.id]: res.data.data }));
         }
@@ -330,6 +351,47 @@ export const EmployerAppManagePage: React.FC = () => {
     setBatchAnalyzing(false);
     toast.success(`AI đã sàng lọc xong ${unanalyzed.length} hồ sơ!`);
   };
+
+  // AI Auto-Ranking Handler: Xếp hạng toàn bộ ứng viên theo tiêu chí JD
+  const handleRankCandidates = async (jobIdParam?: number) => {
+    const targetJobId = jobIdParam || (selectedJobId ? Number(selectedJobId) : (applications[0]?.jobId));
+    if (!targetJobId) {
+      toast.error('Vui lòng chọn một tin tuyển dụng cụ thể để AI xếp hạng hồ sơ ứng viên.');
+      return;
+    }
+    setRankingLoading(true);
+    try {
+      const res = await aiService.rankCandidates(targetJobId);
+      if (res.data?.success && res.data.data) {
+        const ranks = res.data.data as CandidateRankResult[];
+        setRankedCandidates(ranks);
+        setShowRankingModal(true);
+
+        // Sync sang aiScoreCache để bảng và kanban tự cập nhật điểm số tương ứng
+        const newCache: Record<number, JobFitAnalysisResult> = {};
+        ranks.forEach((r) => {
+          newCache[r.applicationId] = {
+            matchScore: r.matchScore,
+            matchLevel: r.matchLevel,
+            summary: r.recommendation,
+            strengths: r.strengths || [],
+            missingSkills: r.missingSkills || [],
+            recommendations: [r.recommendation]
+          };
+        });
+        setAiScoreCache(prev => ({ ...prev, ...newCache }));
+        toast.success(`AI đã xếp hạng thành công ${ranks.length} ứng viên!`);
+      } else {
+        toast.error(res.data?.error?.message || 'Không thể xếp hạng ứng viên.');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Lỗi khi chạy AI Ranking. Vui lòng thử lại.');
+    } finally {
+      setRankingLoading(false);
+    }
+  };
+
 
   // Helper: Lấy gợi ý phỏng vấn dựa trên match score
   const getInterviewRecommendation = (score: number) => {
@@ -983,25 +1045,42 @@ export const EmployerAppManagePage: React.FC = () => {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button
-            onClick={() => navigate('/applications')}
-            style={{
-              background: '#ffffff',
-              color: '#475569',
-              border: '1px solid #cbd5e1',
-              borderRadius: '8px',
-              padding: '8px 14px',
-              fontSize: '0.85rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            title="Chuyển sang dạng Bảng Phễu Kanban"
-          >
-            Phễu Tuyển Dụng (Kanban)
-          </button>
+          <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+            <button
+              onClick={() => setViewMode('kanban')}
+              style={{
+                background: viewMode === 'kanban' ? '#ffffff' : 'transparent',
+                color: viewMode === 'kanban' ? '#2563eb' : '#64748b',
+                border: 'none',
+                borderRadius: '7px',
+                padding: '6px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: viewMode === 'kanban' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              📊 Phễu Kanban
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              style={{
+                background: viewMode === 'table' ? '#ffffff' : 'transparent',
+                color: viewMode === 'table' ? '#2563eb' : '#64748b',
+                border: 'none',
+                borderRadius: '7px',
+                padding: '6px 14px',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: viewMode === 'table' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              📋 Bảng Dữ Liệu
+            </button>
+          </div>
           <button
             onClick={() => navigate('/employer/assessments')}
             style={{
@@ -1041,6 +1120,30 @@ export const EmployerAppManagePage: React.FC = () => {
               </>
             ) : (
               'AI Sàng lọc tất cả'
+            )}
+          </button>
+          <button
+            onClick={() => handleRankCandidates()}
+            disabled={rankingLoading || applications.length === 0}
+            style={{
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '10px',
+              fontSize: '0.82rem', fontWeight: 700, cursor: rankingLoading ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', gap: '6px',
+              boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+              opacity: applications.length === 0 ? 0.5 : 1
+            }}
+          >
+            {rankingLoading ? (
+              <>
+                <div style={{ width: '14px', height: '14px', border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                AI Đang xếp hạng...
+              </>
+            ) : (
+              <>
+                <Trophy size={15} />
+                AI Xếp hạng ứng viên
+              </>
             )}
           </button>
           <button className={styles.btnSecondary} onClick={() => fetchApplications()} disabled={loading}>
@@ -1086,17 +1189,38 @@ export const EmployerAppManagePage: React.FC = () => {
         </div>
 
         <div className={styles.filterGroup} style={{ flex: 1, minWidth: '260px' }}>
-          <span className={styles.filterLabel}>Tìm kiếm nhanh</span>
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px' }}>
+          <span className={styles.filterLabel}>Tìm kiếm & Sắp xếp</span>
+          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <input 
               type="text" 
               placeholder="Nhập tên ứng viên, email, mã #APP..." 
               className={styles.filterInput}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              style={{ flex: 1 }}
+              style={{ flex: 1, minWidth: '180px' }}
             />
             <button type="submit" className={styles.btnPrimary}>Tìm kiếm</button>
+            <button
+              type="button"
+              onClick={() => setSortByAiRank(prev => !prev)}
+              style={{
+                background: sortByAiRank ? '#fef3c7' : '#ffffff',
+                color: sortByAiRank ? '#b45309' : '#475569',
+                border: `1px solid ${sortByAiRank ? '#f59e0b' : '#cbd5e1'}`,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+              title="Sắp xếp ứng viên theo thứ hạng điểm phù hợp AI"
+            >
+              <TrendingUp size={14} />
+              {sortByAiRank ? '⭐ Điểm AI cao nhất' : 'Xếp theo AI'}
+            </button>
             {(selectedJobId !== '' || selectedStatus !== '' || keyword.trim() !== '') && (
               <button 
                 type="button"
@@ -1111,6 +1235,7 @@ export const EmployerAppManagePage: React.FC = () => {
           </form>
         </div>
       </div>
+
 
       {/* Filter summary status strip */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
@@ -1127,7 +1252,7 @@ export const EmployerAppManagePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Grid view */}
+      {/* Grid or Kanban view */}
       {error ? (
         <div style={{
           textAlign: 'center',
@@ -1139,6 +1264,216 @@ export const EmployerAppManagePage: React.FC = () => {
         }}>
           <p>{error}</p>
           <button className={styles.btnPrimary} onClick={() => fetchApplications()} style={{ marginTop: '12px' }}>Thử lại</button>
+        </div>
+      ) : viewMode === 'kanban' ? (
+        <div style={{
+          display: 'flex',
+          gap: '16px',
+          overflowX: 'auto',
+          paddingBottom: '16px',
+          minHeight: '520px',
+          alignItems: 'stretch'
+        }}>
+          {[
+            { key: 'APPLIED', label: 'Chờ duyệt', color: '#475569', stripe: '#94a3b8', bg: '#f8fafc', next: 'SCREENING' },
+            { key: 'SCREENING', label: 'Sàng lọc CV', color: '#1d4ed8', stripe: '#3b82f6', bg: '#eff6ff', next: 'SHORTLISTED' },
+            { key: 'SHORTLISTED', label: 'Sơ tuyển', color: '#6d28d9', stripe: '#8b5cf6', bg: '#f5f3ff', next: 'INTERVIEW' },
+            { key: 'INTERVIEW', label: 'Phỏng vấn', color: '#0e7490', stripe: '#06b6d4', bg: '#ecfeff', next: 'OFFER' },
+            { key: 'OFFER', label: 'Đề nghị (Offer)', color: '#b45309', stripe: '#f59e0b', bg: '#fffbeb', next: 'HIRED' },
+            { key: 'HIRED', label: 'Nhận việc (Hired)', color: '#047857', stripe: '#10b981', bg: '#ecfdf5', next: null },
+            { key: 'REJECTED', label: 'Từ chối', color: '#b91c1c', stripe: '#ef4444', bg: '#fef2f2', next: null }
+          ].map(col => {
+            const colApps = filteredApplications.filter(a => (a.status || 'APPLIED').toUpperCase() === col.key);
+
+            return (
+              <div
+                key={col.key}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const appIdStr = e.dataTransfer.getData('text/plain');
+                  if (appIdStr) {
+                    const appId = Number(appIdStr);
+                    handleUpdateStatus(appId, col.key);
+                  }
+                }}
+                style={{
+                  flex: '0 0 280px',
+                  minWidth: '280px',
+                  background: 'var(--color-bg-card, #ffffff)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--color-border-default, #e2e8f0)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Column Header */}
+                <div style={{
+                  padding: '12px 14px',
+                  borderTop: `4px solid ${col.stripe}`,
+                  background: col.bg,
+                  borderBottom: '1px solid var(--color-border-default, #e2e8f0)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.88rem', color: col.color, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {col.label}
+                  </div>
+                  <span style={{
+                    background: '#ffffff',
+                    color: col.color,
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--color-border-default)'
+                  }}>
+                    {colApps.length}
+                  </span>
+                </div>
+
+                {/* Cards Container */}
+                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, overflowY: 'auto' }}>
+                  {colApps.length === 0 ? (
+                    <div style={{
+                      padding: '24px 12px',
+                      textAlign: 'center',
+                      color: '#94a3b8',
+                      fontSize: '0.8rem',
+                      border: '1px dashed #cbd5e1',
+                      borderRadius: '8px',
+                      marginTop: '4px'
+                    }}>
+                      Thả hồ sơ vào đây
+                    </div>
+                  ) : (
+                    colApps.map(app => {
+                      const cached = aiScoreCache[app.id];
+                      const score = cached?.matchScore || app.matchScore;
+
+                      return (
+                        <div
+                          key={app.id}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('text/plain', String(app.id));
+                          }}
+                          onClick={() => setSelectedApp(app)}
+                          style={{
+                            background: '#ffffff',
+                            borderRadius: '10px',
+                            border: '1px solid #e2e8f0',
+                            padding: '12px',
+                            cursor: 'grab',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                            transition: 'all 0.15s ease',
+                            position: 'relative'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#93c5fd';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#e2e8f0';
+                            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.04)';
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
+                              #APP-{app.id}
+                            </span>
+                            {score !== undefined && score !== null ? (
+                              <span style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 800,
+                                padding: '2px 6px',
+                                borderRadius: '6px',
+                                background: score >= 80 ? '#ecfdf5' : score >= 60 ? '#fffbeb' : '#fef2f2',
+                                color: score >= 80 ? '#059669' : score >= 60 ? '#d97706' : '#dc2626',
+                                border: `1px solid ${score >= 80 ? '#a7f3d0' : score >= 60 ? '#fde68a' : '#fecaca'}`
+                              }}>
+                                🤖 AI: {score}%
+                              </span>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleAiAnalyze(app); }}
+                                style={{
+                                  fontSize: '0.68rem',
+                                  fontWeight: 600,
+                                  color: '#7c3aed',
+                                  background: '#f5f3ff',
+                                  border: '1px solid #ddd6fe',
+                                  borderRadius: '4px',
+                                  padding: '1px 5px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Sparkles AI
+                              </button>
+                            )}
+                          </div>
+
+                          <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#0f172a', lineHeight: '1.3' }}>
+                            {app.candidateName}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {app.jobTitle}
+                          </div>
+
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #f1f5f9' }}>
+                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                              {app.appliedAt ? app.appliedAt.split('T')[0] : ''}
+                            </span>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                              {col.next && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleUpdateStatus(app.id, col.next!); }}
+                                  style={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 700,
+                                    color: '#2563eb',
+                                    background: '#eff6ff',
+                                    border: '1px solid #bfdbfe',
+                                    borderRadius: '5px',
+                                    padding: '2px 6px',
+                                    cursor: 'pointer'
+                                  }}
+                                  title={`Chuyển sang ${col.next}`}
+                                >
+                                  Chuyển tiếp ➔
+                                </button>
+                              )}
+                              {col.key !== 'REJECTED' && col.key !== 'HIRED' && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleUpdateStatus(app.id, 'REJECTED'); }}
+                                  style={{
+                                    fontSize: '0.7rem',
+                                    fontWeight: 600,
+                                    color: '#dc2626',
+                                    background: '#fef2f2',
+                                    border: '1px solid #fecaca',
+                                    borderRadius: '5px',
+                                    padding: '2px 5px',
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Từ chối"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <UiDataTable 
@@ -1789,7 +2124,352 @@ export const EmployerAppManagePage: React.FC = () => {
         );
       })()}
 
+      {/* AI Candidate Auto-Ranking Modal */}
+      {showRankingModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowRankingModal(false)}>
+          <div
+            className={styles.modalContent}
+            style={{ maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+              padding: '20px 24px',
+              borderRadius: '16px 16px 0 0',
+              color: '#ffffff',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  borderRadius: '10px',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.4)'
+                }}>
+                  <Trophy size={22} color="#fff" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>
+                    Bảng Xếp Hạng Ứng Viên Bằng AI
+                  </h3>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#c7d2fe' }}>
+                    Tự động phân tích & chấm điểm hồ sơ theo yêu cầu công việc (JD)
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRankingModal(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  borderRadius: '8px',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div style={{ padding: '20px 24px' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+                flexWrap: 'wrap',
+                gap: '8px'
+              }}>
+                <span style={{ fontSize: '0.9rem', color: '#475569', fontWeight: 600 }}>
+                  Tìm thấy <strong>{rankedCandidates.length}</strong> ứng viên đã được AI đối chiếu và xếp hạng:
+                </span>
+                <button
+                  onClick={() => {
+                    setSortByAiRank(true);
+                    setShowRankingModal(false);
+                    toast.success('Đã áp dụng sắp xếp theo thứ hạng AI cho bảng danh sách!');
+                  }}
+                  style={{
+                    background: '#fef3c7',
+                    color: '#92400e',
+                    border: '1px solid #fde68a',
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <TrendingUp size={14} /> Áp dụng thứ hạng này vào danh sách
+                </button>
+              </div>
+
+              {rankedCandidates.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
+                  <p>Chưa có hồ sơ ứng tuyển nào cho vị trí này để AI xếp hạng.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {rankedCandidates.map((cand) => {
+                    const isTop1 = cand.rank === 1;
+                    const isTop2 = cand.rank === 2;
+                    const isTop3 = cand.rank === 3;
+
+                    let rankBadgeBg = '#f1f5f9';
+                    let rankBadgeColor = '#475569';
+                    let rankIcon = `#${cand.rank}`;
+
+                    if (isTop1) {
+                      rankBadgeBg = 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)';
+                      rankBadgeColor = '#78350f';
+                      rankIcon = '🥇 #1 Top Pick';
+                    } else if (isTop2) {
+                      rankBadgeBg = 'linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%)';
+                      rankBadgeColor = '#1e293b';
+                      rankIcon = '🥈 #2 Xuất sắc';
+                    } else if (isTop3) {
+                      rankBadgeBg = 'linear-gradient(135deg, #fed7aa 0%, #fb923c 100%)';
+                      rankBadgeColor = '#7c2d12';
+                      rankIcon = '🥉 #3 Tiềm năng';
+                    }
+
+                    const matchedApp = applications.find(a => a.id === cand.applicationId);
+
+                    return (
+                      <div
+                        key={cand.applicationId}
+                        style={{
+                          background: isTop1 ? '#fffbeb' : '#ffffff',
+                          border: isTop1 ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          padding: '16px 20px',
+                          boxShadow: isTop1 ? '0 4px 12px rgba(245, 158, 11, 0.12)' : '0 2px 6px rgba(0, 0, 0, 0.04)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '12px'
+                        }}
+                      >
+                        {/* Top row: Rank badge + Candidate Name + Match Score */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{
+                              background: rankBadgeBg,
+                              color: rankBadgeColor,
+                              fontWeight: 800,
+                              fontSize: '0.82rem',
+                              padding: '4px 12px',
+                              borderRadius: '20px',
+                              boxShadow: isTop1 ? '0 2px 6px rgba(245, 158, 11, 0.3)' : 'none'
+                            }}>
+                              {rankIcon}
+                            </span>
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a' }}>
+                                {cand.candidateName}
+                              </div>
+                              {cand.candidateEmail && (
+                                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                                  {cand.candidateEmail}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: cand.matchScore >= 80 ? '#059669' : '#2563eb' }}>
+                                {cand.matchScore}%
+                              </div>
+                              <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>
+                                {cand.matchLevel}
+                              </div>
+                            </div>
+                            <div style={{
+                              width: '42px',
+                              height: '42px',
+                              borderRadius: '50%',
+                              background: cand.matchScore >= 80 ? '#ecfdf5' : '#eff6ff',
+                              border: `2px solid ${cand.matchScore >= 80 ? '#10b981' : '#3b82f6'}`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800,
+                              fontSize: '0.85rem',
+                              color: cand.matchScore >= 80 ? '#059669' : '#2563eb'
+                            }}>
+                              <Sparkles size={18} />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recommendation */}
+                        <div style={{
+                          background: cand.matchScore >= 80 ? '#f0fdf4' : '#f8fafc',
+                          border: `1px solid ${cand.matchScore >= 80 ? '#bbf7d0' : '#e2e8f0'}`,
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          fontSize: '0.84rem',
+                          color: cand.matchScore >= 80 ? '#166534' : '#334155',
+                          fontWeight: 500
+                        }}>
+                          💡 <strong>Khuyến nghị AI:</strong> {cand.recommendation}
+                        </div>
+
+                        {/* Strengths & Gaps */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px' }}>
+                          {cand.strengths && cand.strengths.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#059669', marginBottom: '4px' }}>
+                                ✓ Điểm mạnh nổi bật:
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {cand.strengths.map((s, idx) => (
+                                  <span key={idx} style={{
+                                    background: '#ecfdf5',
+                                    color: '#065f46',
+                                    border: '1px solid #a7f3d0',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600
+                                  }}>
+                                    {s}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {cand.missingSkills && cand.missingSkills.length > 0 && (
+                            <div>
+                              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#d97706', marginBottom: '4px' }}>
+                                ⚠ Kỹ năng nên kiểm tra thêm:
+                              </div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {cand.missingSkills.map((m, idx) => (
+                                  <span key={idx} style={{
+                                    background: '#fffbeb',
+                                    color: '#92400e',
+                                    border: '1px solid #fde68a',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600
+                                  }}>
+                                    {m}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action buttons */}
+                        {matchedApp && (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '6px', borderTop: '1px solid #f1f5f9' }}>
+                            <button
+                              onClick={() => {
+                                setShowRankingModal(false);
+                                setSchedulingApp(matchedApp);
+                              }}
+                              style={{
+                                background: '#10b981',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '5px 12px',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <Calendar size={13} /> Lên lịch phỏng vấn
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowRankingModal(false);
+                                handleInviteTest(matchedApp);
+                              }}
+                              style={{
+                                background: '#eff6ff',
+                                color: '#2563eb',
+                                border: '1px solid #bfdbfe',
+                                padding: '5px 12px',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Mời làm bài Test
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowRankingModal(false);
+                                setSelectedApp(matchedApp);
+                              }}
+                              style={{
+                                background: '#f8fafc',
+                                color: '#475569',
+                                border: '1px solid #cbd5e1',
+                                padding: '5px 12px',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Xem hồ sơ chi tiết
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '14px 24px',
+              borderTop: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '10px'
+            }}>
+              <button
+                className={styles.btnSecondary}
+                onClick={() => setShowRankingModal(false)}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Job Offer Modal */}
+
       {selectedOfferApp && (
         <JobOfferModal
           applicationId={selectedOfferApp.id}

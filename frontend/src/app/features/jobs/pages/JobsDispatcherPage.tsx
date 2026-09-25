@@ -9,10 +9,11 @@ export const JobsDispatcherPage: React.FC = () => {
   const forcePublic = searchParams.get('view') === 'public';
 
   const user = authService.getUser();
+  const isAuthenticated = authService.isAuthenticated();
   const roles = (user?.roles as string[]) || [];
   const userRole = (user?.role || user?.accountType || '').toString().toUpperCase();
 
-  const isEmployer = 
+  const isEmployer = isAuthenticated && (
     roles.includes('Nhà tuyển dụng') || 
     roles.includes('Employer') || 
     roles.includes('Admin') || 
@@ -21,13 +22,14 @@ export const JobsDispatcherPage: React.FC = () => {
     roles.includes('HR_MANAGER') || 
     userRole === 'EMPLOYER' || 
     userRole === 'HR_MANAGER' || 
-    userRole === 'ADMIN';
+    userRole === 'ADMIN'
+  );
 
-  const isCandidate = (roles.includes('Ứng viên') || userRole === 'CANDIDATE' || userRole === 'USER') && !isEmployer;
-
-  if (isCandidate || forcePublic) {
-    return <JobListPage />;
+  // If recruiter is signed in and not explicitly requesting public job view
+  if (isEmployer && !forcePublic) {
+    return <EmployerJobListPage />;
   }
 
-  return <EmployerJobListPage />;
+  // Unauthenticated guests, public searchers, and candidate users see the public job board
+  return <JobListPage />;
 };

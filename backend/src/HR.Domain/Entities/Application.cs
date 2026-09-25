@@ -11,7 +11,12 @@ public class Application : BaseEntity
     public string? CoverLetter { get; set; }
     public ApplicationStatus Status { get; set; } = ApplicationStatus.APPLIED;
     public int? MatchScore { get; set; }
-    public DateTime AppliedAt { get; set; } = DateTime.Now;
+    public string? AiSummary { get; set; }
+    public string? AiStrengthsJson { get; set; }
+    public string? AiGapsJson { get; set; }
+    public DateTime? AiEvaluatedAt { get; set; }
+    public DateTime? ViewedAt { get; set; }
+    public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
     public Job Job { get; set; } = null!;

@@ -18,4 +18,7 @@ export const applicationsService = {
 
   updateStatus: (id: number, status: string): Promise<AxiosResponse<ApiResponse<boolean>>> => 
     api.patch(`/applications/${id}/status`, { status }),
+
+  evaluateAi: (id: number): Promise<AxiosResponse<ApiResponse<ApplicationDto>>> => 
+    api.post(`/applications/${id}/evaluate-ai`),
 };

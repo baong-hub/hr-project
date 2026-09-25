@@ -3,8 +3,7 @@ import {
   Mail, Phone, MapPin, Send, CheckCircle2, 
   HelpCircle 
 } from 'lucide-react';
-import { PublicNavbar } from './PublicNavbar';
-import { PublicFooter } from './PublicFooter';
+import { SeoHead } from '../../shared/components/SeoHead';
 
 export const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -47,8 +46,12 @@ export const ContactPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', color: '#0f172a' }}>
-      <PublicNavbar />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <SeoHead
+        title="Liên Hệ & Hỗ Trợ Khách Hàng | HR Portal"
+        description="Liên hệ với đội ngũ hỗ trợ HR Portal: Tư vấn giải pháp tuyển dụng doanh nghiệp, báo cáo kỹ thuật và hỗ trợ ứng viên 24/7."
+        ogType="website"
+      />
 
       {/* Header */}
       <section style={{
@@ -374,7 +377,6 @@ export const ContactPage: React.FC = () => {
         </div>
       </section>
 
-      <PublicFooter />
     </div>
   );
 };

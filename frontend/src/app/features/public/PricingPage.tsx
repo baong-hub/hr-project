@@ -4,11 +4,10 @@ import {
   Check, X, Crown, 
   QrCode, Copy, CheckCircle2, Loader2 
 } from 'lucide-react';
-import { PublicNavbar } from './PublicNavbar';
-import { PublicFooter } from './PublicFooter';
 import { subscriptionService } from '../../core/services/subscription.service';
 import type { PlanDto, CheckoutResultDto } from '../../core/services/subscription.service';
 import { authService } from '../../core/services/auth.service';
+import { SeoHead } from '../../shared/components/SeoHead';
 
 export const PricingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -140,8 +139,12 @@ export const PricingPage: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc', color: '#0f172a' }}>
-      <PublicNavbar />
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <SeoHead
+        title="Bảng Giá Dịch Vụ Tuyển Dụng & Đăng Tin | HR Portal"
+        description="Bảng giá các gói dịch vụ tuyển dụng HR Portal: Đăng tin không giới hạn, AI chấm điểm CV, săn ứng viên tài năng Talent Pool & hỗ trợ chuyên sâu 24/7."
+        ogType="website"
+      />
 
       {/* Header */}
       <section style={{
@@ -565,7 +568,6 @@ export const PricingPage: React.FC = () => {
         </div>
       )}
 
-      <PublicFooter />
     </div>
   );
 };

@@ -52,4 +52,12 @@ public class ApplicationsController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(new ChangeApplicationStatusCommand(id, dto.Status));
         return Ok(result);
     }
+
+    [HttpPost("{id:int}/evaluate-ai")]
+    [RequirePermission("job:manage")]
+    public async Task<IActionResult> EvaluateAi(int id)
+    {
+        var result = await mediator.Send(new HR.Application.Applications.Commands.EvaluateApplicationAi.EvaluateApplicationAiCommand(id));
+        return Ok(ApiResponse<ApplicationDto>.Ok(result));
+    }
 }

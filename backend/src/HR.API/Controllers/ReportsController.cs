@@ -32,9 +32,10 @@ public class ReportsController(IMediator mediator) : ControllerBase
 
     [HttpGet("admin/summary")]
     [RequirePermission("report:view_all")]
-    public async Task<IActionResult> GetAdminSummary()
+    public async Task<IActionResult> GetAdminSummary([FromQuery] string? from, [FromQuery] string? to, [FromQuery] string? range)
     {
-        var result = await mediator.Send(new GetAdminSummaryQuery());
+        var result = await mediator.Send(new GetAdminSummaryQuery(from, to, range));
         return Ok(ApiResponse<AdminSummaryDto>.Ok(result));
     }
 }
+

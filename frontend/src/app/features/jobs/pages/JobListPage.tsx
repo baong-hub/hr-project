@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Briefcase, DollarSign, Clock, Heart } from 'lucide-react';
+import { MapPin, Briefcase, DollarSign, Clock, Heart, Sparkles } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { applicationsService } from '../../../core/services/applications.service';
 import { cvsService } from '../../../core/services/cvs.service';
 import { savedJobService } from '../../../core/services/saved-job.service';
 import { authService } from '../../../core/services/auth.service';
+import { aiService, type JobRecommendationResult } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobDto } from '../../../core/models/job.model';
 import { CITY_OPTIONS } from '../../../core/utils/city.utils';
 import styles from './JobsPage.module.scss';
 
+
 export const JobListPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = authService.getUser();
+  const isAuthenticated = authService.isAuthenticated();
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
-  const isEmployer = roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN';
-  const isCandidate = !isEmployer;
+  const isEmployer = isAuthenticated && (roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN');
+  const isCandidate = isAuthenticated && !isEmployer;
 
   // State
   const [jobs, setJobs] = useState<JobDto[]>([]);
@@ -47,12 +50,29 @@ export const JobListPage: React.FC = () => {
   // Applied Jobs (prevent duplicate applications)
   const [appliedJobIds, setAppliedJobIds] = useState<Set<number>>(new Set());
 
+  // AI Personalized Job Recommendations
+  const [recommendedJobs, setRecommendedJobs] = useState<JobRecommendationResult[]>([]);
+
+  const fetchRecommendations = async () => {
+    if (!isCandidate || !authService.isAuthenticated()) return;
+    try {
+      const res = await aiService.getRecommendedJobs(4);
+      if (res.data?.success && res.data.data) {
+        setRecommendedJobs(res.data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch AI recommended jobs', err);
+    }
+  };
+
+
   // Track job view impressions for accurate analytics
   useEffect(() => {
     if (activeJob?.id) {
       jobsService.trackJobView(activeJob.id).catch(() => {});
     }
   }, [activeJob?.id]);
+
 
   const fetchJobs = async (overrideParams?: { search?: string; city?: string; salaryFrom?: string }) => {
     setLoading(true);
@@ -102,6 +122,11 @@ export const JobListPage: React.FC = () => {
 
   const toggleSaveJob = async (jobId: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!authService.isAuthenticated()) {
+      toast.info('Vui lòng đăng nhập để lưu việc làm yêu thích.');
+      navigate(`/auth/login?redirect=${encodeURIComponent('/jobs')}`);
+      return;
+    }
     if (!isCandidate) {
       toast.error('Chỉ ứng viên mới có thể lưu việc làm.');
       return;
@@ -159,7 +184,9 @@ export const JobListPage: React.FC = () => {
     fetchJobs();
     fetchSavedJobs();
     fetchAppliedJobs();
+    fetchRecommendations();
   }, []);
+
 
   const handleClearFilters = () => {
     setSearch('');
@@ -194,6 +221,11 @@ export const JobListPage: React.FC = () => {
 
   const openApplyModal = (job: JobDto, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!authService.isAuthenticated()) {
+      toast.info('Vui lòng đăng nhập tài khoản ứng viên để nộp đơn ứng tuyển.');
+      navigate(`/auth/login?redirect=${encodeURIComponent('/jobs/' + job.id)}`);
+      return;
+    }
     if (!isCandidate) {
       toast.error('Chỉ ứng viên mới có thể nộp đơn ứng tuyển.');
       return;
@@ -324,8 +356,133 @@ export const JobListPage: React.FC = () => {
         </div>
       )}
 
+      {/* AI Personalized Recommendations Section for Candidates */}
+      {isCandidate && authService.isAuthenticated() && recommendedJobs.length > 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(238, 242, 255, 0.85) 0%, rgba(245, 243, 255, 0.85) 100%)',
+          border: '1px solid #c7d2fe',
+          borderRadius: '12px',
+          padding: '16px 20px',
+          marginBottom: '20px',
+          boxShadow: '0 4px 15px rgba(99, 102, 241, 0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: '#fff',
+                borderRadius: '8px',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1rem', color: '#312e81', fontWeight: 700 }}>
+                  Việc làm AI Gợi ý cho bạn
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#4f46e5' }}>
+                  Phân tích tự động từ hồ sơ kỹ năng và định hướng trong CV của bạn
+                </p>
+              </div>
+            </div>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, background: '#e0e7ff', color: '#4338ca', padding: '3px 10px', borderRadius: '12px' }}>
+              ✨ AI Matching Engine
+            </span>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: '12px'
+          }}>
+            {recommendedJobs.map((rec) => {
+              const matchedJobObj = jobs.find(j => j.id === rec.jobId);
+              return (
+                <div
+                  key={rec.jobId}
+                  onClick={() => {
+                    if (matchedJobObj) {
+                      setActiveJob(matchedJobObj);
+                    } else {
+                      navigate(`/jobs/${rec.jobId}`);
+                    }
+                  }}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#6366f1';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(99, 102, 241, 0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.04)';
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+                      <h4 style={{ margin: 0, fontSize: '0.92rem', color: '#1e293b', fontWeight: 600, lineHeight: 1.3 }}>
+                        {rec.title}
+                      </h4>
+                      <span style={{
+                        background: rec.matchScore >= 80 ? '#ecfdf5' : '#eff6ff',
+                        color: rec.matchScore >= 80 ? '#059669' : '#2563eb',
+                        border: `1px solid ${rec.matchScore >= 80 ? '#a7f3d0' : '#bfdbfe'}`,
+                        padding: '2px 7px',
+                        borderRadius: '12px',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        whiteSpace: 'nowrap',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        <Sparkles size={11} /> {rec.matchScore}%
+                      </span>
+                    </div>
+
+                    <p style={{ margin: '0 0 6px 0', fontSize: '0.8rem', color: '#64748b' }}>
+                      {rec.companyName} {rec.city ? `• ${rec.city}` : ''}
+                    </p>
+
+                    <p style={{ margin: '0 0 8px 0', fontSize: '0.75rem', color: '#4338ca', fontStyle: 'italic', lineHeight: 1.3 }}>
+                      "{rec.matchReason}"
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #f1f5f9' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#059669' }}>
+                      {formatSalary(rec.salaryFrom, rec.salaryTo)}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: '#6366f1', fontWeight: 600 }}>
+                      Xem ngay →
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Filter Panel */}
       <form onSubmit={handleSearchSubmit} className={styles.jobSearchBox}>
+
         <div className={styles.searchInputs} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
           <input
             type="text"

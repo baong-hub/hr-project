@@ -7,6 +7,7 @@ import { jobsService } from '../../../core/services/jobs.service';
 import { authService } from '../../../core/services/auth.service';
 import type { CompanyDto } from '../../../core/models/company.model';
 import type { JobDto } from '../../../core/models/job.model';
+import { SeoHead } from '../../../shared/components/SeoHead';
 
 export const CompanyDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -140,8 +141,24 @@ export const CompanyDetailPage: React.FC = () => {
   const belongsToCompany = currentUser?.companyId === company.id;
   const canEdit = isAdmin || (isCompanyOwnerOrHR && belongsToCompany);
 
+  const orgJsonLd = company ? {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: company.name,
+    url: company.website || (typeof window !== 'undefined' ? window.location.href : undefined),
+    logo: company.logoUrl || (typeof window !== 'undefined' ? `${window.location.origin}/hr.png` : undefined),
+    description: company.description
+  } : undefined;
+
   return (
-    <div style={{ width: '100%', padding: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', boxSizing: 'border-box', textAlign: 'left' }}>
+    <div style={{ width: '100%', maxWidth: '1280px', margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', boxSizing: 'border-box', textAlign: 'left' }}>
+      <SeoHead
+        title={`${company.name} — Thông tin công ty & Cơ hội nghề nghiệp | HR Portal`}
+        description={company.description ? `${company.name}: ${company.description.slice(0, 160)}...` : `Khám phá văn hóa, môi trường làm việc và danh sách việc làm đang tuyển dụng tại ${company.name} trên HR Portal.`}
+        ogType="profile"
+        ogImage={company.logoUrl || company.coverImageUrl || '/hr.png'}
+        jsonLd={orgJsonLd}
+      />
       {/* Back Button */}
       <div style={{ marginBottom: '12px' }}>
         <button
@@ -218,7 +235,29 @@ export const CompanyDetailPage: React.FC = () => {
         marginBottom: 'var(--space-8)'
       }}>
         <div>
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: '0 0 var(--space-2)' }}>{company.name}</h1>
+          <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: '0 0 var(--space-2)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {company.name}
+            {(company.isVerified || company.verificationStatus === 'VERIFIED') && (
+              <span
+                title="Doanh nghiệp đã xác minh (KYC Verified)"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#2563eb',
+                  color: '#ffffff',
+                  borderRadius: '50%',
+                  width: '22px',
+                  height: '22px',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 4px rgba(37,99,235,0.3)'
+                }}
+              >
+                ✓
+              </span>
+            )}
+          </h1>
           <div style={{ display: 'flex', gap: 'var(--space-4)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', flexWrap: 'wrap' }}>
             <span>🏢 {t('companies.industry_prefix', { industry: company.industry, defaultValue: `Ngành: ${company.industry}` })}</span>
             <span>👥 {t('companies.size_prefix', { size: company.sizeRange, defaultValue: `Quy mô: ${company.sizeRange} nhân viên` })}</span>
