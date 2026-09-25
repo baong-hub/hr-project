@@ -125,4 +125,31 @@ public class InterviewsController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(new GetInterviewEvaluationsQuery(id));
         return Ok(ApiResponse<List<InterviewEvaluationDto>>.Ok(result));
     }
+
+    /// <summary>
+    /// GET /api/v1/interviews/{id}/calendar.ics — Tải file lịch iCalendar (.ics) cho Outlook/Apple Calendar
+    /// </summary>
+    [HttpGet("{id:int}/calendar.ics")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DownloadIcs(int id)
+    {
+        var result = await mediator.Send(new HR.Application.Interviews.Queries.GetInterviewCalendarSyncQuery(id));
+        if (result == null) return NotFound("Không tìm thấy lịch phỏng vấn.");
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(result.IcsContent);
+        return File(bytes, "text/calendar; charset=utf-8", result.FileName);
+    }
+
+    /// <summary>
+    /// GET /api/v1/interviews/{id}/calendar-sync — Lấy link đồng bộ 1-Click Google Calendar & thông tin iCal
+    /// </summary>
+    [HttpGet("{id:int}/calendar-sync")]
+    [RequirePermission("interview:view")]
+    public async Task<IActionResult> GetCalendarSync(int id)
+    {
+        var result = await mediator.Send(new HR.Application.Interviews.Queries.GetInterviewCalendarSyncQuery(id));
+        if (result == null) throw new NotFoundException("INTERVIEW_NOT_FOUND", "Không tìm thấy lịch phỏng vấn.");
+
+        return Ok(ApiResponse<HR.Application.Interviews.Queries.InterviewCalendarSyncResult>.Ok(result));
+    }
 }

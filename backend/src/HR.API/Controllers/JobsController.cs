@@ -127,4 +127,11 @@ public class JobsController(IMediator mediator) : ControllerBase
         }
         return Ok(ApiResponse<bool>.Ok(true));
     }
+
+    [HttpPost("{id:int}/promote")]
+    public async Task<IActionResult> PromoteJob(int id, [FromBody] HR.Application.Jobs.Commands.PromoteJob.PromoteJobDto dto)
+    {
+        var result = await mediator.Send(new HR.Application.Jobs.Commands.PromoteJob.PromoteJobCommand(id, dto));
+        return Ok(ApiResponse<HR.Application.Jobs.Commands.PromoteJob.PromoteJobResultDto>.Ok(result));
+    }
 }

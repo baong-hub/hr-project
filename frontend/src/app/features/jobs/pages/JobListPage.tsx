@@ -551,7 +551,41 @@ export const JobListPage: React.FC = () => {
                 key={job.id}
                 className={`${styles.jobCard} ${activeJob?.id === job.id ? styles.jobCardActive : ''}`}
                 onClick={() => setActiveJob(job)}
+                style={{
+                  border: job.isFeatured ? '2px solid #f59e0b' : (job.isUrgent ? '1.5px solid #fca5a5' : undefined),
+                  background: job.isFeatured ? 'rgba(245, 158, 11, 0.03)' : undefined
+                }}
               >
+                {(job.isFeatured || job.isUrgent) && (
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                    {job.isFeatured && (
+                      <span style={{
+                        background: 'linear-gradient(135deg, #d97706, #b45309)',
+                        color: '#ffffff',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        letterSpacing: '0.03em'
+                      }}>
+                        ⭐ VIP NỔI BẬT
+                      </span>
+                    )}
+                    {job.isUrgent && (
+                      <span style={{
+                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                        color: '#ffffff',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        letterSpacing: '0.03em'
+                      }}>
+                        🔥 TUYỂN GẤP
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className={styles.companyBadge}>
                   {job.companyLogoUrl ? (
                     <img src={job.companyLogoUrl} alt="Logo" className={styles.companyLogo} />

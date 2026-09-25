@@ -24,4 +24,7 @@ export const jobsService = {
     
   trackJobView: (id: number): Promise<AxiosResponse<ApiResponse<boolean>>> => 
     api.post(`/jobs/${id}/view`),
+    
+  promoteJob: (id: number, packageType: string, notes?: string): Promise<AxiosResponse<ApiResponse<any>>> => 
+    api.post(`/jobs/${id}/promote`, { packageType, notes }),
 };

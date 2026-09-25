@@ -22,6 +22,7 @@ public class GetJobByIdQueryHandler(IApplicationDbContext context, ICurrentUserS
 
 
 
+        var now = DateTime.UtcNow;
         return new JobDto(
             j.Id,
             j.EmployerId,
@@ -36,7 +37,11 @@ public class GetJobByIdQueryHandler(IApplicationDbContext context, ICurrentUserS
             j.City,
             j.Status.ToString(),
             j.ExpiredAt,
-            j.CreatedAt
+            j.CreatedAt,
+            j.IsFeatured && (j.FeaturedUntil == null || j.FeaturedUntil > now),
+            j.FeaturedUntil,
+            j.IsUrgent && (j.UrgentUntil == null || j.UrgentUntil > now),
+            j.UrgentUntil
         );
     }
 }

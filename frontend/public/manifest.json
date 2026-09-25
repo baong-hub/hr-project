@@ -1,22 +1,25 @@
 {
+  "name": "HR Portal - Tìm Việc & Tuyển Dụng",
   "short_name": "HR Portal",
-  "name": "HR Portal - Nền Tảng Tuyển Dụng & Quản Trị Nhân Sự Thông Minh",
-  "description": "Nền tảng tuyển dụng thông minh tích hợp AI, kết nối nhân tài và doanh nghiệp hàng đầu tại Việt Nam.",
+  "description": "Nền tảng tìm kiếm việc làm, cẩm nang sự nghiệp và tuyển dụng nhân tài hàng đầu Việt Nam",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/hr.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "192x192"
+      "purpose": "any maskable"
     },
     {
       "src": "/hr.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any maskable"
     }
   ],
-  "start_url": "/",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "display": "standalone",
-  "orientation": "portrait"
+  "categories": ["business", "productivity", "utilities"]
 }

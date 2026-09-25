@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, Trash2, X, Check, Sparkles, ExternalLink } from 'lucide-react';
+import { Pencil, Trash2, X, Check, Sparkles, ExternalLink, Star } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobDto, JobStatus } from '../../../core/models/job.model';
+import { PromoteJobModal } from '../components/PromoteJobModal';
 import styles from './JobsPage.module.scss';
 
 export const EmployerJobListPage: React.FC = () => {
@@ -22,6 +23,10 @@ export const EmployerJobListPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+
+  // Promotion Add-on
+  const [promotingJob, setPromotingJob] = useState<JobDto | null>(null);
+  const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
 
   const fetchJobs = async (overrideParams?: { keyword?: string; status?: string }) => {
     setLoading(true);
@@ -332,6 +337,14 @@ export const EmployerJobListPage: React.FC = () => {
                           <Sparkles size={14} />
                         </button>
                         <button
+                          onClick={() => { setPromotingJob(job); setIsPromoteModalOpen(true); }}
+                          className={styles.actionBtn}
+                          style={{ color: '#d97706', borderColor: '#fcd34d', background: '#fffbeb' }}
+                          title="Đẩy tin / Ghim VIP (Pay-per-job)"
+                        >
+                          <Star size={14} fill={job.isFeatured ? '#d97706' : 'none'} />
+                        </button>
+                        <button
                           onClick={() => navigate(`/companies/${job.companyId || 1}/careers`)}
                           className={styles.actionBtn}
                           style={{ color: '#d97706', borderColor: '#fde68a', background: '#fffbeb' }}
@@ -370,7 +383,23 @@ export const EmployerJobListPage: React.FC = () => {
                         JOB-{String(job.id).padStart(4, '0')}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 600 }}>{job.title}</td>
+                    <td style={{ fontWeight: 600 }}>
+                      <div>{job.title}</div>
+                      {(job.isFeatured || job.isUrgent) && (
+                        <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+                          {job.isFeatured && (
+                            <span style={{ fontSize: '10px', background: '#f59e0b', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                              VIP NỔI BẬT
+                            </span>
+                          )}
+                          {job.isUrgent && (
+                            <span style={{ fontSize: '10px', background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                              TUYỂN GẤP
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </td>
                     <td style={{ textAlign: 'right', fontWeight: 600, color: '#2e7d32' }}>
                       {formatSalary(job.salaryFrom, job.salaryTo)}
                     </td>
@@ -443,6 +472,14 @@ export const EmployerJobListPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Promote Job Modal */}
+      <PromoteJobModal
+        job={promotingJob}
+        isOpen={isPromoteModalOpen}
+        onClose={() => setIsPromoteModalOpen(false)}
+        onSuccess={() => fetchJobs()}
+      />
     </div>
   );
 };

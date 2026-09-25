@@ -29,6 +29,10 @@ export interface JobDto {
   probationDuration?: string;
   openings?: number;
   hiredCount?: number;
+  isFeatured?: boolean;
+  featuredUntil?: string;
+  isUrgent?: boolean;
+  urgentUntil?: string;
 }
 
 export type JobStatus = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'PAUSED' | 'REJECTED' | 'EXPIRED' | 'CLOSED';

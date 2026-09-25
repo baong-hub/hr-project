@@ -31,6 +31,13 @@ public class Job : BaseEntity
     public JobStatus Status { get; set; } = JobStatus.DRAFT;
     public DateTime ExpiredAt { get; set; }
 
+    // Promotion & Monetization Add-ons
+    public bool IsFeatured { get; set; } = false;
+    public DateTime? FeaturedUntil { get; set; }
+    public bool IsUrgent { get; set; } = false;
+    public DateTime? UrgentUntil { get; set; }
+    public int PriorityOrder { get; set; } = 0;
+
     // Navigation
     public Company Company { get; set; } = null!;
     public Employer Employer { get; set; } = null!;

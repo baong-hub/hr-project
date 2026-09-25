@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  User, CheckCircle, XCircle, Award, X, FileSignature, Search, Filter
+  User, CheckCircle, XCircle, Award, X, FileSignature, Search, Filter, Calendar, Download
 } from 'lucide-react';
 import { interviewsService, type CreateInterviewEvaluationPayload, type InterviewEvaluation } from '../../../core/services/interviews.service';
 import { JobOfferModal } from '../../job-offers/components/JobOfferModal';
@@ -384,6 +384,27 @@ export const InterviewsPage: React.FC = () => {
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div className={styles.actionBtns} style={{ justifyContent: 'flex-end' }}>
+                          {/* 1-Click Calendar Sync */}
+                          <a
+                            href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`[Phỏng vấn] ${i.jobTitle || 'Vị trí tuyển dụng'}`)}&dates=${new Date(i.startTime || i.scheduledAt || Date.now()).toISOString().replace(/-|:|\.\d\d\d/g, "")}/${new Date(i.endTime || new Date(Date.now() + 3600000)).toISOString().replace(/-|:|\.\d\d\d/g, "")}&details=${encodeURIComponent(`Phỏng vấn vòng: ${i.roundName || 'Phỏng vấn'}\nĐịa điểm/Meeting: ${i.locationOrLink || i.meetingLink || 'Online'}`)}&location=${encodeURIComponent(i.locationOrLink || i.meetingLink || 'Online')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.actionBtn}
+                            style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff', textDecoration: 'none' }}
+                            title="Thêm vào Google Calendar (1-Click)"
+                          >
+                            <Calendar size={14} />
+                          </a>
+                          <a
+                            href={`/api/v1/interviews/${i.id}/calendar.ics`}
+                            download={`Lich_phong_van_${i.id}.ics`}
+                            className={styles.actionBtn}
+                            style={{ color: '#0d9488', borderColor: '#99f6e4', background: '#f0fdfa', textDecoration: 'none' }}
+                            title="Tải lịch iCal (.ics) cho Outlook/Apple"
+                          >
+                            <Download size={14} />
+                          </a>
+
                           {isCandidate && (statusUpper === 'SCHEDULED' || statusUpper === 'INTERVIEW_INVITATION') && (
                             <>
                               <button 

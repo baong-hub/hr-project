@@ -7,6 +7,7 @@ import { TopProgressBar } from './shared/ui/TopProgressBar/TopProgressBar';
 import { ErrorBoundary } from './shared/ui/ErrorBoundary/ErrorBoundary';
 
 import { CookieConsentBanner } from './shared/components/CookieConsentBanner';
+import { PwaInstallBanner } from './shared/components/PwaInstallBanner';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Router>
             <AppRoutes />
             <CookieConsentBanner />
+            <PwaInstallBanner />
           </Router>
         </ThemeProvider>
       </ErrorBoundary>

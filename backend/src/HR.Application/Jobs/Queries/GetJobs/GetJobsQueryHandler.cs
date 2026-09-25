@@ -144,8 +144,12 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
 
         var total = await query.CountAsync(cancellationToken);
 
+        var now = DateTime.UtcNow;
         var rawItems = await query
-            .OrderByDescending(j => j.CreatedAt)
+            .OrderByDescending(j => j.IsFeatured && (j.FeaturedUntil == null || j.FeaturedUntil > now))
+            .ThenByDescending(j => j.IsUrgent && (j.UrgentUntil == null || j.UrgentUntil > now))
+            .ThenByDescending(j => j.PriorityOrder)
+            .ThenByDescending(j => j.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
@@ -164,7 +168,11 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
             j.City,
             j.Status.ToString(),
             j.ExpiredAt,
-            j.CreatedAt
+            j.CreatedAt,
+            j.IsFeatured && (j.FeaturedUntil == null || j.FeaturedUntil > now),
+            j.FeaturedUntil,
+            j.IsUrgent && (j.UrgentUntil == null || j.UrgentUntil > now),
+            j.UrgentUntil
         )).ToList();
 
         return new PagedResult<JobDto>

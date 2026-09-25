@@ -16,5 +16,9 @@ public record JobDto(
     string City,
     string Status,
     DateTime ExpiredAt,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    bool IsFeatured = false,
+    DateTime? FeaturedUntil = null,
+    bool IsUrgent = false,
+    DateTime? UrgentUntil = null
 );
