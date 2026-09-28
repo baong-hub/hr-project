@@ -25,5 +25,7 @@ public record CreateJobCommand(
     int? ExperienceYearsMin = null,
     string? Education = null,
     string? ProbationDuration = null,
-    int? Openings = 1
+    int? Openings = 1,
+    string? ProvinceCode = null,
+    string? CategoryCode = null
 ) : IRequest<JobDto>;

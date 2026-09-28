@@ -1,0 +1,176 @@
+.jobCard {
+  background-color: var(--color-bg-card, #FFFFFF);
+  border: 1px solid var(--color-border-default, #E5E7EB);
+  border-radius: var(--radius-lg, 8px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast, 0.15s ease);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-primary, #2563EB);
+  }
+
+  &.featured {
+    border-color: var(--color-salary, #8C6B28);
+  }
+
+  &.selected {
+    border-color: var(--color-brand-primary, #2563EB);
+    background-color: var(--color-brand-subtle, #eff6ff);
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.logoWrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md, 6px);
+  border: 1px solid var(--color-border-default, #E5E7EB);
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.companyLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logoInitial {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-secondary, #4B5563);
+}
+
+.titleArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.badgesRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.badgeFeatured {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-salary, #8C6B28);
+  background-color: #FEF3C7;
+  border: 1px solid #FDE68A;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.badgeUrgent {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-danger, #DC2626);
+  background-color: var(--color-danger-bg, #FEE2E2);
+  border: 1px solid #FECACA;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.jobTitle {
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-text-primary, #111827);
+  margin: 0 0 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  &:hover {
+    color: var(--color-primary, #2563EB);
+  }
+}
+
+.companyName {
+  font-size: 0.8125rem; /* 13px */
+  color: var(--color-text-secondary, #4B5563);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saveBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #9CA3AF);
+  padding: 6px;
+  cursor: pointer;
+  border-radius: var(--radius-sm, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    color: var(--color-danger, #DC2626);
+    background-color: var(--color-bg-hover, rgba(0, 0, 0, 0.04));
+  }
+
+  &.saved {
+    color: var(--color-danger, #DC2626);
+  }
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-default, #E5E7EB);
+  font-size: 0.8125rem;
+}
+
+.salary {
+  font-weight: 600;
+  color: var(--color-salary, #8C6B28);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary, #4B5563);
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.metaDot {
+  color: var(--color-border-default, #D1D5DB);
+}

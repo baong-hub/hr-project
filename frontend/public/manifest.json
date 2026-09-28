@@ -1,7 +1,7 @@
 {
   "name": "HR Portal - Tìm Việc & Tuyển Dụng",
   "short_name": "HR Portal",
-  "description": "Nền tảng tìm kiếm việc làm, cẩm nang sự nghiệp và tuyển dụng nhân tài hàng đầu Việt Nam",
+  "description": "Nền tảng tìm kiếm việc làm, cẩm nang sự nghiệp và kết nối tuyển dụng doanh nghiệp tại Việt Nam",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,14 +9,14 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/hr.png",
-      "sizes": "192x192",
+      "src": "/logo.png",
+      "sizes": "1080x1080",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/hr.png",
-      "sizes": "512x512",
+      "src": "/icon.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     }

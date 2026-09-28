@@ -42,6 +42,7 @@ export interface CompanyDto {
   cultureHighlights?: string; // JSON array of CultureHighlight
   companyFaqs?: string; // JSON array of CompanyFaq
   testimonials?: string; // JSON array of CompanyTestimonial
+  activeJobsCount?: number;
 }
 
 export type CompanyVerificationStatus = 'DRAFT' | 'PENDING_VERIFICATION' | 'VERIFIED' | 'REJECTED' | 'SUSPENDED';

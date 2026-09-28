@@ -31,6 +31,22 @@ namespace HR.Infrastructure.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("AiEvaluatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("ai_evaluated_at");
+
+                    b.Property<string>("AiGapsJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("ai_gaps_json");
+
+                    b.Property<string>("AiStrengthsJson")
+                        .HasColumnType("longtext")
+                        .HasColumnName("ai_strengths_json");
+
+                    b.Property<string>("AiSummary")
+                        .HasColumnType("longtext")
+                        .HasColumnName("ai_summary");
+
                     b.Property<DateTime>("AppliedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("applied_at");
@@ -88,6 +104,10 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("updated_by");
 
+                    b.Property<DateTime?>("ViewedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("viewed_at");
+
                     b.HasKey("Id")
                         .HasName("pk_applications");
 
@@ -105,6 +125,115 @@ namespace HR.Infrastructure.Migrations
                         .HasDatabaseName("uq_applications_candidate_job");
 
                     b.ToTable("applications", (string)null);
+                });
+
+            modelBuilder.Entity("HR.Domain.Entities.Article", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("int")
+                        .HasColumnName("author_id");
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("author_name");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("category");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("content_html");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("deleted_by");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_published");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("published_at");
+
+                    b.Property<int>("ReadingTimeMinutes")
+                        .HasColumnType("int")
+                        .HasColumnName("reading_time_minutes");
+
+                    b.Property<string>("SeoDescription")
+                        .HasColumnType("longtext")
+                        .HasColumnName("seo_description");
+
+                    b.Property<string>("SeoKeywords")
+                        .HasColumnType("longtext")
+                        .HasColumnName("seo_keywords");
+
+                    b.Property<string>("SeoTitle")
+                        .HasColumnType("longtext")
+                        .HasColumnName("seo_title");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("slug");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("longtext")
+                        .HasColumnName("tags");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("thumbnail_url");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int")
+                        .HasColumnName("updated_by");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("int")
+                        .HasColumnName("view_count");
+
+                    b.HasKey("Id")
+                        .HasName("pk_articles");
+
+                    b.ToTable("articles");
                 });
 
             modelBuilder.Entity("HR.Domain.Entities.Candidate", b =>
@@ -723,6 +852,11 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("industry");
 
+                    b.Property<string>("IndustryCode")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)")
+                        .HasColumnName("industry_code");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_active");
@@ -750,6 +884,11 @@ namespace HR.Infrastructure.Migrations
                     b.Property<string>("OfficeGallery")
                         .HasColumnType("json")
                         .HasColumnName("office_gallery");
+
+                    b.Property<string>("ProvinceCode")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("province_code");
 
                     b.Property<string>("SizeRange")
                         .IsRequired()
@@ -798,6 +937,12 @@ namespace HR.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_companies");
+
+                    b.HasIndex("IndustryCode")
+                        .HasDatabaseName("idx_companies_industry_code");
+
+                    b.HasIndex("ProvinceCode")
+                        .HasDatabaseName("idx_companies_province_code");
 
                     b.ToTable("companies", (string)null);
                 });
@@ -1399,6 +1544,11 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("category");
 
+                    b.Property<string>("CategoryCode")
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)")
+                        .HasColumnName("category_code");
+
                     b.Property<string>("City")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1477,11 +1627,47 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("date")
                         .HasColumnName("expired_at");
 
+                    b.Property<DateTime?>("FeaturedUntil")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("featured_until");
+
+                    b.Property<string>("FraudWarningFlags")
+                        .HasColumnType("text")
+                        .HasColumnName("fraud_warning_flags");
+
                     b.Property<int>("HiredCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("hired_count");
+
+                    b.Property<bool>("IsFeatured")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_featured");
+
+                    b.Property<bool>("IsUrgent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_urgent");
+
+                    b.Property<DateTime?>("ModeratedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("moderated_at");
+
+                    b.Property<string>("ModerationNotes")
+                        .HasColumnType("text")
+                        .HasColumnName("moderation_notes");
+
+                    b.Property<string>("ModerationStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)")
+                        .HasDefaultValue("APPROVED")
+                        .HasColumnName("moderation_status");
 
                     b.Property<string>("Office")
                         .HasMaxLength(200)
@@ -1494,15 +1680,32 @@ namespace HR.Infrastructure.Migrations
                         .HasDefaultValue(1)
                         .HasColumnName("openings");
 
+                    b.Property<int>("PriorityOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("priority_order");
+
                     b.Property<string>("ProbationDuration")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
                         .HasColumnName("probation_duration");
 
+                    b.Property<string>("ProvinceCode")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)")
+                        .HasColumnName("province_code");
+
                     b.Property<string>("Requirements")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("requirements");
+
+                    b.Property<int>("RiskScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("risk_score");
 
                     b.Property<decimal?>("SalaryFrom")
                         .HasColumnType("decimal(18,2)")
@@ -1542,6 +1745,10 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasColumnName("updated_by");
 
+                    b.Property<DateTime?>("UrgentUntil")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("urgent_until");
+
                     b.Property<string>("WorkMode")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1553,11 +1760,17 @@ namespace HR.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_jobs");
 
+                    b.HasIndex("CategoryCode")
+                        .HasDatabaseName("idx_jobs_category_code");
+
                     b.HasIndex("CompanyId")
                         .HasDatabaseName("ix_jobs_company_id");
 
                     b.HasIndex("EmployerId")
                         .HasDatabaseName("idx_jobs_employer");
+
+                    b.HasIndex("ProvinceCode")
+                        .HasDatabaseName("idx_jobs_province_code");
 
                     b.HasIndex("Status", "ExpiredAt")
                         .HasDatabaseName("idx_jobs_status_expired");
@@ -1707,6 +1920,10 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("candidate_response_note");
 
+                    b.Property<string>("CandidateSignature")
+                        .HasColumnType("longtext")
+                        .HasColumnName("candidate_signature");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
@@ -1798,6 +2015,20 @@ namespace HR.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)")
                         .HasColumnName("salary_type");
+
+                    b.Property<DateTime?>("SignedAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("signed_at");
+
+                    b.Property<string>("SignerFullName")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("signer_full_name");
+
+                    b.Property<string>("SignerIpAddress")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("signer_ip_address");
 
                     b.Property<string>("SpecialTerms")
                         .HasColumnType("text")
@@ -2986,20 +3217,49 @@ namespace HR.Infrastructure.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("email");
 
+                    b.Property<string>("EmailVerificationToken")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("email_verification_token");
+
+                    b.Property<DateTime?>("EmailVerificationTokenExpiresAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("email_verification_token_expires_at");
+
                     b.Property<string>("FullName")
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
                         .HasColumnName("full_name");
 
+                    b.Property<string>("GoogleId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("google_id");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_active");
+
+                    b.Property<bool>("IsEmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint(1)")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_email_verified");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)")
                         .HasColumnName("password_hash");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("password_reset_token");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpiresAt")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("password_reset_token_expires_at");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(15)

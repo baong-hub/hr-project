@@ -51,18 +51,21 @@
 }
 
 .logoImg {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  border-radius: var(--radius-md, 8px);
+  padding: 3px;
   flex-shrink: 0;
 }
 
 .logoText {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-sidebar-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-sidebar-text, #ffffff);
   white-space: nowrap;
+  letter-spacing: -0.2px;
 }
 
 .toggleBtn {

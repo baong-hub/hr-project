@@ -1,7 +1,15 @@
-import api from './api.service';
+import { metaService } from './meta.service';
 
+/**
+ * @deprecated Use metaService from './meta.service' instead.
+ */
 export const locationService = {
-  getCountries: () => api.get('/locations/countries'),
-  getProvinces: (countryId?: number) => api.get('/locations/provinces', { params: { countryId } }),
-  getWards: (provinceId: number) => api.get(`/locations/wards/${provinceId}`),
+  getCountries: async () => ({ data: [{ id: 1, name: 'Việt Nam' }] }),
+  getProvinces: async () => {
+    const provinces = await metaService.getProvinces();
+    return { data: provinces };
+  },
+  getWards: async () => ({ data: [] }),
 };
+
+export default locationService;

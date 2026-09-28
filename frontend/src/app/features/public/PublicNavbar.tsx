@@ -1,28 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Briefcase, Building, DollarSign, Menu, X, LogIn, UserPlus, Sparkles, LogOut, BookOpen, TrendingUp } from 'lucide-react';
+import { ChevronDown, ChevronRight, Menu, X, LayoutDashboard, LogOut, ArrowRight } from 'lucide-react';
 import { authService } from '../../core/services/auth.service';
+import { metaService, type ProvinceItem, type IndustryItem, STATIC_PROVINCES, STATIC_INDUSTRIES } from '../../core/services/meta.service';
+import styles from './PublicNavbar.module.scss';
+import logoImg from '@/assets/logo.png';
 
 export const PublicNavbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [mobileJobsAccordion, setMobileJobsAccordion] = useState(false);
+  const [mobileSearchKeyword, setMobileSearchKeyword] = useState('');
+
+  const [topIndustries, setTopIndustries] = useState<IndustryItem[]>(STATIC_INDUSTRIES.slice(0, 12));
+  const [centralCities, setCentralCities] = useState<ProvinceItem[]>(
+    STATIC_PROVINCES.filter((p) => p.type === 'city')
+  );
+
   const isAuthenticated = authService.isAuthenticated();
   const user = authService.getUser();
+  const roles = (user?.roles as string[]) || [];
+  const userRole = (user?.role || user?.accountType || '').toString().toUpperCase();
+  const isEmployer =
+    isAuthenticated &&
+    (roles.includes('Nhà tuyển dụng') ||
+      userRole === 'EMPLOYER' ||
+      userRole === 'COMPANY_OWNER' ||
+      userRole === 'HR_MANAGER' ||
+      userRole === 'RECRUITER');
+
   const navigate = useNavigate();
   const location = useLocation();
 
+  const megaMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Fetch top industries & central cities for mega-menu
+  useEffect(() => {
+    metaService.getIndustries().then((industries) => {
+      if (industries && industries.length > 0) {
+        // Sort by jobCount if available, otherwise take first 12
+        const sorted = [...industries].sort((a, b) => (b.jobCount || 0) - (a.jobCount || 0));
+        setTopIndustries(sorted.slice(0, 12));
+      }
+    });
+
+    metaService.getProvinces().then((provinces) => {
+      if (provinces && provinces.length > 0) {
+        setCentralCities(provinces.filter((p) => p.type === 'city'));
+      }
+    });
+  }, []);
+
+  // Close menus on click outside or Esc key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (megaMenuRef.current && !megaMenuRef.current.contains(event.target as Node)) {
+        setMegaMenuOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMegaMenuOpen(false);
+        setUserDropdownOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Close menus on route change
+  useEffect(() => {
+    setMegaMenuOpen(false);
+    setUserDropdownOpen(false);
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   const handleDashboardClick = () => {
-    const role = (user?.role || user?.accountType || '').toString().toUpperCase();
-    if (role === 'CANDIDATE' || role === 'USER') {
+    setUserDropdownOpen(false);
+    if (userRole === 'CANDIDATE' || userRole === 'USER') {
       navigate('/candidate/applications');
-    } else if (
-      role === 'EMPLOYER' ||
-      role === 'COMPANY_OWNER' ||
-      role === 'HR_MANAGER' ||
-      role === 'RECRUITER' ||
-      role === 'HIRING_MANAGER'
-    ) {
+    } else if (isEmployer) {
       navigate('/employer/jobs');
-    } else if (role === 'ADMIN' || role === 'SUPER ADMIN') {
+    } else if (userRole === 'ADMIN' || userRole === 'SUPER ADMIN') {
       navigate('/user-roles');
     } else {
       navigate('/candidate/applications');
@@ -30,8 +114,17 @@ export const PublicNavbar: React.FC = () => {
   };
 
   const handleLogout = async () => {
+    setUserDropdownOpen(false);
     await authService.logout();
     navigate('/', { replace: true });
+  };
+
+  const handleMobileSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mobileSearchKeyword.trim()) {
+      navigate(`/jobs?q=${encodeURIComponent(mobileSearchKeyword.trim())}`);
+      setMobileMenuOpen(false);
+    }
   };
 
   const isActive = (path: string) => {
@@ -39,301 +132,404 @@ export const PublicNavbar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  const linkStyle = (path: string): React.CSSProperties => {
-    const active = isActive(path);
-    return {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      color: active ? '#2563eb' : '#475569',
-      textDecoration: 'none',
-      fontWeight: active ? 600 : 500,
-      fontSize: '0.95rem',
-      padding: '8px 12px',
-      borderRadius: '8px',
-      backgroundColor: active ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
-      transition: 'all 0.2s ease'
-    };
-  };
+  const displayName = user?.fullName || user?.username || user?.email || 'Tài khoản';
 
   return (
-    <header style={{
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(10px)',
-      borderBottom: '1px solid #e2e8f0',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-    }}>
-      <div style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: '0 20px',
-        height: '70px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <img src="/hr.png" alt="HR Portal Logo" style={{ height: '38px', width: 'auto', objectFit: 'contain' }} />
-          <div>
-            <span style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', letterSpacing: '-0.5px' }}>
-              HR <span style={{ color: '#2563eb' }}>Portal</span>
-            </span>
-            <span style={{ display: 'block', fontSize: '0.68rem', color: '#64748b', fontWeight: 500, lineHeight: 1 }}>
-              TUYỂN DỤNG & NHÂN SỰ
-            </span>
+    <header className={styles.navbarWrapper}>
+      {/* Row 1: Top Bar (36px, #1E2130) */}
+      <div className={styles.topBar}>
+        <div className={styles.topBarContainer}>
+          <div className={styles.topBarLeft}>
+            <span>Nền tảng kết nối việc làm và tuyển dụng chuyên nghiệp</span>
           </div>
-        </Link>
 
-        {/* Desktop Nav */}
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '8px' }} className="hidden-mobile">
-          <Link to="/jobs" style={linkStyle('/jobs')}>
-            <Briefcase size={17} color={isActive('/jobs') ? '#2563eb' : '#3b82f6'} />
-            Việc làm
-          </Link>
-          <Link to="/companies" style={linkStyle('/companies')}>
-            <Building size={17} color={isActive('/companies') ? '#059669' : '#10b981'} />
-            Công ty
-          </Link>
-          <Link to="/blog" style={linkStyle('/blog')}>
-            <BookOpen size={17} color={isActive('/blog') ? '#7c3aed' : '#8b5cf6'} />
-            Cẩm nang
-          </Link>
-          <Link to="/salary-insights" style={linkStyle('/salary-insights')}>
-            <TrendingUp size={17} color={isActive('/salary-insights') ? '#0284c7' : '#0ea5e9'} />
-            Báo cáo lương
-          </Link>
-          <Link to="/pricing" style={linkStyle('/pricing')}>
-            <DollarSign size={17} color={isActive('/pricing') ? '#d97706' : '#f59e0b'} />
-            Bảng giá
-          </Link>
-          <Link to="/about" style={linkStyle('/about')}>
-            Giới thiệu
-          </Link>
-          <Link to="/contact" style={linkStyle('/contact')}>
-            Liên hệ
-          </Link>
-        </nav>
+          <div className={styles.topBarRight}>
+            <Link to="/pricing" className={styles.topBarEmployerLink}>
+              Dành cho nhà tuyển dụng <ChevronRight size={13} />
+            </Link>
+            <span className={styles.topBarDivider}>|</span>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="hidden-mobile">
-          {isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                onClick={handleDashboardClick}
-                style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '9px 18px',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-                  transition: 'transform 0.15s ease'
-                }}
-              >
-                <Sparkles size={16} />
-                Trang Quản Trị ({user?.fullName?.split(' ').slice(-1)[0] || 'Tài khoản'})
-              </button>
-              <button
-                onClick={handleLogout}
-                title="Đăng xuất"
-                style={{
-                  backgroundColor: '#f1f5f9',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569',
-                  padding: '9px 12px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '0.85rem',
-                  fontWeight: 500
-                }}
-              >
-                <LogOut size={15} />
-              </button>
-            </div>
-          ) : (
-            <>
-              <Link
-                to="/auth/login"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#1e293b',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  backgroundColor: '#ffffff',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <LogIn size={16} color="#2563eb" />
-                Đăng nhập
-              </Link>
-              <Link
-                to="/auth/register/candidate"
-                style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  padding: '9px 18px',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)'
-                }}
-              >
-                <UserPlus size={16} />
-                Đăng ký
-              </Link>
-              <Link
-                to="/auth/register/employer"
-                style={{
-                  backgroundColor: '#f8fafc',
-                  color: '#0f172a',
-                  border: '1px solid #94a3b8',
-                  textDecoration: 'none',
-                  padding: '8px 14px',
-                  borderRadius: '8px',
-                  fontWeight: 600,
-                  fontSize: '0.85rem'
-                }}
-              >
-                Đăng tin tuyển dụng
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Mobile menu toggle */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          style={{ background: 'none', border: 'none', color: '#334155', cursor: 'pointer', display: 'none' }}
-          className="visible-mobile"
-          aria-label="Toggle navigation menu"
-        >
-          {mobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderTop: '1px solid #e2e8f0',
-          padding: '16px 20px 24px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
-        }}>
-          <Link to="/jobs" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/jobs')}>
-            <Briefcase size={17} color="#2563eb" /> Việc làm
-          </Link>
-          <Link to="/companies" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/companies')}>
-            <Building size={17} color="#059669" /> Công ty
-          </Link>
-          <Link to="/blog" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/blog')}>
-            <BookOpen size={17} color="#7c3aed" /> Cẩm nang
-          </Link>
-          <Link to="/salary-insights" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/salary-insights')}>
-            <TrendingUp size={17} color="#0284c7" /> Báo cáo lương
-          </Link>
-          <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/pricing')}>
-            <DollarSign size={17} color="#d97706" /> Bảng giá dịch vụ
-          </Link>
-          <Link to="/about" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/about')}>
-            Giới thiệu
-          </Link>
-          <Link to="/contact" onClick={() => setMobileMenuOpen(false)} style={linkStyle('/contact')}>
-            Liên hệ
-          </Link>
-          
-          <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {isAuthenticated ? (
+            {!isAuthenticated ? (
               <>
-                <button
-                  onClick={() => { setMobileMenuOpen(false); handleDashboardClick(); }}
-                  style={{
-                    backgroundColor: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <Sparkles size={16} />
-                  Vào Trang Quản Trị ({user?.fullName || 'Tài khoản'})
-                </button>
-                <button
-                  onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
-                  style={{
-                    backgroundColor: '#f1f5f9',
-                    border: '1px solid #cbd5e1',
-                    color: '#475569',
-                    padding: '10px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <LogOut size={16} /> Đăng xuất
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/auth/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ textAlign: 'center', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#1e293b', textDecoration: 'none', fontWeight: 600 }}
-                >
+                <Link to="/auth/login" className={styles.topBarLink}>
                   Đăng nhập
                 </Link>
-                <Link
-                  to="/auth/register/candidate"
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ textAlign: 'center', padding: '10px', backgroundColor: '#2563eb', color: '#ffffff', textDecoration: 'none', borderRadius: '8px', fontWeight: 600 }}
-                >
-                  Đăng ký Ứng viên
-                </Link>
-                <Link
-                  to="/auth/register/employer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  style={{ textAlign: 'center', padding: '10px', backgroundColor: '#f1f5f9', color: '#0f172a', textDecoration: 'none', borderRadius: '8px', fontWeight: 600 }}
-                >
-                  Đăng ký Nhà tuyển dụng
+                <Link to="/auth/register/candidate" className={styles.topBarLink}>
+                  Đăng ký
                 </Link>
               </>
+            ) : (
+              <div className={styles.userMenuWrapper} ref={userMenuRef}>
+                <button
+                  type="button"
+                  className={styles.userMenuTrigger}
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  aria-expanded={userDropdownOpen}
+                >
+                  <span>{displayName}</span>
+                  <ChevronDown size={13} />
+                </button>
+
+                {userDropdownOpen && (
+                  <div className={styles.userDropdown} role="menu">
+                    <button
+                      type="button"
+                      className={styles.userDropdownItem}
+                      onClick={handleDashboardClick}
+                      role="menuitem"
+                    >
+                      <LayoutDashboard size={14} /> Vào trang quản lý
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.userDropdownItem} ${styles.danger}`}
+                      onClick={handleLogout}
+                      role="menuitem"
+                    >
+                      <LogOut size={14} /> Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
+      </div>
+
+      {/* Row 2: Main Navigation Bar (60px, White) */}
+      <div className={styles.mainBar}>
+        <div className={styles.mainContainer}>
+          <div className={styles.brandGroup}>
+            <Link to="/" className={styles.logoLink} aria-label="HR Portal - Trang chủ">
+              <img src={logoImg} alt="HR Portal Logo" className={styles.logoImg} />
+            </Link>
+
+            <nav className={styles.navMenu} aria-label="Menu chính">
+              {/* Mega Menu Trigger: Việc làm */}
+              <div className={styles.navItem} ref={megaMenuRef}>
+                <button
+                  type="button"
+                  className={`${styles.megaTrigger} ${isActive('/jobs') ? styles.active : ''}`}
+                  onClick={() => setMegaMenuOpen(!megaMenuOpen)}
+                  aria-expanded={megaMenuOpen}
+                  aria-haspopup="true"
+                >
+                  Việc làm <ChevronDown size={14} />
+                </button>
+
+                {megaMenuOpen && (
+                  <div className={styles.megaMenu} role="region" aria-label="Mega menu việc làm">
+                    {/* Column 1: Theo ngành nghề */}
+                    <div>
+                      <div className={styles.megaColTitle}>Theo ngành nghề</div>
+                      <ul className={styles.megaColList}>
+                        {topIndustries.map((ind) => (
+                          <li key={ind.code}>
+                            <Link
+                              to={`/jobs?industry=${encodeURIComponent(ind.code)}`}
+                              className={styles.megaLink}
+                              onClick={() => setMegaMenuOpen(false)}
+                            >
+                              <span>{ind.name}</span>
+                              {ind.jobCount !== undefined && ind.jobCount > 0 && (
+                                <span className={styles.megaCount}>{ind.jobCount}</span>
+                              )}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        to="/jobs"
+                        className={styles.megaViewAll}
+                        onClick={() => setMegaMenuOpen(false)}
+                      >
+                        Xem tất cả 36 ngành <ArrowRight size={13} />
+                      </Link>
+                    </div>
+
+                    {/* Column 2: Theo địa điểm */}
+                    <div>
+                      <div className={styles.megaColTitle}>Theo địa điểm</div>
+                      <ul className={styles.megaColList}>
+                        {centralCities.map((city) => (
+                          <li key={city.code}>
+                            <Link
+                              to={`/jobs?province=${encodeURIComponent(city.code)}`}
+                              className={styles.megaLink}
+                              onClick={() => setMegaMenuOpen(false)}
+                            >
+                              <span>{city.name}</span>
+                              {city.jobCount !== undefined && city.jobCount > 0 && (
+                                <span className={styles.megaCount}>{city.jobCount}</span>
+                              )}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        to="/jobs"
+                        className={styles.megaViewAll}
+                        onClick={() => setMegaMenuOpen(false)}
+                      >
+                        Tất cả 34 tỉnh, thành <ArrowRight size={13} />
+                      </Link>
+                    </div>
+
+                    {/* Column 3: Theo hình thức làm việc */}
+                    <div>
+                      <div className={styles.megaColTitle}>Theo hình thức</div>
+                      <ul className={styles.megaColList}>
+                        <li>
+                          <Link
+                            to="/jobs?type=Full-time"
+                            className={styles.megaLink}
+                            onClick={() => setMegaMenuOpen(false)}
+                          >
+                            <span>Toàn thời gian</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to="/jobs?type=Part-time"
+                            className={styles.megaLink}
+                            onClick={() => setMegaMenuOpen(false)}
+                          >
+                            <span>Bán thời gian</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to="/jobs?type=Internship"
+                            className={styles.megaLink}
+                            onClick={() => setMegaMenuOpen(false)}
+                          >
+                            <span>Thực tập sinh</span>
+                          </Link>
+                        </li>
+                        <li>
+                          <Link
+                            to="/jobs?mode=remote"
+                            className={styles.megaLink}
+                            onClick={() => setMegaMenuOpen(false)}
+                          >
+                            <span>Làm việc từ xa (Remote)</span>
+                          </Link>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                to="/companies"
+                className={`${styles.navLink} ${isActive('/companies') ? styles.active : ''}`}
+              >
+                Công ty
+              </Link>
+              <Link
+                to="/blog"
+                className={`${styles.navLink} ${isActive('/blog') ? styles.active : ''}`}
+              >
+                Cẩm nang
+              </Link>
+              <Link
+                to="/salary-insights"
+                className={`${styles.navLink} ${isActive('/salary-insights') ? styles.active : ''}`}
+              >
+                Báo cáo lương
+              </Link>
+            </nav>
+          </div>
+
+          <div className={styles.mainActions}>
+            <Link
+              to={isEmployer ? '/employer/jobs/new' : '/auth/register/employer'}
+              className={styles.postJobBtn}
+            >
+              Đăng tin tuyển dụng
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            className={styles.mobileToggleBtn}
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Mở menu di động"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Drawer (Full Height Panel) */}
+      {mobileMenuOpen && (
+        <>
+          <div
+            className={styles.mobileBackdrop}
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className={styles.mobileDrawer} role="dialog" aria-modal="true" aria-label="Menu điều hướng">
+            <div className={styles.mobileDrawerHeader}>
+              <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+                <img src={logoImg} alt="HR Portal Logo" className={styles.logoImg} />
+              </Link>
+              <button
+                type="button"
+                className={styles.mobileToggleBtn}
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Đóng menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Mobile Search Box */}
+            <form onSubmit={handleMobileSearch} className={styles.mobileSearchBox}>
+              <input
+                type="text"
+                placeholder="Tìm việc làm, kỹ năng..."
+                value={mobileSearchKeyword}
+                onChange={(e) => setMobileSearchKeyword(e.target.value)}
+              />
+            </form>
+
+            <nav className={styles.mobileNavList}>
+              {/* Accordion: Việc làm */}
+              <div>
+                <button
+                  type="button"
+                  className={styles.mobileNavLink}
+                  onClick={() => setMobileJobsAccordion(!mobileJobsAccordion)}
+                  aria-expanded={mobileJobsAccordion}
+                >
+                  <span>Việc làm</span>
+                  <ChevronDown
+                    size={16}
+                    className={`${styles.accordionChevron} ${mobileJobsAccordion ? styles.open : ''}`}
+                  />
+                </button>
+                {mobileJobsAccordion && (
+                  <div className={styles.mobileAccordionContent}>
+                    <Link
+                      to="/jobs"
+                      className={styles.mobileSubLink}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Tất cả việc làm
+                    </Link>
+                    <Link
+                      to="/jobs?mode=remote"
+                      className={styles.mobileSubLink}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Việc làm từ xa
+                    </Link>
+                    <Link
+                      to="/jobs?type=Full-time"
+                      className={styles.mobileSubLink}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Toàn thời gian
+                    </Link>
+                    <Link
+                      to="/jobs?type=Internship"
+                      className={styles.mobileSubLink}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Thực tập sinh
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                to="/companies"
+                className={`${styles.mobileNavLink} ${isActive('/companies') ? styles.mobileActive : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Công ty
+              </Link>
+              <Link
+                to="/blog"
+                className={`${styles.mobileNavLink} ${isActive('/blog') ? styles.mobileActive : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Cẩm nang
+              </Link>
+              <Link
+                to="/salary-insights"
+                className={`${styles.mobileNavLink} ${isActive('/salary-insights') ? styles.mobileActive : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Báo cáo lương
+              </Link>
+              <Link
+                to="/pricing"
+                className={`${styles.mobileNavLink} ${isActive('/pricing') ? styles.mobileActive : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Bảng giá dịch vụ
+              </Link>
+            </nav>
+
+            <div className={styles.mobileDivider} />
+
+            <div className={styles.mobileFooterActions}>
+              <Link
+                to={isEmployer ? '/employer/jobs/new' : '/auth/register/employer'}
+                className={styles.postJobBtn}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Đăng tin tuyển dụng
+              </Link>
+
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    to="/auth/login"
+                    className={styles.mobileNavLink}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/auth/register/candidate"
+                    className={styles.mobileNavLink}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Đăng ký ứng viên
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className={styles.mobileNavLink}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleDashboardClick();
+                    }}
+                  >
+                    Vào trang quản lý
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.mobileNavLink} ${styles.danger}`}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    Đăng xuất
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </header>
   );

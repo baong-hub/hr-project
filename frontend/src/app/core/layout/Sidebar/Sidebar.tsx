@@ -6,6 +6,7 @@ import { Icon } from '../../../shared/ui/Icon/Icon';
 import styles from './Sidebar.module.scss';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { authService } from '../../services/auth.service';
+import defaultLogoImg from '@/assets/logo.png';
 
 interface SidebarProps {
   expanded: boolean;
@@ -20,8 +21,8 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const [expandedSubmenus, setExpandedSubmenus] = useState<Set<string>>(new Set());
 
   const user = authService.getUser();
-  const companyLogo = user?.companyLogo || '/hr.png';
-  const companyCode = user?.companyCode || 'HR';
+  const companyLogo = user?.companyLogo || defaultLogoImg;
+  const companyCode = user?.companyCode || 'HR Portal';
   const permissions = (user?.permissions as string[]) || [];
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';

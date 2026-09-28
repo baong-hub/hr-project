@@ -1,7 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&display=swap');
-
 html, body, button, input, select, textarea, table, th, td, p, span, a, h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family-base) !important;
+  font-family: var(--font-family-base);
+}
+
+.public-area {
+  h1, h2, h3 {
+    font-family: var(--font-family-display);
+  }
 }
 
 body {
@@ -29,5 +33,5 @@ p {
 }
 
 b, strong {
-  font-weight: 600;
+  font-weight: 700;
 }

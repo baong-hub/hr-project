@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { authService } from '../../../../core/services/auth.service';
 import styles from './LoginPage.module.scss';
+import logoImg from '@/assets/logo.png';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ export const LoginPage: React.FC = () => {
           <div className={styles.brandContent}>
             <div className={styles.logoWrapper}>
               <div className={styles.logoBox}>
-                <img src="/hr.png" alt="Logo" className={styles.logoImg} style={{ maxWidth: '80%' }} />
+                <img src={logoImg} alt="Logo" className={styles.logoImg} />
               </div>
               <span className={styles.brandName}>HR Portal</span>
             </div>

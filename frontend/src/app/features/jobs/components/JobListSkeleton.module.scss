@@ -1,0 +1,99 @@
+.skeletonWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.skeletonCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-subtle, #f3f4f6) 0%,
+    var(--color-bg-hover, #e5e7eb) 50%,
+    var(--color-bg-subtle, #f3f4f6) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm, 6px);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.headerRow {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.logoPlaceholder {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md, 8px);
+  flex-shrink: 0;
+}
+
+.headerContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleLine {
+  height: 18px;
+  width: 75%;
+}
+
+.companyLine {
+  height: 14px;
+  width: 45%;
+}
+
+.metaRow {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.metaBadge {
+  height: 22px;
+  width: 90px;
+  border-radius: 999px;
+}
+
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-subtle, #f3f4f6);
+}
+
+.dateLine {
+  height: 12px;
+  width: 80px;
+}
+
+.btnPlaceholder {
+  height: 28px;
+  width: 70px;
+  border-radius: var(--radius-md, 6px);
+}

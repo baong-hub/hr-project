@@ -1,0 +1,316 @@
+.salaryPage {
+  width: 100%;
+  max-width: var(--page-max-width, 1280px);
+  margin: 0 auto;
+  padding: var(--space-4, 16px) var(--space-4, 16px) var(--space-10, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 24px);
+}
+
+.heroCard {
+  background: var(--footer-bg, #1E2130);
+  color: #ffffff;
+  border-radius: var(--radius-xl, 16px);
+  padding: var(--space-8, 36px) var(--space-6, 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+
+  .heroTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-xs, 12px);
+    font-weight: 600;
+    color: #93c5fd;
+    background: rgba(147, 197, 253, 0.12);
+    border: 1px solid rgba(147, 197, 253, 0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+
+  h1 {
+    font-size: var(--font-size-2xl, 28px);
+    font-weight: 800;
+    margin: 0;
+    color: #ffffff;
+    line-height: 1.25;
+  }
+
+  p {
+    font-size: var(--font-size-sm, 14px);
+    color: #94a3b8;
+    max-width: 680px;
+    margin: 0;
+    line-height: 1.6;
+
+    strong {
+      color: #f1f5f9;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  /* Filter Selects Row */
+  .filterRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-lg, 12px);
+    padding: 10px 14px;
+    width: 100%;
+    max-width: 600px;
+
+    select {
+      flex: 1 1 200px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: var(--radius-md, 6px);
+      background: var(--color-bg-card, #ffffff);
+      color: var(--color-text-primary, #0f172a);
+      font-size: var(--font-size-xs, 13px);
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+    }
+  }
+}
+
+/* 4 Summary Metric Cards */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4, 16px);
+
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metricCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .metricLabel {
+    font-size: var(--font-size-xs, 12px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted, #64748b);
+    font-weight: 600;
+  }
+
+  .metricValue {
+    font-size: var(--font-size-2xl, 26px);
+    font-weight: 800;
+    color: var(--color-text-primary, #0f172a);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+
+    &.salaryGold {
+      color: var(--color-salary, #8C6B28);
+    }
+  }
+
+  .metricSub {
+    font-size: 11px;
+    color: var(--color-text-secondary, #64748b);
+    margin: 0;
+  }
+}
+
+/* Sections */
+.sectionCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-5, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+
+  .sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+
+    h2 {
+      font-size: var(--font-size-md, 16px);
+      font-weight: 700;
+      color: var(--color-text-primary, #0f172a);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sectionNote {
+      font-size: var(--font-size-xs, 12px);
+      color: var(--color-text-muted, #64748b);
+    }
+  }
+}
+
+/* Benchmarks Table */
+.benchmarkTableWrapper {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-xs, 13px);
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--color-bg-subtle, #f8fafc);
+      color: var(--color-text-secondary, #475569);
+      font-weight: 700;
+      border-bottom: 1px solid var(--color-border-default, #cbd5e1);
+      white-space: nowrap;
+
+      &.numeric {
+        text-align: right;
+      }
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+      color: var(--color-text-primary, #1e293b);
+
+      &.numeric {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+
+      &.salaryHighlight {
+        color: var(--color-salary, #8C6B28);
+        font-weight: 700;
+      }
+    }
+
+    tr:hover td {
+      background: var(--color-bg-subtle, #f8fafc);
+    }
+  }
+
+  .sampleSizeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-weight: 600;
+    background: var(--color-bg-subtle, #f1f5f9);
+    color: var(--color-text-muted, #64748b);
+
+    &.smallSample {
+      background: var(--color-warning-subtle, #fef3c7);
+      color: var(--color-warning-text, #92400e);
+      border: 1px solid var(--color-warning-border, #fde68a);
+    }
+  }
+}
+
+/* Monochromatic Industry Comparison Bars */
+.categoryBarsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.barRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .barLabelRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size-xs, 13px);
+
+    .catName {
+      font-weight: 600;
+      color: var(--color-text-primary, #0f172a);
+    }
+
+    .catSalary {
+      font-weight: 700;
+      color: var(--color-salary, #8C6B28);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .barTrack {
+    height: 10px;
+    background: var(--color-bg-subtle, #f1f5f9);
+    border-radius: 999px;
+    overflow: hidden;
+
+    .barFill {
+      height: 100%;
+      width: var(--bar-pct, 0%);
+      background: var(--color-brand-primary, #2563eb);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+  }
+}
+
+/* Top Paying Skills Grid */
+.skillsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.skillPill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--color-bg-subtle, #f8fafc);
+  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+
+  .skillName {
+    font-size: var(--font-size-xs, 13px);
+    font-weight: 600;
+    color: var(--color-text-primary, #0f172a);
+  }
+
+  .skillPay {
+    font-size: var(--font-size-xs, 12px);
+    font-weight: 700;
+    color: var(--color-salary, #8C6B28);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.loadingBox {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--color-text-muted, #94a3b8);
+}

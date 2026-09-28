@@ -25,7 +25,9 @@ public record UpdateJobCommand(
     int? ExperienceYearsMin = null,
     string? Education = null,
     string? ProbationDuration = null,
-    int? Openings = null
+    int? Openings = null,
+    string? ProvinceCode = null,
+    string? CategoryCode = null
 ) : IRequest<bool>;
 
 public record DeleteJobCommand(int Id) : IRequest<bool>;

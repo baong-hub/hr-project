@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, DollarSign, Clock, Calendar, Sparkles, CheckCircle, AlertCircle, Lightbulb, X } from 'lucide-react';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import {
+  MapPin,
+  DollarSign,
+  Clock,
+  Briefcase,
+  CheckCircle,
+  Share2,
+  Bookmark,
+  Sparkles,
+  ExternalLink,
+  ChevronRight,
+} from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { cvsService } from '../../../core/services/cvs.service';
 import { applicationsService } from '../../../core/services/applications.service';
@@ -10,68 +21,51 @@ import { aiService, type JobFitAnalysisResult } from '../../../core/services/ai.
 import { toast } from '../../../core/services/toast.service';
 import type { JobDto } from '../../../core/models/job.model';
 import { SeoHead } from '../../../shared/components/SeoHead';
-import styles from './JobsPage.module.scss';
+import { ApplyJobModal } from '../components/ApplyJobModal';
+import { AiJobFitModal } from '../components/AiJobFitModal';
+import styles from './JobDetailPage.module.scss';
 
 export const JobDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const fromQuickView = (location.state as any)?.fromQuickView;
+
   const user = authService.getUser();
   const isAuthenticated = authService.isAuthenticated();
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
-  const isEmployer = isAuthenticated && (roles.includes('Nhà tuyển dụng') || userRole === 'EMPLOYER' || userRole === 'Company' || userRole === 'Admin' || userRole === 'ADMIN');
+  const isEmployer =
+    isAuthenticated &&
+    (roles.includes('Nhà tuyển dụng') ||
+      userRole === 'EMPLOYER' ||
+      userRole === 'Company' ||
+      userRole === 'Admin' ||
+      userRole === 'ADMIN');
   const isCandidate = isAuthenticated && !isEmployer;
 
-  // State
+  // Job data
   const [job, setJob] = useState<JobDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [similarJobs, setSimilarJobs] = useState<JobDto[]>([]);
+  const [imgError, setImgError] = useState(false);
 
-  // Apply Modal
+  // Apply Modal state
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [cvs, setCvs] = useState<any[]>([]);
-  const [selectedCvId, setSelectedCvId] = useState<number | ''>('');
-  const [coverLetter, setCoverLetter] = useState('');
   const [submittingApply, setSubmittingApply] = useState(false);
 
-  // AI Job Fit Modal
+  // AI Fit Modal state
   const [showAiModal, setShowAiModal] = useState(false);
   const [analyzingAi, setAnalyzingAi] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<JobFitAnalysisResult | null>(null);
 
-  // Saved Job state
+  // Saved & Applied status
   const [isSaved, setIsSaved] = useState(false);
   const [togglingSave, setTogglingSave] = useState(false);
-
-  // Applied state (prevent duplicate applications)
   const [hasApplied, setHasApplied] = useState(false);
 
-  const handleAnalyzeJobFit = async () => {
-    if (!isAuthenticated) {
-      toast.info('Vui lòng đăng nhập để AI phân tích độ phù hợp giữa CV của bạn và công việc này.');
-      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname)}`);
-      return;
-    }
-    if (!job) return;
-    setShowAiModal(true);
-    setAnalyzingAi(true);
-    try {
-      const res = await aiService.analyzeJobFit(job.id);
-      if (res.data?.success && res.data.data) {
-        setAiAnalysis(res.data.data);
-      } else {
-        toast.error(res.data?.error?.message || 'Không thể phân tích độ phù hợp.');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Lỗi khi kết nối với Trợ lý AI.');
-    } finally {
-      setAnalyzingAi(false);
-    }
-  };
-
+  // Fetch Job details
   useEffect(() => {
     const fetchJob = async () => {
       if (!id) return;
@@ -80,9 +74,24 @@ export const JobDetailPage: React.FC = () => {
       try {
         const res = await jobsService.getJobById(Number(id));
         if (res.data?.success && res.data.data) {
-          setJob(res.data.data);
-          if (!fromQuickView) {
-            jobsService.trackJobView(Number(id)).catch(() => {});
+          const jobData = res.data.data;
+          setJob(jobData);
+          jobsService.trackJobView(Number(id)).catch(() => {});
+
+          // Fetch similar jobs in same category or province
+          const categoryQuery = jobData.categoryCode || jobData.category;
+          if (categoryQuery) {
+            jobsService
+              .getJobs({ categories: categoryQuery, pageSize: 5 })
+              .then((simRes) => {
+                if (simRes.data?.success && simRes.data.data?.items) {
+                  const filtered = simRes.data.data.items
+                    .filter((j: JobDto) => j.id !== Number(id))
+                    .slice(0, 4);
+                  setSimilarJobs(filtered);
+                }
+              })
+              .catch(() => {});
           }
         } else {
           setError(res.data?.error?.message || 'Không tìm thấy tin tuyển dụng yêu cầu.');
@@ -98,57 +107,34 @@ export const JobDetailPage: React.FC = () => {
     fetchJob();
   }, [id]);
 
-  const fetchCvs = async () => {
-    if (!isCandidate) return;
-    try {
-      const res = await cvsService.getCvs();
-      if (res.success && res.data) {
-        const list = res.data || [];
-        setCvs(list);
-        const main = list.find((c: any) => c.isMain);
-        if (main) {
-          setSelectedCvId(main.id);
-        } else if (list.length > 0) {
-          setSelectedCvId(list[0].id);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // Check saved and applied status for candidates
+  useEffect(() => {
+    if (!isAuthenticated || isEmployer || !id) return;
 
-  const handleApply = async () => {
-    if (!selectedCvId) {
-      toast.error('Vui lòng chọn CV để ứng tuyển.');
-      return;
-    }
-    setSubmittingApply(true);
-    try {
-      const res = await applicationsService.submitApplication({
-        jobId: job!.id,
-        candidateCvId: Number(selectedCvId),
-        coverLetter
-      });
-      if (res.data?.success) {
-        toast.success('Ứng tuyển thành công!');
-        setHasApplied(true);
-        setShowApplyModal(false);
-        setCoverLetter('');
-      } else {
-        toast.error(res.data?.error?.message || 'Ứng tuyển thất bại.');
-      }
-    } catch (err: any) {
-      console.error(err);
-      const errMsg = err?.response?.data?.error?.message || err?.message || 'Lỗi khi gửi đơn ứng tuyển.';
-      toast.error(errMsg);
-      if (errMsg.includes('đã nộp đơn') || errMsg.includes('already applied')) {
-        setHasApplied(true);
-        setShowApplyModal(false);
-      }
-    } finally {
-      setSubmittingApply(false);
-    }
-  };
+    // Saved status
+    savedJobService
+      .getSavedJobs({ page: 1, pageSize: 200 })
+      .then((res) => {
+        if (res.data?.success && res.data.data) {
+          const raw = res.data.data;
+          const items = Array.isArray(raw) ? raw : (raw as any)?.items || [];
+          setIsSaved(items.some((item: any) => item.jobId === Number(id)));
+        }
+      })
+      .catch(() => {});
+
+    // Applied status
+    applicationsService
+      .getApplications()
+      .then((res) => {
+        if (res.data?.success && res.data.data) {
+          const raw = res.data.data;
+          const items = Array.isArray(raw) ? raw : (raw as any)?.items || [];
+          setHasApplied(items.some((item: any) => item.jobId === Number(id)));
+        }
+      })
+      .catch(() => {});
+  }, [id, isAuthenticated, isEmployer]);
 
   const formatSalary = (from?: number, to?: number) => {
     if (!from && !to) return 'Thỏa thuận';
@@ -158,68 +144,54 @@ export const JobDetailPage: React.FC = () => {
     return `Đến ${fmt(to!)}`;
   };
 
-  // Fetch saved status for this job
-  useEffect(() => {
-    const checkSavedStatus = async () => {
-      if (!authService.isAuthenticated() || isEmployer || !id) return;
-      try {
-        const res = await savedJobService.getSavedJobs({ page: 1, pageSize: 200 });
-        if (res.data?.success && res.data.data) {
-          const raw = res.data.data;
-          const items = Array.isArray(raw) ? raw : (raw as any)?.items || [];
-          const saved = items.some((item: any) => item.jobId === Number(id));
-          setIsSaved(saved);
-        }
-      } catch (err) {
-        console.error('Failed to check saved status:', err);
-      }
-    };
-    checkSavedStatus();
-  }, [id, isEmployer]);
+  const getDaysRemainingText = (expiredAt?: string) => {
+    if (!expiredAt) return 'Đang tuyển';
+    const target = new Date(expiredAt).getTime();
+    const now = Date.now();
+    const diffDays = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) return 'Đã hết hạn';
+    if (diffDays === 0) return 'Hết hạn hôm nay';
+    return `Còn ${diffDays} ngày (hạn: ${new Date(expiredAt).toLocaleDateString('vi-VN')})`;
+  };
 
-  // Check if already applied
-  useEffect(() => {
-    const checkAppliedStatus = async () => {
-      if (!authService.isAuthenticated() || isEmployer || !id) return;
-      try {
-        const res = await applicationsService.getApplications();
-        if (res.data?.success && res.data.data) {
-          const raw = res.data.data;
-          const items = Array.isArray(raw) ? raw : (raw as any)?.items || [];
-          const applied = items.some((item: any) => item.jobId === Number(id));
-          setHasApplied(applied);
-        }
-      } catch (err) {
-        console.error('Failed to check applied status:', err);
-      }
-    };
-    checkAppliedStatus();
-  }, [id, isEmployer]);
-
-  const toggleSaveJob = async () => {
+  // Toggle Save Job
+  const handleToggleSaveJob = async () => {
     if (!isAuthenticated) {
       toast.info('Vui lòng đăng nhập tài khoản ứng viên để lưu việc làm.');
       navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname)}`);
       return;
     }
     if (!job || !isCandidate) return;
+
     setTogglingSave(true);
     const wasSaved = isSaved;
-    setIsSaved(!wasSaved); // Optimistic
+    setIsSaved(!wasSaved);
+
     try {
       const res = await savedJobService.toggleSave(job.id);
       if (res.data?.success && res.data.data) {
         setIsSaved(res.data.data.isSaved);
         toast.success(res.data.data.isSaved ? 'Đã lưu việc làm!' : 'Đã bỏ lưu việc làm.');
       }
-    } catch (err) {
-      setIsSaved(wasSaved); // Rollback
+    } catch {
+      setIsSaved(wasSaved);
       toast.error('Lỗi khi lưu việc làm.');
     } finally {
       setTogglingSave(false);
     }
   };
 
+  // Share Job Link
+  const handleShareJob = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Đã sao chép liên kết việc làm vào bộ nhớ tạm!');
+    } else {
+      toast.info(window.location.href);
+    }
+  };
+
+  // Open Apply Modal
   const handleOpenApplyModal = () => {
     if (!isAuthenticated) {
       toast.info('Vui lòng đăng nhập tài khoản ứng viên để nộp đơn ứng tuyển.');
@@ -230,30 +202,108 @@ export const JobDetailPage: React.FC = () => {
       toast.error('Tài khoản nhà tuyển dụng không thể nộp đơn ứng tuyển.');
       return;
     }
+
     setShowApplyModal(true);
-    fetchCvs();
+    cvsService
+      .getCvs()
+      .then((res) => {
+        if (res.success && res.data) {
+          setCvs(res.data);
+        }
+      })
+      .catch((err) => console.error(err));
+  };
+
+  // Submit Apply
+  const handleSubmitApply = async (cvId: number, coverLetter: string) => {
+    if (!job) return;
+    setSubmittingApply(true);
+    try {
+      const res = await applicationsService.submitApplication({
+        jobId: job.id,
+        candidateCvId: cvId,
+        coverLetter,
+      });
+
+      if (res.data?.success) {
+        toast.success('Ứng tuyển thành công!');
+        setHasApplied(true);
+        setShowApplyModal(false);
+      } else {
+        toast.error(res.data?.error?.message || 'Ứng tuyển thất bại.');
+      }
+    } catch (err: any) {
+      const errMsg =
+        err?.response?.data?.error?.message || err?.message || 'Lỗi khi gửi đơn ứng tuyển.';
+      toast.error(errMsg);
+      if (errMsg.includes('đã nộp đơn') || errMsg.includes('already applied')) {
+        setHasApplied(true);
+        setShowApplyModal(false);
+      }
+    } finally {
+      setSubmittingApply(false);
+    }
+  };
+
+  // Analyze Job Fit with AI
+  const handleAnalyzeJobFit = async () => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để AI phân tích độ phù hợp giữa hồ sơ và công việc.');
+      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+    if (!job) return;
+
+    setShowAiModal(true);
+    setAnalyzingAi(true);
+    try {
+      const res = await aiService.analyzeJobFit(job.id);
+      if (res.data?.success && res.data.data) {
+        setAiAnalysis(res.data.data);
+      } else {
+        toast.error(res.data?.error?.message || 'Không thể phân tích độ phù hợp.');
+      }
+    } catch {
+      toast.error('Lỗi khi kết nối với Trợ lý AI.');
+    } finally {
+      setAnalyzingAi(false);
+    }
   };
 
   if (loading) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-        Đang tải thông tin chi tiết công việc...
+      <div className={styles.jobDetailPage}>
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary, #475569)' }}>
+          Đang tải thông tin chi tiết công việc...
+        </div>
       </div>
     );
   }
 
   if (error || !job) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center' }}>
-        <p style={{ color: 'var(--color-error)', marginBottom: '16px' }}>{error || 'Công việc không tồn tại.'}</p>
-        <button onClick={() => navigate('/jobs')} className={styles.btnSecondary}>
-          Quay lại danh sách
-        </button>
+      <div className={styles.jobDetailPage}>
+        <div style={{ padding: '60px', textAlign: 'center' }}>
+          <p style={{ color: 'var(--color-error, #dc2626)', marginBottom: '16px' }}>
+            {error || 'Công việc không tồn tại.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/jobs')}
+            className={styles.mainApplyBtn}
+            style={{ width: 'auto', display: 'inline-flex', padding: '8px 20px' }}
+          >
+            Quay lại danh sách việc làm
+          </button>
+        </div>
       </div>
     );
   }
 
-  const jobPostingJsonLd = job ? {
+  const initial = job.companyName ? job.companyName.trim().charAt(0).toUpperCase() : 'C';
+
+  // Schema.org JobPosting JSON-LD
+  const jobPostingJsonLd = {
     '@context': 'https://schema.org/',
     '@type': 'JobPosting',
     title: job.title,
@@ -261,398 +311,343 @@ export const JobDetailPage: React.FC = () => {
     identifier: {
       '@type': 'PropertyValue',
       name: 'HR Portal',
-      value: job.id.toString()
+      value: job.id.toString(),
     },
     datePosted: job.createdAt,
     validThrough: job.expiredAt,
-    employmentType: job.employmentType === 'PART_TIME' ? 'PART_TIME' : (job.employmentType === 'INTERNSHIP' ? 'INTERN' : 'FULL_TIME'),
+    employmentType:
+      job.employmentType === 'PART_TIME'
+        ? 'PART_TIME'
+        : job.employmentType === 'INTERNSHIP'
+        ? 'INTERN'
+        : 'FULL_TIME',
     hiringOrganization: {
       '@type': 'Organization',
       name: job.companyName,
-      logo: job.companyLogoUrl || (typeof window !== 'undefined' ? `${window.location.origin}/hr.png` : undefined)
+      logo: job.companyLogoUrl || (typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : undefined),
     },
     jobLocation: {
       '@type': 'Place',
       address: {
         '@type': 'PostalAddress',
         addressLocality: job.city || 'Toàn quốc',
-        addressCountry: 'VN'
-      }
+        addressCountry: 'VN',
+      },
     },
-    ...(job.salaryFrom || job.salaryTo ? {
-      baseSalary: {
-        '@type': 'MonetaryAmount',
-        currency: 'VND',
-        value: {
-          '@type': 'QuantitativeValue',
-          minValue: job.salaryFrom || undefined,
-          maxValue: job.salaryTo || undefined,
-          unitText: 'MONTH'
+    ...(job.salaryFrom || job.salaryTo
+      ? {
+          baseSalary: {
+            '@type': 'MonetaryAmount',
+            currency: 'VND',
+            value: {
+              '@type': 'QuantitativeValue',
+              minValue: job.salaryFrom || undefined,
+              maxValue: job.salaryTo || undefined,
+              unitText: 'MONTH',
+            },
+          },
         }
-      }
-    } : {})
-  } : undefined;
+      : {}),
+  };
 
   return (
-    <div className={styles.jobsPage} style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className={styles.jobDetailPage}>
       <SeoHead
-        title={`${job.title} — ${job.companyName} | HR Portal`}
-        description={`Tuyển dụng ${job.title} tại ${job.companyName} (${job.city}). Mức lương: ${formatSalary(job.salaryFrom, job.salaryTo)}. Hạn nộp: ${new Date(job.expiredAt).toLocaleDateString('vi-VN')}. Nộp đơn ứng tuyển ngay trên HR Portal!`}
+        title={`${job.title} — ${job.companyName} | Tuyển dụng HR Portal`}
+        description={`Tuyển dụng ${job.title} tại ${job.companyName} (${job.city || 'Toàn quốc'}). Mức lương: ${formatSalary(job.salaryFrom, job.salaryTo)}. Hạn nộp: ${job.expiredAt ? new Date(job.expiredAt).toLocaleDateString('vi-VN') : 'Đang tuyển'}.`}
         ogType="article"
-        ogImage={job.companyLogoUrl || '/hr.png'}
+        ogImage={job.companyLogoUrl || '/logo.png'}
         jsonLd={jobPostingJsonLd}
       />
-      <div style={{ marginBottom: '12px' }}>
-        <button onClick={() => navigate(-1)} className={styles.btnSecondary}>
-          Quay lại
-        </button>
-      </div>
 
-      <div className={styles.jobDetailColumn}>
-        <div className={styles.detailHeader}>
-          <div className={styles.companyBadge} style={{ marginBottom: '12px' }}>
-            {job.companyLogoUrl ? (
-              <img src={job.companyLogoUrl} alt="Logo" className={styles.companyLogo} style={{ width: '48px', height: '48px' }} />
-            ) : (
-              <div className={styles.companyLogo} style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-subtle)' }}>No Logo</div>
-            )}
-            <div>
-              <span style={{ fontSize: 'var(--font-size-md)', fontWeight: 700, color: 'var(--color-text-primary)' }}>{job.companyName}</span>
-              <p style={{ margin: 0, fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>Nhà tuyển dụng chuyên nghiệp</p>
-            </div>
-          </div>
+      {/* Breadcrumb Navigation */}
+      <nav className={styles.breadcrumbs} aria-label="Đường dẫn trang">
+        <Link to="/">Trang chủ</Link>
+        <ChevronRight size={13} className={styles.separator} />
+        <Link to="/jobs">Việc làm</Link>
+        {job.category && (
+          <>
+            <ChevronRight size={13} className={styles.separator} />
+            <Link to={`/jobs?industry=${encodeURIComponent(job.categoryCode || job.category)}`}>
+              {job.category}
+            </Link>
+          </>
+        )}
+        <ChevronRight size={13} className={styles.separator} />
+        <span className={styles.current}>{job.title}</span>
+      </nav>
 
-          <h1 className={styles.detailHeaderTitle} style={{ fontSize: 'var(--font-size-2xl)' }}>{job.title}</h1>
+      {/* Main Grid */}
+      <div className={styles.detailGrid}>
+        {/* Left Column: Job Details */}
+        <div className={styles.mainColumn}>
+          {/* Header Card */}
+          <div className={styles.headerCard}>
+            <div className={styles.companyMetaRow}>
+              <div className={styles.logoWrapper}>
+                {job.companyLogoUrl && !imgError ? (
+                  <img
+                    src={job.companyLogoUrl}
+                    alt={job.companyName}
+                    className={styles.logoImg}
+                    onError={() => setImgError(true)}
+                  />
+                ) : (
+                  <span className={styles.logoInitial}>{initial}</span>
+                )}
+              </div>
+              <div className={styles.companyInfo}>
+                {job.companyId ? (
+                  <Link to={`/companies/${job.companyId}`} className={styles.companyLink}>
+                    {job.companyName}
+                  </Link>
+                ) : (
+                  <span className={styles.companyLink}>{job.companyName}</span>
+                )}
+                <span className={styles.verifiedBadge}>
+                  <CheckCircle size={11} /> Đã xác thực doanh nghiệp
+                </span>
+              </div>
+            </div>
 
-          <div className={styles.detailHeaderMeta} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', margin: '16px 0' }}>
-            <div className={styles.metaItem}>
-              <MapPin size={16} /> <strong>Địa điểm:</strong> {job.city}
-            </div>
-            <div className={styles.metaItem}>
-              <DollarSign size={16} /> <strong>Mức lương:</strong>{' '}
-              <span className={styles.salaryText}>{formatSalary(job.salaryFrom, job.salaryTo)}</span>
-            </div>
-            <div className={styles.metaItem}>
-              <Calendar size={16} /> <strong>Ngày đăng:</strong>{' '}
-              {new Date(job.createdAt).toLocaleDateString('vi-VN')}
-            </div>
-            <div className={styles.metaItem}>
-              <Clock size={16} /> <strong>Hạn nộp:</strong>{' '}
-              {new Date(job.expiredAt).toLocaleDateString('vi-VN')}
-            </div>
-          </div>
+            <h1 className={styles.jobTitle}>{job.title}</h1>
 
-          <div style={{ marginTop: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button 
-              type="button"
-              onClick={handleAnalyzeJobFit} 
-              className={styles.btnSecondary} 
-              style={{ 
-                flex: '1 1 180px', 
-                justifyContent: 'center', 
-                padding: '12px',
-                background: 'linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)',
-                border: '1px solid #c7d2fe',
-                color: '#4338ca',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center'
-              }}
-            >
-              Phân tích độ phù hợp hồ sơ
-            </button>
-            {!isEmployer && (
+            {/* 4 Summary Blocks */}
+            <div className={styles.summaryGrid}>
+              <div className={styles.summaryBlock}>
+                <DollarSign size={18} className={styles.blockIcon} />
+                <div className={styles.blockText}>
+                  <span className={styles.blockLabel}>Mức lương</span>
+                  <span className={`${styles.blockValue} ${styles.salary}`}>
+                    {formatSalary(job.salaryFrom, job.salaryTo)}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.summaryBlock}>
+                <MapPin size={18} className={styles.blockIcon} />
+                <div className={styles.blockText}>
+                  <span className={styles.blockLabel}>Địa điểm</span>
+                  <span className={styles.blockValue} title={job.city || 'Toàn quốc'}>
+                    {job.city || 'Toàn quốc'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.summaryBlock}>
+                <Briefcase size={18} className={styles.blockIcon} />
+                <div className={styles.blockText}>
+                  <span className={styles.blockLabel}>Kinh nghiệm</span>
+                  <span className={styles.blockValue}>
+                    {job.experienceLevel || 'Không yêu cầu'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.summaryBlock}>
+                <Clock size={18} className={styles.blockIcon} />
+                <div className={styles.blockText}>
+                  <span className={styles.blockLabel}>Hạn nộp hồ sơ</span>
+                  <span className={styles.blockValue}>
+                    {getDaysRemainingText(job.expiredAt)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Fit Banner */}
+            <div className={styles.aiFitBanner}>
+              <div className={styles.aiFitText}>
+                <Sparkles size={16} className={styles.aiFitIcon} />
+                <span>
+                  Đánh giá mức độ phù hợp giữa CV của bạn và công việc này bằng Trợ lý AI
+                </span>
+              </div>
               <button
                 type="button"
-                onClick={toggleSaveJob}
-                disabled={togglingSave}
-                className={styles.btnSecondary}
-                style={{
-                  flex: '0 0 auto',
-                  justifyContent: 'center',
-                  padding: '12px 20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontWeight: 600,
-                  color: isSaved ? '#ef4444' : undefined,
-                  borderColor: isSaved ? '#fecaca' : undefined,
-                  background: isSaved ? '#fef2f2' : undefined,
-                  transition: 'all 0.2s ease',
-                }}
+                className={styles.aiFitBtn}
+                onClick={handleAnalyzeJobFit}
               >
-                {isSaved ? 'Đã lưu' : 'Lưu việc làm'}
+                Phân tích CV ngay
+              </button>
+            </div>
+          </div>
+
+          {/* Prose Content Card */}
+          <div className={styles.proseCard}>
+            {job.description && (
+              <section className={styles.contentSection}>
+                <h2>
+                  <Briefcase size={16} /> Mô tả công việc
+                </h2>
+                <div className={styles.sectionBody}>{job.description}</div>
+              </section>
+            )}
+
+            {job.requirements && (
+              <section className={styles.contentSection}>
+                <h2>
+                  <CheckCircle size={16} /> Yêu cầu ứng viên
+                </h2>
+                <div className={styles.sectionBody}>{job.requirements}</div>
+              </section>
+            )}
+
+            {job.benefits && (
+              <section className={styles.contentSection}>
+                <h2>
+                  <DollarSign size={16} /> Quyền lợi phúc lợi
+                </h2>
+                <div className={styles.sectionBody}>{job.benefits}</div>
+              </section>
+            )}
+
+            <section className={styles.contentSection}>
+              <h2>
+                <MapPin size={16} /> Địa điểm & Thời gian làm việc
+              </h2>
+              <div className={styles.sectionBody}>
+                <p>• Địa điểm: {job.city || 'Toàn quốc'}</p>
+                <p>• Chế độ làm việc: {job.workMode || 'Tại văn phòng'}</p>
+                <p>• Hình thức làm việc: {job.employmentType || 'Toàn thời gian'}</p>
+                <p>
+                  • Ngày đăng: {new Date(job.createdAt).toLocaleDateString('vi-VN')} — Hạn nộp:{' '}
+                  {job.expiredAt ? new Date(job.expiredAt).toLocaleDateString('vi-VN') : 'Đang tuyển'}
+                </p>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        {/* Right Sticky Sidebar */}
+        <aside className={styles.sidebarColumn} aria-label="Thao tác ứng tuyển">
+          {/* Action Card */}
+          <div className={styles.actionCard}>
+            {hasApplied ? (
+              <button type="button" disabled className={styles.appliedStateBtn}>
+                <CheckCircle size={16} /> Đã nộp hồ sơ ứng tuyển
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.mainApplyBtn}
+                onClick={handleOpenApplyModal}
+              >
+                Ứng tuyển ngay
               </button>
             )}
-            {!isEmployer && (
-              hasApplied ? (
-                <button 
-                  disabled
-                  className={styles.btnSecondary} 
-                  style={{
-                    flex: '1 1 180px',
-                    justifyContent: 'center',
-                    padding: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: '#ecfdf5',
-                    color: '#059669',
-                    borderColor: '#a7f3d0',
-                    fontWeight: 600,
-                    cursor: 'not-allowed',
-                    opacity: 0.9,
-                  }}
-                >
-                  Đã ứng tuyển vị trí này
-                </button>
-              ) : (
-                <button 
+
+            <div className={styles.secondaryActionRow}>
+              {!isEmployer && (
+                <button
                   type="button"
-                  onClick={handleOpenApplyModal} 
-                  className={styles.btnPrimary} 
-                  style={{ flex: '1 1 180px', justifyContent: 'center', padding: '12px' }}
+                  className={`${styles.secondaryActionBtn} ${isSaved ? styles.saved : ''}`}
+                  onClick={handleToggleSaveJob}
+                  disabled={togglingSave}
                 >
-                  Nộp đơn ứng tuyển ngay
+                  <Bookmark size={14} fill={isSaved ? 'currentColor' : 'none'} />
+                  <span>{isSaved ? 'Đã lưu' : 'Lưu tin'}</span>
                 </button>
-              )
-            )}
-            {isEmployer && (
-              <div style={{
-                padding: '12px 20px',
-                backgroundColor: 'var(--color-bg-subtle, #f1f5f9)',
-                borderRadius: 'var(--radius-lg, 8px)',
-                color: 'var(--color-text-secondary, #475569)',
-                fontSize: '0.9rem',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                Chế độ xem trước tin tuyển dụng
-              </div>
-            )}
-          </div>
-        </div>
+              )}
 
-        <div className={styles.detailBody}>
-          <div className={styles.detailSection}>
-            <h3>Mô tả công việc</h3>
-            <p>{job.description}</p>
-          </div>
-
-          <div className={styles.detailSection}>
-            <h3>Yêu cầu ứng viên</h3>
-            <p>{job.requirements}</p>
-          </div>
-
-          {job.benefits && (
-            <div className={styles.detailSection}>
-              <h3>Quyền lợi phúc lợi</h3>
-              <p>{job.benefits}</p>
+              <button
+                type="button"
+                className={styles.secondaryActionBtn}
+                onClick={handleShareJob}
+                style={{ gridColumn: isEmployer ? 'span 2' : undefined }}
+              >
+                <Share2 size={14} />
+                <span>Chia sẻ tin</span>
+              </button>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Apply Modal */}
-      {showApplyModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent} style={{ padding: '24px', gap: '16px' }}>
-            <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700 }}>Ứng tuyển: {job.title}</h2>
-            <div>
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', marginBottom: '6px', fontWeight: 600 }}>Chọn hồ sơ CV</label>
-              {cvs.length === 0 ? (
-                <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>Bạn chưa có CV nào trong hệ thống. Vui lòng tạo CV trước.</p>
-              ) : (
-                <select value={selectedCvId} onChange={(e) => setSelectedCvId(Number(e.target.value))} style={{ width: '100%', padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}>
-                  {cvs.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.cvTitle} {c.isMain ? '(CV chính)' : ''}
-                    </option>
-                  ))}
-                </select>
+          {/* Mini Company Card */}
+          <div className={styles.miniCompanyCard}>
+            <h3 className={styles.cardTitle}>Thông tin doanh nghiệp</h3>
+            <div className={styles.companyBrief}>
+              <div className={styles.miniLogo}>
+                {job.companyLogoUrl && !imgError ? (
+                  <img src={job.companyLogoUrl} alt={job.companyName} />
+                ) : (
+                  <span>{initial}</span>
+                )}
+              </div>
+              <div className={styles.miniInfo}>
+                {job.companyId ? (
+                  <Link to={`/companies/${job.companyId}`} className={styles.miniName}>
+                    {job.companyName}
+                  </Link>
+                ) : (
+                  <span className={styles.miniName}>{job.companyName}</span>
+                )}
+                <span className={styles.miniIndustry}>
+                  {job.category || 'Doanh nghiệp tuyển dụng'} • {job.city || 'Việt Nam'}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.companyLinkRow}>
+              {job.companyId && (
+                <>
+                  <Link to={`/companies/${job.companyId}`}>
+                    <span>Xem hồ sơ công ty</span>
+                    <ExternalLink size={12} />
+                  </Link>
+                  <Link to={`/companies/${job.companyId}/careers`}>
+                    <span>Xem cổng tuyển dụng (Careers)</span>
+                    <ExternalLink size={12} />
+                  </Link>
+                </>
               )}
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: 'var(--font-size-sm)', marginBottom: '6px', fontWeight: 600 }}>Thư giới thiệu (Cover Letter)</label>
-              <textarea
-                rows={4}
-                value={coverLetter}
-                onChange={(e) => setCoverLetter(e.target.value)}
-                placeholder="Giới thiệu bản thân và lý do bạn phù hợp với công việc này..."
-                style={{ width: '100%', padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', fontSize: 'var(--font-size-sm)' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' }}>
-              <button onClick={() => setShowApplyModal(false)} className={styles.btnSecondary}>Hủy</button>
-              <button onClick={handleApply} disabled={submittingApply || !selectedCvId} className={styles.btnPrimary}>
-                {submittingApply ? 'Đang gửi...' : 'Nộp hồ sơ'}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
 
-      {/* AI Job Fit Analysis Modal */}
-      {showAiModal && (
-        <div className={styles.modalOverlay} style={{ backdropFilter: 'blur(4px)', background: 'rgba(15, 23, 42, 0.65)' }}>
-          <div className={styles.modalContent} style={{ maxWidth: '680px', width: '92%', maxHeight: '88vh', overflowY: 'auto', padding: '24px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <Sparkles size={20} />
-                </div>
-                <div>
-                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: '#1e293b' }}>Đánh Giá Độ Phù Hợp AI</h2>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Phân tích hồ sơ CV đối chiếu với vị trí: {job.title}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowAiModal(false)} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '8px', color: '#64748b' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {analyzingAi ? (
-              <div style={{ textAlign: 'center', padding: '48px 16px' }}>
-                <div style={{ width: '48px', height: '48px', border: '4px solid #e0e7ff', borderTopColor: '#4f46e5', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px auto' }} />
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>AI Đang Phân Tích Kỹ Năng & Kinh Nghiệm...</h3>
-                <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>Hệ thống đang quét các từ khóa chuyên môn, yêu cầu năng lực và tính toán độ tương thích chuẩn xác nhất.</p>
-                <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
-              </div>
-            ) : aiAnalysis ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Score Banner */}
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  padding: '16px 20px', 
-                  background: aiAnalysis.matchScore >= 80 ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)' : aiAnalysis.matchScore >= 60 ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' : 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-                  borderRadius: '12px',
-                  border: `1px solid ${aiAnalysis.matchScore >= 80 ? '#a7f3d0' : aiAnalysis.matchScore >= 60 ? '#bfdbfe' : '#fde68a'}`
-                }}>
-                  <div>
-                    <span style={{ 
-                      display: 'inline-block',
-                      padding: '4px 10px', 
-                      borderRadius: '999px', 
-                      fontSize: '0.75rem', 
-                      fontWeight: 700, 
-                      textTransform: 'uppercase',
-                      backgroundColor: aiAnalysis.matchScore >= 80 ? '#059669' : aiAnalysis.matchScore >= 60 ? '#2563eb' : '#d97706',
-                      color: '#ffffff',
-                      marginBottom: '6px'
-                    }}>
-                      {aiAnalysis.matchLevel}
-                    </span>
-                    <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>
-                      Độ Phù Hợp Tổng Quan: {aiAnalysis.matchScore}%
-                    </h3>
-                  </div>
-                  <div style={{ 
-                    width: '64px', 
-                    height: '64px', 
-                    borderRadius: '50%', 
-                    background: '#ffffff', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08)',
-                    fontWeight: 800,
-                    fontSize: '1.25rem',
-                    color: aiAnalysis.matchScore >= 80 ? '#059669' : aiAnalysis.matchScore >= 60 ? '#2563eb' : '#d97706'
-                  }}>
-                    {aiAnalysis.matchScore}%
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '10px', borderLeft: '4px solid #6366f1' }}>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: 1.6 }}>
-                    <strong>Nhận định:</strong> {aiAnalysis.summary}
-                  </p>
-                </div>
-
-                {/* Strengths & Missing Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                  {/* Strengths */}
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#059669' }}>
-                      <CheckCircle size={18} />
-                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Điểm mạnh nổi bật</h4>
-                    </div>
-                    {aiAnalysis.strengths && aiAnalysis.strengths.length > 0 ? (
-                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#475569', lineHeight: 1.6 }}>
-                        {aiAnalysis.strengths.map((str, idx) => (
-                          <li key={idx} style={{ marginBottom: '6px' }}>{str}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>Chưa phát hiện điểm mạnh cụ thể từ hồ sơ.</p>
-                    )}
-                  </div>
-
-                  {/* Missing skills */}
-                  <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#d97706' }}>
-                      <AlertCircle size={18} />
-                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Kỹ năng nên bổ sung</h4>
-                    </div>
-                    {aiAnalysis.missingSkills && aiAnalysis.missingSkills.length > 0 ? (
-                      <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#475569', lineHeight: 1.6 }}>
-                        {aiAnalysis.missingSkills.map((sk, idx) => (
-                          <li key={idx} style={{ marginBottom: '6px' }}>{sk}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#059669' }}>Hồ sơ đáp ứng trọn vẹn yêu cầu công việc!</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Recommendations */}
-                {aiAnalysis.recommendations && aiAnalysis.recommendations.length > 0 && (
-                  <div style={{ background: '#fdf4ff', border: '1px solid #f0abfc', borderRadius: '12px', padding: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: '#a21caf' }}>
-                      <Lightbulb size={18} />
-                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#1e293b' }}>Lời khuyên từ AI để tăng cơ hội trúng tuyển</h4>
-                    </div>
-                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85rem', color: '#475569', lineHeight: 1.6 }}>
-                      {aiAnalysis.recommendations.map((rec, idx) => (
-                        <li key={idx} style={{ marginBottom: '4px' }}>{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                  <button 
-                    onClick={() => setShowAiModal(false)} 
-                    className={styles.btnSecondary}
-                    style={{ padding: '10px 20px' }}
+          {/* Similar Jobs Card */}
+          {similarJobs.length > 0 && (
+            <div className={styles.similarJobsCard}>
+              <h3 className={styles.cardTitle}>Việc làm tương tự</h3>
+              <div className={styles.similarList}>
+                {similarJobs.map((simJob) => (
+                  <Link
+                    key={simJob.id}
+                    to={`/jobs/${simJob.id}`}
+                    className={styles.similarItem}
                   >
-                    Đóng
-                  </button>
-                  {isCandidate && (
-                    <button 
-                      onClick={() => {
-                        setShowAiModal(false);
-                        setShowApplyModal(true);
-                        fetchCvs();
-                      }} 
-                      className={styles.btnPrimary}
-                      style={{ padding: '10px 24px' }}
-                    >
-                      Ứng tuyển ngay vị trí này
-                    </button>
-                  )}
-                </div>
+                    <h4 className={styles.similarJobTitle}>{simJob.title}</h4>
+                    <p className={styles.similarCompany}>
+                      {simJob.companyName} • {simJob.city}
+                    </p>
+                    <span className={styles.similarSalary}>
+                      {formatSalary(simJob.salaryFrom, simJob.salaryTo)}
+                    </span>
+                  </Link>
+                ))}
               </div>
-            ) : null}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {/* Modals */}
+      <ApplyJobModal
+        isOpen={showApplyModal}
+        onClose={() => setShowApplyModal(false)}
+        job={job}
+        cvs={cvs}
+        onSubmit={handleSubmitApply}
+        submitting={submittingApply}
+      />
+
+      <AiJobFitModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        loading={analyzingAi}
+        analysis={aiAnalysis}
+        jobTitle={job.title}
+      />
     </div>
   );
 };
+
+export default JobDetailPage;

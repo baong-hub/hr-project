@@ -63,6 +63,14 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
         var workMode = Enum.TryParse<WorkMode>(request.WorkMode, true, out var wm) ? wm : WorkMode.ONSITE;
         var salaryType = Enum.TryParse<SalaryType>(request.SalaryType, true, out var st) ? st : SalaryType.NEGOTIABLE;
 
+        var provCode = !string.IsNullOrWhiteSpace(request.ProvinceCode) 
+            ? request.ProvinceCode 
+            : HR.Domain.Reference.AdministrativeReference.MatchProvince(request.City);
+
+        var catCode = !string.IsNullOrWhiteSpace(request.CategoryCode) 
+            ? request.CategoryCode 
+            : HR.Domain.Reference.AdministrativeReference.MatchCategory(request.Category);
+
         var job = new Job
         {
             CompanyId = employer.CompanyId.Value,
@@ -70,9 +78,11 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
             Title = request.Title,
             Department = request.Department,
             Category = request.Category ?? string.Empty,
+            CategoryCode = catCode,
             EmploymentType = request.EmploymentType ?? "Full-time",
             Country = request.Country ?? "VIETNAM",
             City = request.City,
+            ProvinceCode = provCode,
             District = request.District,
             Office = request.Office,
             WorkMode = workMode,
@@ -135,7 +145,9 @@ public class CreateJobCommandHandler : IRequestHandler<CreateJobCommand, JobDto>
             job.Education,
             job.ProbationDuration,
             job.Openings,
-            job.HiredCount
+            job.HiredCount,
+            job.ProvinceCode,
+            job.CategoryCode
         );
     }
 }

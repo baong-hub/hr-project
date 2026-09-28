@@ -1,0 +1,552 @@
+.jobDetailPage {
+  width: 100%;
+  max-width: var(--page-max-width, 1280px);
+  margin: 0 auto;
+  padding: var(--space-4, 16px) var(--space-4, 16px) var(--space-10, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-xs, 12px);
+  color: var(--color-text-secondary, #64748b);
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 4px 0;
+
+  a {
+    color: var(--color-text-secondary, #64748b);
+    text-decoration: none;
+    transition: color var(--transition-fast, 0.15s ease);
+
+    &:hover {
+      color: var(--color-brand-primary, #2563eb);
+    }
+  }
+
+  .separator {
+    color: var(--color-text-muted, #94a3b8);
+  }
+
+  .current {
+    color: var(--color-text-primary, #0f172a);
+    font-weight: 600;
+  }
+}
+
+/* Main Layout Grid */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-6, 24px);
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left / Main Column */
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 20px);
+  min-width: 0;
+}
+
+/* Header Card */
+.headerCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-5, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+.companyMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  .logoWrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-bg-subtle, #f1f5f9);
+    border: 1px solid var(--color-border-subtle, #e2e8f0);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .logoImg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .logoInitial {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-brand-primary, #2563eb);
+    }
+  }
+
+  .companyInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+
+    .companyLink {
+      font-size: var(--font-size-base, 15px);
+      font-weight: 700;
+      color: var(--color-text-primary, #0f172a);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover {
+        color: var(--color-brand-primary, #2563eb);
+        text-decoration: underline;
+      }
+    }
+
+    .verifiedBadge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-success, #059669);
+      background: var(--color-success-subtle, #ecfdf5);
+      border: 1px solid var(--color-success-border, #a7f3d0);
+      padding: 1px 6px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      width: fit-content;
+    }
+  }
+}
+
+.jobTitle {
+  font-size: var(--font-size-2xl, 24px);
+  font-weight: 800;
+  color: var(--color-text-primary, #0f172a);
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* 4 Summary Blocks */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  background: var(--color-bg-subtle, #f8fafc);
+  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  border-radius: var(--radius-lg, 10px);
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summaryBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  .blockIcon {
+    color: var(--color-brand-primary, #2563eb);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .blockText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .blockLabel {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted, #64748b);
+      font-weight: 600;
+    }
+
+    .blockValue {
+      font-size: var(--font-size-sm, 13px);
+      font-weight: 700;
+      color: var(--color-text-primary, #0f172a);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      &.salary {
+        color: var(--color-salary, #8C6B28);
+        font-variant-numeric: tabular-nums;
+      }
+    }
+  }
+}
+
+/* AI Fit Banner */
+.aiFitBanner {
+  background: var(--color-brand-subtle, #eff6ff);
+  border: 1px solid var(--color-brand-border, #bfdbfe);
+  border-radius: var(--radius-lg, 10px);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .aiFitText {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-sm, 13px);
+    color: var(--color-text-primary, #0f172a);
+
+    .aiFitIcon {
+      color: var(--color-brand-primary, #2563eb);
+    }
+  }
+
+  .aiFitBtn {
+    padding: 6px 14px;
+    background: var(--color-brand-primary, #2563eb);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-md, 6px);
+    font-size: var(--font-size-xs, 12px);
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &:hover {
+      background: var(--color-brand-hover, #1d4ed8);
+    }
+  }
+}
+
+/* Prose Content Card */
+.proseCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-5, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 24px);
+}
+
+.contentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h2 {
+    font-size: var(--font-size-md, 16px);
+    font-weight: 700;
+    color: var(--color-text-primary, #0f172a);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  }
+
+  .sectionBody {
+    font-size: var(--font-size-sm, 14px);
+    line-height: 1.7;
+    color: var(--color-text-secondary, #334155);
+    white-space: pre-line;
+  }
+}
+
+/* Sticky Right Column */
+.sidebarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+  position: sticky;
+  top: 80px;
+}
+
+.actionCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-5, 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mainApplyBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-brand-primary, #2563eb);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-base, 15px);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    background: var(--color-brand-hover, #1d4ed8);
+  }
+}
+
+.appliedStateBtn {
+  width: 100%;
+  padding: 12px;
+  background: var(--color-success-subtle, #ecfdf5);
+  color: var(--color-success, #059669);
+  border: 1px solid var(--color-success-border, #a7f3d0);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--font-size-base, 15px);
+  font-weight: 700;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.secondaryActionRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.secondaryActionBtn {
+  padding: 8px 12px;
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-default, #cbd5e1);
+  border-radius: var(--radius-md, 6px);
+  font-size: var(--font-size-xs, 12px);
+  font-weight: 600;
+  color: var(--color-text-secondary, #475569);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    background: var(--color-bg-hover, #f1f5f9);
+    color: var(--color-text-primary, #0f172a);
+  }
+
+  &.saved {
+    color: var(--color-error, #dc2626);
+    border-color: var(--color-error-border, #fca5a5);
+    background: var(--color-error-subtle, #fef2f2);
+  }
+}
+
+/* Mini Company Card */
+.miniCompanyCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-4, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .cardTitle {
+    font-size: var(--font-size-xs, 12px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--color-text-muted, #64748b);
+    margin: 0;
+  }
+
+  .companyBrief {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .miniLogo {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md, 6px);
+      background: var(--color-bg-subtle, #f1f5f9);
+      border: 1px solid var(--color-border-subtle, #e2e8f0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--color-brand-primary, #2563eb);
+      overflow: hidden;
+      flex-shrink: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .miniInfo {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+
+      .miniName {
+        font-size: var(--font-size-sm, 14px);
+        font-weight: 700;
+        color: var(--color-text-primary, #0f172a);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--color-brand-primary, #2563eb);
+        }
+      }
+
+      .miniIndustry {
+        font-size: 11px;
+        color: var(--color-text-secondary, #64748b);
+      }
+    }
+  }
+
+  .companyLinkRow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+
+    a {
+      font-size: var(--font-size-xs, 12px);
+      font-weight: 600;
+      color: var(--color-brand-primary, #2563eb);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+/* Similar Jobs Card */
+.similarJobsCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-4, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .cardTitle {
+    font-size: var(--font-size-xs, 12px);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--color-text-muted, #64748b);
+    margin: 0;
+  }
+
+  .similarList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .similarItem {
+    padding: 8px 10px;
+    background: var(--color-bg-subtle, #f8fafc);
+    border: 1px solid var(--color-border-subtle, #f1f5f9);
+    border-radius: var(--radius-md, 8px);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    transition: all var(--transition-fast, 0.15s ease);
+
+    &:hover {
+      background: var(--color-brand-subtle, #eff6ff);
+      border-color: var(--color-brand-border, #bfdbfe);
+    }
+
+    .similarJobTitle {
+      font-size: var(--font-size-xs, 13px);
+      font-weight: 700;
+      color: var(--color-text-primary, #0f172a);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .similarCompany {
+      font-size: 11px;
+      color: var(--color-text-secondary, #64748b);
+      margin: 0;
+    }
+
+    .similarSalary {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-salary, #8C6B28);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+/* Print Stylesheet */
+@media print {
+  .breadcrumbs,
+  .sidebarColumn,
+  .aiFitBanner,
+  .secondaryActionRow,
+  .mainApplyBtn {
+    display: none !important;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .headerCard,
+  .proseCard {
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+}

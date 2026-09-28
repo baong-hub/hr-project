@@ -1,7 +1,7 @@
 :root {
   /* === Colors (Gold-sand theme matching CRM Getfly) === */
   --color-brand-primary:        #c9a961;   /* Gold sand */
-  --color-brand-primary-dark:   #a8893f;   /* Dark Gold */
+  --color-brand-primary-dark:   #8c6b28;   /* Deep Gold (WCAG AA >= 4.8:1 on light paper) */
   --color-brand-primary-soft:   #f9f6ef;   /* Soft Gold */
   --color-brand-secondary:      #2563EB;   /* Blue */
   --color-brand-secondary-hover:#1D4ED8;
@@ -114,6 +114,21 @@
   --space-12:      var(--spacing-3xl); /* 48px */
   --space-16:      4rem;               /* 64px */
 
+  /* === Job Board Public Tokens === */
+  --color-page-public:         #F4F5F7;   /* Clean neutral cold background for public job board */
+  --color-salary:              #8C6B28;   /* Deep gold for salary figures (WCAG AA) */
+  --footer-bg:                 #1E2130;   /* FIXED navy background in both light and dark mode */
+  --header-topbar-bg:          #1E2130;   /* Header top bar navy */
+  --header-nav-bg:             #FFFFFF;
+
+  /* === Public Theme Tokens (Legacy Fallbacks) === */
+  --color-paper:               #F4F5F7;
+  --color-ink:                 #1E2130;
+  --color-hairline:            #E5E7EB;
+  --font-family-display:       "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --container-public:          1200px;
+  --container-prose:           720px;
+
   /* === Transitions === */
   --transition-fast:   0.15s ease;
   --transition-normal: 0.25s ease;
@@ -121,12 +136,12 @@
   /* === Font Weights === */
   --font-weight-normal:   400;
   --font-weight-medium:   500;
-  --font-weight-semibold: 500;
-  --font-weight-bold:     600;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
 
   /* === Brand Color Aliases === */
   --color-brand-gold:      var(--color-brand-primary);      /* #c9a961 */
-  --color-brand-gold-dark: var(--color-brand-primary-dark); /* #a8893f */
+  --color-brand-gold-dark: var(--color-brand-primary-dark); /* #8c6b28 */
   --color-brand-gold-soft: var(--color-brand-primary-soft); /* #f9f6ef */
 }
 
@@ -181,5 +196,16 @@ body.dark-mode {
   --shadow-md:     0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-lg:     0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
   --shadow-xl:     0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+
+  /* === Public Theme Dark Tokens === */
+  --color-page-public:         #0f172a;
+  --color-salary:              #D4B064;   /* Accessible lighter gold for dark mode */
+  --footer-bg:                 #1E2130;   /* FIXED navy background for footer even in dark mode */
+  --header-topbar-bg:          #1E2130;
+  --header-nav-bg:             #1e293b;
+  --color-paper:               #0f172a;
+  --color-ink:                 #F9FAFB;
+  --color-hairline:            #374151;
+  --color-brand-primary-dark:  #dfc789;   /* High contrast Gold for dark mode */
 }
 

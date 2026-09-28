@@ -1,128 +1,120 @@
 import React from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { SeoHead } from '../../shared/components/SeoHead';
+import { COMPANY_INFO } from '../../config/company-info';
+import styles from './ProsePage.module.scss';
 
 export const PrivacyPolicyPage: React.FC = () => {
+  const tableOfContents = [
+    { id: 'muc-1', title: '1. Loại Dữ Liệu Thu Thập' },
+    { id: 'muc-2', title: '2. Mục Đích Xử Lý Dữ Liệu' },
+    { id: 'muc-3', title: '3. Nguyên Tắc Chia Sẻ Dữ Liệu' },
+    { id: 'muc-4', title: '4. Quyền Của Chủ Thể Dữ Liệu' },
+    { id: 'muc-5', title: '5. Thông Tin Đơn Vị Quản Lý' }
+  ];
+
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.prosePage}>
+      <SeoHead
+        title="Chính Sách Bảo Mật Dữ Liệu Cá Nhân | HR Portal"
+        description="Chính sách bảo mật và bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP của HR Portal. Quyền truy cập, chỉnh sửa, xuất và ẩn danh dữ liệu cá nhân."
+        ogType="article"
+      />
 
-      <main style={{ flex: 1, maxWidth: '900px', margin: '40px auto', padding: '0 20px', width: '100%' }}>
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '12px',
-          padding: '40px',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '10px', color: '#16a34a' }}>
-              <ShieldCheck size={28} />
-            </div>
-            <div>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Chính Sách Bảo Mật & Bảo Vệ Dữ Liệu Cá Nhân</h1>
-              <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600 }}>Tuân thủ Nghị định số 13/2023/NĐ-CP của Chính phủ Việt Nam</span>
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: '#eff6ff',
-            border: '1px solid #bfdbfe',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '28px',
-            color: '#1e40af',
-            fontSize: '0.9rem',
-            lineHeight: 1.6
-          }}>
-            <p style={{ margin: 0 }}>
-              <strong>Cam kết pháp lý:</strong> HR Recruitment Portal cam kết bảo vệ tuyệt đối quyền riêng tư và dữ liệu cá nhân của mọi Ứng viên và Đại diện Doanh nghiệp theo đúng các quy định tại Nghị định số 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân (có hiệu lực từ ngày 01/07/2023).
-            </p>
-          </div>
-
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              1. Loại Dữ Liệu Cá Nhân Thu Thập
-            </h2>
-            <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.7 }}>
-              Khi người dùng đăng ký và sử dụng dịch vụ, chúng tôi thu thập các thông tin sau:
-            </p>
-            <ul style={{ paddingLeft: '20px', color: '#475569', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <li><strong>Dữ liệu định danh:</strong> Họ và tên, giới tính, ngày tháng năm sinh, ảnh chân dung (Avatar).</li>
-              <li><strong>Dữ liệu liên lạc:</strong> Địa chỉ email, số điện thoại di động, địa chỉ cư trú/làm việc.</li>
-              <li><strong>Dữ liệu hồ sơ nghề nghiệp:</strong> Lịch sử học vấn, bằng cấp, chứng chỉ chuyên môn, lịch sử kinh nghiệm làm việc, kỹ năng, mức lương mong muốn và tệp đính kèm CV (PDF).</li>
-              <li><strong>Dữ liệu kỹ thuật & Nhật ký:</strong> Địa chỉ IP, thời điểm đăng nhập, loại trình duyệt (nhằm phát hiện truy cập bất thường và bảo mật tài khoản).</li>
+      <div className={styles.readerLayout}>
+        {/* Fixed Table of Contents on Desktop */}
+        <aside className={styles.tocSidebar} aria-label="Mục lục bài viết">
+          <div className={styles.tocTitle}>Mục Lục</div>
+          <nav>
+            <ul className={styles.tocList}>
+              {tableOfContents.map((item) => (
+                <li key={item.id}>
+                  <a href={`#${item.id}`} className={styles.tocLink}>
+                    {item.title}
+                  </a>
+                </li>
+              ))}
             </ul>
-          </section>
+          </nav>
+        </aside>
 
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              2. Mục Đích Xử Lý Dữ Liệu
-            </h2>
-            <ul style={{ paddingLeft: '20px', color: '#475569', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <li>Tạo lập tài khoản người dùng và xác thực danh tính qua email/Google.</li>
-              <li>Chuyển tiếp hồ sơ ứng tuyển của bạn tới Nhà tuyển dụng mà bạn đã chủ động nộp đơn.</li>
-              <li>Sử dụng trí tuệ nhân tạo (AI Matching) gợi ý việc làm phù hợp dựa trên kỹ năng của bạn.</li>
-              <li>Gửi thông báo cập nhật trạng thái hồ sơ, thư mời phỏng vấn và nhắc nhở lịch hẹn.</li>
-              <li>Ngăn chặn các hành vi giả mạo, tấn công mạng và lừa đảo tuyển dụng.</li>
-            </ul>
-          </section>
-
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              3. Chia Sẻ Dữ Liệu Cho Bên Thứ Ba
-            </h2>
-            <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.7 }}>
-              Chúng tôi <strong>KHÔNG</strong> bán, trao đổi hoặc cho thuê dữ liệu cá nhân của bạn cho các mục đích tiếp thị thương mại không liên quan. Dữ liệu chỉ được chia sẻ trong các trường hợp:
-            </p>
-            <ul style={{ paddingLeft: '20px', color: '#475569', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <li>Chia sẻ cho Doanh nghiệp tuyển dụng khi bạn bấm nút "Nộp hồ sơ ứng tuyển" hoặc khi bạn bật chế độ "Cho phép Nhà tuyển dụng tìm kiếm hồ sơ".</li>
-              <li>Chia sẻ cho cổng thanh toán trực tuyến nhằm xác minh và xử lý giao dịch mua gói dịch vụ.</li>
-              <li>Cung cấp cho cơ quan nhà nước có thẩm quyền tại Việt Nam khi có yêu cầu bằng văn bản theo đúng quy định của pháp luật.</li>
-            </ul>
-          </section>
-
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              4. Quyền của Chủ Thể Dữ Liệu (Theo Điều 9 Nghị định 13)
-            </h2>
-            <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.7 }}>
-              Bạn có đầy đủ các quyền hợp pháp đối với dữ liệu cá nhân của mình, bao gồm:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginTop: '12px' }}>
-              <div style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#1e293b' }}>Quyền được biết & đồng ý:</strong> Biết rõ dữ liệu nào đang được xử lý.
-              </div>
-              <div style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#1e293b' }}>Quyền truy cập & chỉnh sửa:</strong> Tự cập nhật CV, thông tin trong mục Hồ Sơ.
-              </div>
-              <div style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#1e293b' }}>Quyền rút lại sự đồng ý:</strong> Bật/tắt trạng thái hiển thị hồ sơ bất kỳ lúc nào.
-              </div>
-              <div style={{ padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}>
-                <strong style={{ color: '#1e293b' }}>Quyền xóa dữ liệu:</strong> Yêu cầu xóa vĩnh viễn tài khoản và các bản ghi CV lưu trữ.
-              </div>
+        {/* Main Content Column (720px) */}
+        <main className={styles.contentCol}>
+          <article className={styles.paperCard}>
+            <div className={styles.headerBlock}>
+              <h1>Chính Sách Bảo Mật & Bảo Vệ Dữ Liệu Cá Nhân</h1>
+              <span className={styles.subtitle}>
+                Tuân thủ Nghị định số 13/2023/NĐ-CP của Chính phủ Việt Nam
+              </span>
             </div>
-          </section>
 
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              5. Biện Pháp Kỹ Thuật Bảo Mật
-            </h2>
-            <p style={{ color: '#475569', fontSize: '0.9rem', lineHeight: 1.7 }}>
-              Hệ thống áp dụng các tiêu chuẩn an ninh thông tin nghiêm ngặt: Mã hóa dữ liệu truyền tải qua HTTPS/TLS, mã hóa AES-256 các thông tin nhạy cảm trong cơ sở dữ liệu, kiểm soát truy cập RBAC đa tầng và tường lửa chống tấn công DDOS/Brute-force.
-            </p>
-          </section>
+            <div className={styles.complianceNotice}>
+              <strong>Cam kết pháp lý:</strong> HR Portal cam kết bảo vệ quyền riêng tư và dữ liệu cá nhân của mọi Ứng viên và Đại diện Doanh nghiệp theo đúng quy định tại Nghị định số 13/2023/NĐ-CP về Bảo vệ dữ liệu cá nhân.
+            </div>
 
-          <div style={{
-            borderTop: '1px solid #e2e8f0',
-            paddingTop: '20px',
-            fontSize: '0.85rem',
-            color: '#64748b'
-          }}>
-            Để thực hiện các quyền của chủ thể dữ liệu hoặc giải đáp thắc mắc về chính sách bảo mật, vui lòng liên hệ Bộ phận Bảo vệ Dữ liệu Cá nhân của chúng tôi qua email: <strong>privacy@hamo.vn</strong> hoặc Hotline: <strong>1900 6868</strong>.
-          </div>
-        </div>
-      </main>
+            <section className={styles.section} id="muc-1">
+              <h2>1. Loại Dữ Liệu Cá Nhân Thu Thập</h2>
+              <p>
+                Khi người dùng đăng ký và sử dụng dịch vụ trên nền tảng HR Portal, chúng tôi thu thập các thông tin sau:
+              </p>
+              <ul>
+                <li><strong>Dữ liệu định danh:</strong> Họ và tên, giới tính, ngày tháng năm sinh, ảnh đại diện.</li>
+                <li><strong>Dữ liệu liên lạc:</strong> Địa chỉ email, số điện thoại di động, địa chỉ liên hệ.</li>
+                <li><strong>Dữ liệu hồ sơ ứng tuyển:</strong> Lịch sử học vấn, bằng cấp, chứng chỉ, kinh nghiệm làm việc, kỹ năng và tệp đính kèm CV (PDF/DOCX).</li>
+                <li><strong>Dữ liệu kỹ thuật & phiên truy cập:</strong> Địa chỉ IP, thời điểm đăng nhập, loại trình duyệt nhằm phát hiện truy cập bất thường và bảo mật tài khoản.</li>
+              </ul>
+            </section>
 
+            <section className={styles.section} id="muc-2">
+              <h2>2. Mục Đích Xử Lý Dữ Liệu</h2>
+              <ul>
+                <li>Tạo lập và quản lý tài khoản người dùng, xác thực danh tính qua email hoặc số điện thoại.</li>
+                <li>Chuyển tiếp hồ sơ ứng tuyển của bạn tới nhà tuyển dụng mà bạn chủ động nộp đơn.</li>
+                <li>Hỗ trợ tính năng so khớp và gợi ý cơ hội việc làm phù hợp với kỹ năng và kinh nghiệm.</li>
+                <li>Gửi thông báo cập nhật tiến trình hồ sơ, thư mời phỏng vấn và kết quả ứng tuyển.</li>
+                <li>Phát hiện, ngăn chặn các hành vi gian lận, truy cập trái phép và bảo vệ an ninh hệ thống.</li>
+              </ul>
+            </section>
+
+            <section className={styles.section} id="muc-3">
+              <h2>3. Nguyên Tắc Chia Sẻ Dữ Liệu</h2>
+              <p>
+                Chúng tôi <strong>không</strong> bán hoặc chia sẻ dữ liệu cá nhân của người dùng cho bên thứ ba vì mục đích tiếp thị thương mại không liên quan. Dữ liệu chỉ được chia sẻ trong các phạm vi:
+              </p>
+              <ul>
+                <li>Cung cấp cho Doanh nghiệp tuyển dụng khi bạn chủ động nộp hồ sơ ứng tuyển hoặc khi bạn bật chế độ cho phép nhà tuyển dụng tìm kiếm hồ sơ.</li>
+                <li>Chuyển thông tin mã đơn hàng cho cổng thanh toán trực tuyến nhằm xác minh và xử lý giao dịch mua gói dịch vụ.</li>
+                <li>Cung cấp cho cơ quan nhà nước có thẩm quyền khi có yêu cầu bằng văn bản theo đúng trình tự pháp luật Việt Nam.</li>
+              </ul>
+            </section>
+
+            <section className={styles.section} id="muc-4">
+              <h2>4. Quyền Của Chủ Thể Dữ Liệu (Điều 9 Nghị định 13/2023)</h2>
+              <p>
+                Chủ thể dữ liệu có đầy đủ các quyền hợp pháp đối với dữ liệu cá nhân của mình trên hệ thống:
+              </p>
+              <ul>
+                <li><strong>Quyền truy cập & chỉnh sửa:</strong> Tự xem, cập nhật và hoàn thiện hồ sơ CV cũng như thông tin tài khoản bất kỳ lúc nào tại trang quản trị cá nhân.</li>
+                <li><strong>Quyền rút lại sự đồng ý & ẩn danh tài khoản:</strong> Bạn có thể chủ động tắt chế độ tìm kiếm hồ sơ hoặc sử dụng tính năng ẩn danh tài khoản trong mục Cài đặt tài khoản.</li>
+                <li><strong>Quyền xuất dữ liệu cá nhân:</strong> Bạn có thể sử dụng chức năng tải xuống bản sao dữ liệu cá nhân đã lưu trữ trên hệ thống dưới định dạng tiêu chuẩn.</li>
+                <li><strong>Quyền xóa dữ liệu:</strong> Bạn có quyền gửi yêu cầu đóng vĩnh viễn tài khoản và xóa bỏ các thông tin nhận dạng cá nhân khỏi cơ sở dữ liệu hoạt động.</li>
+              </ul>
+            </section>
+
+            <section className={styles.section} id="muc-5">
+              <h2>5. Thông Tin Đơn Vị Quản Lý & Tiếp Nhận Yêu Cầu</h2>
+              <p>
+                Để thực thi các quyền dữ liệu cá nhân hoặc gửi thắc mắc liên quan đến quyền riêng tư, vui lòng liên hệ:
+              </p>
+              <p>
+                <strong>Đơn vị vận hành:</strong> {COMPANY_INFO.legalName}<br />
+                <strong>Địa chỉ:</strong> {COMPANY_INFO.address}<br />
+                <strong>Email chuyên trách dữ liệu:</strong> {COMPANY_INFO.email}<br />
+                <strong>Hotline:</strong> {COMPANY_INFO.phone} ({COMPANY_INFO.operatingHours})
+              </p>
+            </section>
+          </article>
+        </main>
+      </div>
     </div>
   );
 };

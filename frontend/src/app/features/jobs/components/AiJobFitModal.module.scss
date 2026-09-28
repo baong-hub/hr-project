@@ -1,0 +1,202 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4, 16px);
+}
+
+.modalCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 640px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4, 16px) var(--space-5, 20px);
+  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+
+  .headerTitleWrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .iconBox {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-md, 8px);
+      background: var(--color-brand-subtle, #eff6ff);
+      color: var(--color-brand-primary, #2563eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modalTitle {
+      font-size: var(--font-size-base, 16px);
+      font-weight: 700;
+      color: var(--color-text-primary, #0f172a);
+      margin: 0;
+    }
+
+    .modalJobSubtitle {
+      font-size: 12px;
+      color: var(--color-text-secondary, #64748b);
+    }
+  }
+
+  .closeBtn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--color-text-muted, #94a3b8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: var(--color-text-primary, #0f172a);
+    }
+  }
+}
+
+.modalBody {
+  padding: var(--space-5, 20px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 16px);
+}
+
+.loadingBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+  color: var(--color-text-secondary, #475569);
+  font-size: var(--font-size-sm, 14px);
+}
+
+.scoreBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--color-bg-subtle, #f8fafc);
+  border: 1px solid var(--color-border-default, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+
+  .scoreLabel {
+    font-size: var(--font-size-sm, 14px);
+    font-weight: 600;
+    color: var(--color-text-secondary, #475569);
+  }
+
+  .scoreValue {
+    font-size: var(--font-size-2xl, 24px);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-brand-primary, #2563eb);
+
+    &.high {
+      color: var(--color-success, #16a34a);
+    }
+    &.medium {
+      color: var(--color-brand-primary, #2563eb);
+    }
+    &.low {
+      color: var(--color-warning, #d97706);
+    }
+  }
+}
+
+.analysisSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .sectionTitle {
+    font-size: var(--font-size-sm, 13px);
+    font-weight: 700;
+    color: var(--color-text-primary, #1e293b);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sectionContent {
+    font-size: var(--font-size-sm, 13px);
+    line-height: 1.6;
+    color: var(--color-text-secondary, #334155);
+    margin: 0;
+    white-space: pre-line;
+  }
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recommendationList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.iconSuccess {
+  color: var(--color-success, #16a34a);
+}
+
+.iconWarning {
+  color: var(--color-warning, #d97706);
+}
+
+.skillBadge {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle, #f1f5f9);
+  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  color: var(--color-text-primary, #0f172a);
+}
+
+.modalFooter {
+  padding: var(--space-4, 16px) var(--space-5, 20px);
+  border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.closeButton {
+  padding: 8px 18px;
+  background: var(--color-brand-primary, #2563eb);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md, 6px);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-brand-hover, #1d4ed8);
+  }
+}

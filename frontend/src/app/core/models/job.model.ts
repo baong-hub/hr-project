@@ -17,6 +17,8 @@ export interface JobDto {
   
   department?: string;
   category?: string;
+  categoryCode?: string;
+  provinceCode?: string;
   employmentType?: string;
   country?: string;
   district?: string;

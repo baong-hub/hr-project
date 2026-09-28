@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import { Button } from '../../../shared/ui/Button/Button';
 import styles from './LoginPage.module.scss';
+import logoImg from '@/assets/logo.png';
 import { Lock, User, Eye, EyeOff, Database, Mail } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -199,7 +200,7 @@ export const LoginPage = () => {
       <div className={styles.loginCard}>
         <div className={styles.brandSection}>
           <div className={styles.logo}>
-            <img src="/hr.png" alt="Logo" className={styles.logoImg} />
+            <img src={logoImg} alt="Logo" className={styles.logoImg} />
             <span className={styles.logoText}>HR</span>
           </div>
           <p className={styles.brandSlogan}>Hệ thống tìm việc & tuyển dụng</p>

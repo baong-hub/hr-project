@@ -4,6 +4,7 @@ import { Wand2, X } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { aiService } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
+import { metaService, type ProvinceItem, type IndustryItem, STATIC_PROVINCES, STATIC_INDUSTRIES } from '../../../core/services/meta.service';
 import type { JobStatus } from '../../../core/models/job.model';
 import styles from './JobsPage.module.scss';
 
@@ -17,11 +18,17 @@ export const JobFormPage: React.FC = () => {
   const [aiKeywords, setAiKeywords] = useState('');
   const [generatingJd, setGeneratingJd] = useState(false);
 
+  // Meta Options
+  const [provincesList, setProvincesList] = useState<ProvinceItem[]>(STATIC_PROVINCES);
+  const [industriesList, setIndustriesList] = useState<IndustryItem[]>(STATIC_INDUSTRIES);
+
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
+  const [categoryCode, setCategoryCode] = useState('');
   const [employmentType, setEmploymentType] = useState('Full-time');
   const [city, setCity] = useState('Hà Nội');
+  const [provinceCode, setProvinceCode] = useState('ha-noi');
   const [district, setDistrict] = useState('');
   const [office, setOffice] = useState('');
   const [openings, setOpenings] = useState(1);
@@ -41,18 +48,38 @@ export const JobFormPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    metaService.getProvinces().then((data) => {
+      if (data && data.length > 0) setProvincesList(data);
+    });
+    metaService.getIndustries().then((data) => {
+      if (data && data.length > 0) setIndustriesList(data);
+    });
+  }, []);
+
+  useEffect(() => {
     if (isEditMode && id) {
       const fetchJobDetails = async () => {
         setLoading(true);
         try {
           const res = await jobsService.getJobById(Number(id));
           if (res.data?.success && res.data.data) {
-            const job = res.data.data;
+            const job = res.data.data as any;
             setTitle(job.title);
-            // Since we added these fields, we fall back to sensible defaults or map them
             setCategory(job.category || '');
+            if (job.categoryCode) {
+              setCategoryCode(job.categoryCode);
+            } else if (job.category) {
+              const matched = metaService.matchIndustry(job.category);
+              if (matched) setCategoryCode(matched.code);
+            }
             setEmploymentType(job.employmentType || 'Full-time');
-            setCity(job.city);
+            setCity(job.city || 'Hà Nội');
+            if (job.provinceCode) {
+              setProvinceCode(job.provinceCode);
+            } else if (job.city) {
+              const matched = metaService.matchProvince(job.city);
+              if (matched) setProvinceCode(matched.code);
+            }
             setDistrict(job.district || '');
             setOffice(job.office || '');
             setOpenings(job.openings || 1);
@@ -92,12 +119,12 @@ export const JobFormPage: React.FC = () => {
       toast.error('Tiêu đề tin đăng phải từ 10 đến 150 ký tự.');
       return false;
     }
-    if (!category.trim()) {
-      toast.error('Vui lòng nhập danh mục ngành nghề.');
+    if (!category.trim() && !categoryCode) {
+      toast.error('Vui lòng chọn danh mục ngành nghề.');
       return false;
     }
-    if (!city.trim()) {
-      toast.error('Vui lòng nhập hoặc chọn tỉnh/thành phố.');
+    if (!city.trim() && !provinceCode) {
+      toast.error('Vui lòng chọn tỉnh/thành phố tuyển dụng.');
       return false;
     }
     if (!description.trim() || description.length < 50) {
@@ -144,9 +171,11 @@ export const JobFormPage: React.FC = () => {
       const payload = {
         title: title.trim(),
         category: category.trim(),
+        categoryCode: categoryCode || null,
         employmentType,
         country: 'VIETNAM',
-        city,
+        city: city.trim(),
+        provinceCode: provinceCode || null,
         district: district.trim() || null,
         office: office.trim() || null,
         workMode: 'ONSITE', // Can expand to dynamic workModes
@@ -265,13 +294,23 @@ export const JobFormPage: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Ngành nghề / Danh mục <span style={{ color: 'var(--color-error)' }}>*</span></label>
-              <input
-                type="text"
-                placeholder="Ví dụ: IT / Phần mềm"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
-              />
+              <select
+                value={categoryCode}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setCategoryCode(code);
+                  const selected = industriesList.find((i) => i.code === code);
+                  if (selected) setCategory(selected.name);
+                }}
+                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface, #fff)' }}
+              >
+                <option value="">-- Chọn ngành nghề ({industriesList.length} nhóm) --</option>
+                {industriesList.map((ind) => (
+                  <option key={ind.code} value={ind.code}>
+                    {ind.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Loại hình làm việc</label>
@@ -291,18 +330,35 @@ export const JobFormPage: React.FC = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Thành phố tuyển dụng <span style={{ color: 'var(--color-error)' }}>*</span></label>
+              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Tỉnh / Thành phố tuyển dụng <span style={{ color: 'var(--color-error)' }}>*</span></label>
               <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
+                value={provinceCode}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  setProvinceCode(code);
+                  const selected = provincesList.find((p) => p.code === code);
+                  if (selected) setCity(selected.name);
+                }}
+                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface, #fff)' }}
               >
-                <option value="Hà Nội">Hà Nội</option>
-                <option value="TP. HCM">TP. Hồ Chí Minh</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
-                <option value="Hải Phòng">Hải Phòng</option>
-                <option value="Cần Thơ">Cần Thơ</option>
-                <option value="Remote">Remote / Từ xa</option>
+                <optgroup label="Thành phố trực thuộc trung ương (6)">
+                  {provincesList
+                    .filter((p) => p.type === 'city')
+                    .map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {p.name}
+                      </option>
+                    ))}
+                </optgroup>
+                <optgroup label="Tỉnh (28)">
+                  {provincesList
+                    .filter((p) => p.type === 'province')
+                    .map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {p.name}
+                      </option>
+                    ))}
+                </optgroup>
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

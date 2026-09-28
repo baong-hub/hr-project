@@ -1,0 +1,240 @@
+[
+  {
+    "code": "ha-noi",
+    "name": "Hà Nội",
+    "type": "city",
+    "legacyNames": [],
+    "aliases": ["hn", "hà nội", "ha noi", "hanoi"]
+  },
+  {
+    "code": "ho-chi-minh",
+    "name": "TP. Hồ Chí Minh",
+    "type": "city",
+    "legacyNames": ["Bình Dương", "Bà Rịa – Vũng Tàu", "Bà Rịa - Vũng Tàu", "Bà Rịa Vũng Tàu"],
+    "aliases": ["hcm", "tp.hcm", "tp. hcm", "tp hcm", "tphcm", "sài gòn", "saigon", "hồ chí minh", "ho chi minh", "hcmc", "binh duong", "ba ria vung tau"]
+  },
+  {
+    "code": "hai-phong",
+    "name": "Hải Phòng",
+    "type": "city",
+    "legacyNames": ["Hải Dương"],
+    "aliases": ["hp", "hải phòng", "hai phong", "haiphong", "hải dương", "hai duong"]
+  },
+  {
+    "code": "da-nang",
+    "name": "Đà Nẵng",
+    "type": "city",
+    "legacyNames": ["Quảng Nam"],
+    "aliases": ["dn", "đà nẵng", "da nang", "danang", "quảng nam", "quang nam"]
+  },
+  {
+    "code": "can-tho",
+    "name": "Cần Thơ",
+    "type": "city",
+    "legacyNames": ["Sóc Trăng", "Hậu Giang"],
+    "aliases": ["ct", "cần thơ", "can tho", "cantho", "sóc trăng", "soc trang", "hậu giang", "hau giang"]
+  },
+  {
+    "code": "hue",
+    "name": "Huế",
+    "type": "city",
+    "legacyNames": ["Thừa Thiên Huế"],
+    "aliases": ["huế", "hue", "thừa thiên huế", "thua thien hue", "tth"]
+  },
+  {
+    "code": "an-giang",
+    "name": "An Giang",
+    "type": "province",
+    "legacyNames": ["Kiên Giang"],
+    "aliases": ["an giang", "kiên giang", "kien giang", "long xuyên", "rạch giá", "phú quốc"]
+  },
+  {
+    "code": "bac-ninh",
+    "name": "Bắc Ninh",
+    "type": "province",
+    "legacyNames": ["Bắc Giang"],
+    "aliases": ["bắc ninh", "bac ninh", "bắc giang", "bac giang"]
+  },
+  {
+    "code": "ca-mau",
+    "name": "Cà Mau",
+    "type": "province",
+    "legacyNames": ["Bạc Liêu"],
+    "aliases": ["cà mau", "ca mau", "bạc liêu", "bac lieu"]
+  },
+  {
+    "code": "cao-bang",
+    "name": "Cao Bằng",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["cao bằng", "cao bang"]
+  },
+  {
+    "code": "dak-lak",
+    "name": "Đắk Lắk",
+    "type": "province",
+    "legacyNames": ["Phú Yên"],
+    "aliases": ["đắk lắk", "dak lak", "đắc lắc", "dac lac", "buôn ma thuột", "phú yên", "phu yen", "tuy hòa"]
+  },
+  {
+    "code": "dien-bien",
+    "name": "Điện Biên",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["điện biên", "dien bien", "điện biên phủ"]
+  },
+  {
+    "code": "dong-nai",
+    "name": "Đồng Nai",
+    "type": "province",
+    "legacyNames": ["Bình Phước"],
+    "aliases": ["đồng nai", "dong nai", "biên hòa", "bình phước", "binh phuoc", "đồng xoài"]
+  },
+  {
+    "code": "dong-thap",
+    "name": "Đồng Tháp",
+    "type": "province",
+    "legacyNames": ["Tiền Giang"],
+    "aliases": ["đồng tháp", "dong thap", "cao lãnh", "sa đéc", "tiền giang", "tien giang", "mỹ tho"]
+  },
+  {
+    "code": "gia-lai",
+    "name": "Gia Lai",
+    "type": "province",
+    "legacyNames": ["Bình Định"],
+    "aliases": ["gia lai", "pleiku", "bình định", "binh dinh", "quy nhơn"]
+  },
+  {
+    "code": "ha-tinh",
+    "name": "Hà Tĩnh",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["hà tĩnh", "ha tinh"]
+  },
+  {
+    "code": "hung-yen",
+    "name": "Hưng Yên",
+    "type": "province",
+    "legacyNames": ["Thái Bình"],
+    "aliases": ["hưng yên", "hung yen", "thái bình", "thai binh"]
+  },
+  {
+    "code": "khanh-hoa",
+    "name": "Khánh Hòa",
+    "type": "province",
+    "legacyNames": ["Ninh Thuận"],
+    "aliases": ["khánh hòa", "khanh hoa", "nha trang", "cam ranh", "ninh thuận", "ninh thuan", "phan rang"]
+  },
+  {
+    "code": "lai-chau",
+    "name": "Lai Châu",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["lai châu", "lai chau"]
+  },
+  {
+    "code": "lam-dong",
+    "name": "Lâm Đồng",
+    "type": "province",
+    "legacyNames": ["Đắk Nông", "Bình Thuận"],
+    "aliases": ["lâm đồng", "lam dong", "đà lạt", "da lat", "bảo lộc", "đắk nông", "dak nong", "gia nghĩa", "bình thuận", "binh thuan", "phan thiết"]
+  },
+  {
+    "code": "lang-son",
+    "name": "Lạng Sơn",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["lạng sơn", "lang son"]
+  },
+  {
+    "code": "lao-cai",
+    "name": "Lào Cai",
+    "type": "province",
+    "legacyNames": ["Yên Bái"],
+    "aliases": ["lào cai", "lao cai", "sa pa", "sapa", "yên bái", "yen bai"]
+  },
+  {
+    "code": "nghe-an",
+    "name": "Nghệ An",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["nghệ an", "nghe an", "vinh"]
+  },
+  {
+    "code": "ninh-binh",
+    "name": "Ninh Bình",
+    "type": "province",
+    "legacyNames": ["Hà Nam", "Nam Định"],
+    "aliases": ["ninh bình", "ninh binh", "hà nam", "ha nam", "phủ lý", "nam định", "nam dinh"]
+  },
+  {
+    "code": "phu-tho",
+    "name": "Phú Thọ",
+    "type": "province",
+    "legacyNames": ["Vĩnh Phúc", "Hòa Bình"],
+    "aliases": ["phú thọ", "phu tho", "việt trì", "vĩnh phúc", "vinh phuc", "vĩnh yên", "hòa bình", "hoa binh"]
+  },
+  {
+    "code": "quang-ngai",
+    "name": "Quảng Ngãi",
+    "type": "province",
+    "legacyNames": ["Kon Tum"],
+    "aliases": ["quảng ngãi", "quang ngai", "kon tum"]
+  },
+  {
+    "code": "quang-ninh",
+    "name": "Quảng Ninh",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["quảng ninh", "quang ninh", "hạ long", "ha long", "cẩm phả", "móng cái"]
+  },
+  {
+    "code": "quang-tri",
+    "name": "Quảng Trị",
+    "type": "province",
+    "legacyNames": ["Quảng Bình"],
+    "aliases": ["quảng trị", "quang tri", "đông hà", "quảng bình", "quang binh", "đồng hới"]
+  },
+  {
+    "code": "son-la",
+    "name": "Sơn La",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["sơn la", "son la", "mộc châu"]
+  },
+  {
+    "code": "tay-ninh",
+    "name": "Tây Ninh",
+    "type": "province",
+    "legacyNames": ["Long An"],
+    "aliases": ["tây ninh", "tay ninh", "long an", "tân an"]
+  },
+  {
+    "code": "thai-nguyen",
+    "name": "Thái Nguyên",
+    "type": "province",
+    "legacyNames": ["Bắc Kạn"],
+    "aliases": ["thái nguyên", "thai nguyen", "bắc kạn", "bac kan"]
+  },
+  {
+    "code": "thanh-hoa",
+    "name": "Thanh Hóa",
+    "type": "province",
+    "legacyNames": [],
+    "aliases": ["thanh hóa", "thanh hoa", "sầm sơn"]
+  },
+  {
+    "code": "tuyen-quang",
+    "name": "Tuyên Quang",
+    "type": "province",
+    "legacyNames": ["Hà Giang"],
+    "aliases": ["tuyên quang", "tuyen quang", "hà giang", "ha giang"]
+  },
+  {
+    "code": "vinh-long",
+    "name": "Vĩnh Long",
+    "type": "province",
+    "legacyNames": ["Bến Tre", "Trà Vinh"],
+    "aliases": ["vĩnh long", "vinh long", "bến tre", "ben tre", "trà vinh", "tra vinh"]
+  }
+]

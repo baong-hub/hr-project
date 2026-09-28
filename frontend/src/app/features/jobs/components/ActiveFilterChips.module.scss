@@ -1,0 +1,114 @@
+.chipsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  margin-bottom: var(--space-4, 16px);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+}
+
+.resultCount {
+  font-size: var(--font-size-base, 14px);
+  color: var(--color-text-secondary, #475569);
+  font-weight: 500;
+
+  strong {
+    color: var(--color-text-primary, #0f172a);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.sortSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #64748b);
+
+  select {
+    padding: 6px 12px;
+    border: 1px solid var(--color-border-default, #cbd5e1);
+    border-radius: var(--radius-md, 6px);
+    background: var(--color-bg-card, #ffffff);
+    color: var(--color-text-primary, #0f172a);
+    font-size: var(--font-size-sm, 13px);
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: border-color var(--transition-fast, 0.15s ease);
+
+    &:focus {
+      border-color: var(--color-brand-primary, #2563eb);
+    }
+  }
+}
+
+.chipsList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--color-bg-subtle, #f1f5f9);
+  border: 1px solid var(--color-border-default, #cbd5e1);
+  border-radius: var(--radius-md, 6px);
+  font-size: var(--font-size-xs, 12px);
+  color: var(--color-text-primary, #1e293b);
+  line-height: 1.4;
+
+  .chipLabel {
+    color: var(--color-text-secondary, #64748b);
+  }
+
+  .chipValue {
+    font-weight: 600;
+    color: var(--color-text-primary, #0f172a);
+  }
+
+  .removeBtn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-text-muted, #94a3b8);
+    transition: color var(--transition-fast, 0.15s ease);
+
+    &:hover {
+      color: var(--color-error, #dc2626);
+    }
+  }
+}
+
+.clearAllBtn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  font-size: var(--font-size-xs, 12px);
+  font-weight: 600;
+  color: var(--color-brand-primary, #2563eb);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    opacity: 0.8;
+  }
+}

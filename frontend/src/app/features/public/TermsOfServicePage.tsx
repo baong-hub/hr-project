@@ -1,90 +1,102 @@
 import React from 'react';
-import { ShieldCheck, FileText } from 'lucide-react';
+import { SeoHead } from '../../shared/components/SeoHead';
+import { COMPANY_INFO } from '../../config/company-info';
+import styles from './ProsePage.module.scss';
 
 export const TermsOfServicePage: React.FC = () => {
+  const tableOfContents = [
+    { id: 'dieu-1', title: '1. Chấp Nhận Điều Khoản' },
+    { id: 'dieu-2', title: '2. Quy Định Dành Cho Ứng Viên' },
+    { id: 'dieu-3', title: '3. Quy Định Dành Cho Nhà Tuyển Dụng' },
+    { id: 'dieu-4', title: '4. Quyền Hạn & Trách Nhiệm Của Nền Tảng' },
+    { id: 'dieu-5', title: '5. Thông Tin Đơn Vị Quản Lý' }
+  ];
+
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.prosePage}>
+      <SeoHead
+        title="Điều Khoản Dịch Vụ | HR Portal"
+        description="Điều khoản và quy định sử dụng dịch vụ trên nền tảng tuyển dụng HR Portal. Quy định quyền và trách nhiệm của ứng viên và nhà tuyển dụng."
+        ogType="article"
+      />
 
-      <main style={{ flex: 1, maxWidth: '900px', margin: '40px auto', padding: '0 20px', width: '100%' }}>
-        <div style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '12px',
-          padding: '40px',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-          border: '1px solid #e2e8f0'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ backgroundColor: '#eff6ff', padding: '10px', borderRadius: '10px', color: '#2563eb' }}>
-              <FileText size={28} />
+      <div className={styles.readerLayout}>
+        {/* Fixed Table of Contents on Desktop */}
+        <aside className={styles.tocSidebar} aria-label="Mục lục điều khoản">
+          <div className={styles.tocTitle}>Mục Lục</div>
+          <nav>
+            <ul className={styles.tocList}>
+              {tableOfContents.map((item) => (
+                <li key={item.id}>
+                  <a href={`#${item.id}`} className={styles.tocLink}>
+                    {item.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </aside>
+
+        {/* Main Content Column (720px) */}
+        <main className={styles.contentCol}>
+          <article className={styles.paperCard}>
+            <div className={styles.headerBlock}>
+              <h1>Điều Khoản Sử Dụng Dịch Vụ</h1>
+              <span className={styles.subtitle}>
+                Áp dụng cho mọi Người dùng Ứng viên và Nhà tuyển dụng trên HR Portal
+              </span>
             </div>
-            <div>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', margin: 0 }}>Điều Khoản Dịch Vụ</h1>
-              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Cập nhật lần cuối: 21/09/2026</span>
-            </div>
-          </div>
 
-          <p style={{ color: '#475569', lineHeight: 1.7, fontSize: '0.95rem', marginBottom: '24px' }}>
-            Chào mừng bạn đến với <strong>HR Recruitment Portal</strong>. Khi truy cập, đăng ký tài khoản hoặc sử dụng bất kỳ dịch vụ nào trên nền tảng của chúng tôi, bạn đồng ý chịu sự ràng buộc bởi các điều khoản và điều kiện được nêu dưới đây.
-          </p>
+            <section className={styles.section} id="dieu-1">
+              <h2>1. Chấp Nhận Điều Khoản</h2>
+              <p>
+                Khi truy cập, đăng ký tài khoản hoặc sử dụng bất kỳ dịch vụ nào trên nền tảng HR Portal, bạn xác nhận đã đọc, hiểu rõ và cam kết tuân thủ toàn bộ các quy định trong văn bản Điều khoản dịch vụ này.
+              </p>
+            </section>
 
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              1. Quyền và Nghĩa Vụ của Ứng Viên (Người Tìm Việc)
-            </h2>
-            <ul style={{ paddingLeft: '20px', color: '#475569', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <li>Ứng viên cam kết cung cấp thông tin trung thực, chính xác về danh tính, học vấn, kinh nghiệm làm việc và kỹ năng trong hồ sơ ứng tuyển (CV).</li>
-              <li>Ứng viên tự chịu trách nhiệm bảo mật mật khẩu tài khoản và không chia sẻ thông tin đăng nhập cho bên thứ ba.</li>
-              <li>Nghiêm cấm hành vi sử dụng hồ sơ giả mạo hoặc spam đơn ứng tuyển hàng loạt làm gián đoạn hệ thống.</li>
-            </ul>
-          </section>
+            <section className={styles.section} id="dieu-2">
+              <h2>2. Quy Định Dành Cho Ứng Viên</h2>
+              <ul>
+                <li>Ứng viên có trách nhiệm cung cấp thông tin trung thực, chính xác về học vấn, kinh nghiệm làm việc và các kỹ năng nghề nghiệp trong hồ sơ ứng tuyển (CV).</li>
+                <li>Không đăng tải nội dung vi phạm pháp luật, ngôn từ phân biệt đối xử hoặc tệp đính kèm chứa phần mềm gây hại.</li>
+                <li>Ứng viên được sử dụng các tính năng tìm kiếm việc làm, tạo hồ sơ, ứng tuyển và theo dõi kết quả hoàn toàn miễn phí.</li>
+                <li>Ứng viên tự chịu trách nhiệm bảo mật thông tin đăng nhập và thông báo kịp thời cho ban quản trị nếu phát hiện tài khoản có dấu hiệu bị xâm nhập.</li>
+              </ul>
+            </section>
 
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              2. Quyền và Nghĩa Vụ của Nhà Tuyển Dụng (Doanh Nghiệp)
-            </h2>
-            <ul style={{ paddingLeft: '20px', color: '#475569', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <li>Nhà tuyển dụng cam kết mọi tin tuyển dụng đăng tải đều phản ánh nhu cầu tuyển dụng có thật, minh bạch về mức lương, địa điểm và mô tả công việc.</li>
-              <li><strong>Nghiêm cấm tuyệt đối:</strong> Thu bất kỳ khoản phí đặt cọc, phí hồ sơ hoặc tiền giữ chỗ nào từ ứng viên dưới mọi hình thức.</li>
-              <li>Nhà tuyển dụng có trách nhiệm bảo mật thông tin cá nhân và CV của ứng viên, chỉ được sử dụng cho mục đích tuyển dụng vào vị trí đã đăng tin.</li>
-            </ul>
-          </section>
+            <section className={styles.section} id="dieu-3">
+              <h2>3. Quy Định Dành Cho Nhà Tuyển Dụng</h2>
+              <ul>
+                <li>Nhà tuyển dụng cam kết mọi tin đăng tuyển đều xuất phát từ nhu cầu tuyển dụng có thật, nêu rõ chức danh, địa điểm và mô tả công việc.</li>
+                <li><strong>Tuyệt đối nghiêm cấm:</strong> Yêu cầu ứng viên nộp bất kỳ khoản tiền đặt cọc, phí giữ chỗ hoặc lệ phí phỏng vấn dưới mọi hình thức.</li>
+                <li>Nghiêm cấm đăng tin tuyển dụng mạo danh tổ chức khác, mô hình đa cấp trái phép hoặc các hoạt động có dấu hiệu lừa đảo.</li>
+                <li>Thông tin hồ sơ ứng viên nhận được chỉ được sử dụng cho mục đích tuyển chọn nhân sự của doanh nghiệp và phải tuân thủ quy định bảo vệ dữ liệu cá nhân.</li>
+              </ul>
+            </section>
 
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              3. Phí Dịch Vụ và Thanh Toán
-            </h2>
-            <ul style={{ paddingLeft: '20px', color: '#475569', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <li>Ứng viên được sử dụng toàn bộ tính năng tìm việc, nộp hồ sơ, thi trắc nghiệm AI và nhắn tin hoàn toàn <strong>miễn phí</strong>.</li>
-              <li>Doanh nghiệp sử dụng các gói dịch vụ nâng cao (Pro, Business, Enterprise) tuân theo bảng giá công khai được niêm yết tại thời điểm thanh toán.</li>
-              <li>Giao dịch thanh toán được xử lý qua cổng thanh toán bảo mật chuẩn VietQR / NAPAS / Thẻ ngân hàng nội địa và quốc tế.</li>
-            </ul>
-          </section>
+            <section className={styles.section} id="dieu-4">
+              <h2>4. Quyền Hạn & Trách Nhiệm Của Nền Tảng</h2>
+              <ul>
+                <li>HR Portal có quyền từ chối phê duyệt hoặc gỡ bỏ các tin tuyển dụng, tạm ngừng tài khoản có dấu hiệu vi phạm tiêu chuẩn cộng đồng hoặc có phản ánh tiêu cực từ người dùng.</li>
+                <li>Chúng tôi nỗ lực duy trì vận hành hệ thống ổn định và liên tục, nhưng không chịu trách nhiệm bồi thường cho các gián đoạn dịch vụ xuất phát từ sự cố viễn thông diện rộng hoặc nguyên nhân bất khả kháng.</li>
+                <li>Mọi tranh chấp giữa nhà tuyển dụng và ứng viên sẽ được các bên chủ động giải quyết trên tinh thần thiện chí và quy định pháp luật lao động hiện hành.</li>
+              </ul>
+            </section>
 
-          <section style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>
-              4. Xử Lý Vi Phạm và Tạm Khóa Tài Khoản
-            </h2>
-            <p style={{ color: '#475569', lineHeight: 1.7, fontSize: '0.9rem' }}>
-              HR Portal bảo lưu quyền tạm khóa, hủy bỏ hoặc xóa vĩnh viễn các tài khoản vi phạm chính sách cộng đồng, phát tán tin tuyển dụng lừa đảo hoặc vi phạm pháp luật hiện hành mà không cần báo trước.
-            </p>
-          </section>
-
-          <div style={{
-            backgroundColor: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: '8px',
-            padding: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            color: '#15803d'
-          }}>
-            <ShieldCheck size={24} />
-            <span style={{ fontSize: '0.9rem' }}>Mọi tranh chấp phát sinh sẽ được giải quyết trước hết thông qua thương lượng hòa giải dựa trên pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam.</span>
-          </div>
-        </div>
-      </main>
-
+            <section className={styles.section} id="dieu-5">
+              <h2>5. Thông Tin Đơn Vị Quản Lý</h2>
+              <p>
+                Nếu có bất kỳ câu hỏi hoặc thắc mắc nào về Điều khoản dịch vụ, vui lòng liên hệ:
+              </p>
+              <p>
+                <strong>Đơn vị vận hành:</strong> {COMPANY_INFO.legalName}<br />
+                <strong>Địa chỉ:</strong> {COMPANY_INFO.address}<br />
+                <strong>Email:</strong> {COMPANY_INFO.email} | <strong>Hotline:</strong> {COMPANY_INFO.phone} ({COMPANY_INFO.operatingHours})
+              </p>
+            </section>
+          </article>
+        </main>
+      </div>
     </div>
   );
 };

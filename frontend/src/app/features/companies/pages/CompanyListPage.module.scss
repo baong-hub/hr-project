@@ -1,0 +1,372 @@
+.companyListPage {
+  width: 100%;
+  max-width: var(--page-max-width, 1280px);
+  margin: 0 auto;
+  padding: var(--space-4, 16px) var(--space-4, 16px) var(--space-10, 48px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 20px);
+}
+
+.headerCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-xl, 14px);
+  padding: var(--space-5, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .titleWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    h1 {
+      font-size: var(--font-size-2xl, 24px);
+      font-weight: 800;
+      color: var(--color-text-primary, #0f172a);
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    p {
+      font-size: var(--font-size-sm, 14px);
+      color: var(--color-text-secondary, #64748b);
+      margin: 0;
+    }
+  }
+
+  .countBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--color-brand-subtle, #eff6ff);
+    border: 1px solid var(--color-brand-border, #bfdbfe);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--font-size-sm, 13px);
+    font-weight: 700;
+    color: var(--color-brand-primary, #2563eb);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Filter Strip */
+.filterStrip {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-3, 14px) var(--space-4, 16px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  .searchBox {
+    flex: 1 1 280px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--color-bg-page, #f8fafc);
+    border: 1px solid var(--color-border-default, #cbd5e1);
+    border-radius: var(--radius-md, 6px);
+    padding: 8px 12px;
+
+    input {
+      border: none;
+      background: transparent;
+      font-size: var(--font-size-sm, 13px);
+      color: var(--color-text-primary, #0f172a);
+      outline: none;
+      width: 100%;
+
+      &::placeholder {
+        color: var(--color-text-muted, #94a3b8);
+      }
+    }
+
+    .searchIcon {
+      color: var(--color-text-muted, #94a3b8);
+      flex-shrink: 0;
+    }
+  }
+
+  .selectBox {
+    flex: 0 1 200px;
+
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--color-border-default, #cbd5e1);
+      border-radius: var(--radius-md, 6px);
+      background: var(--color-bg-card, #ffffff);
+      color: var(--color-text-primary, #0f172a);
+      font-size: var(--font-size-sm, 13px);
+      outline: none;
+      cursor: pointer;
+
+      &:focus {
+        border-color: var(--color-brand-primary, #2563eb);
+      }
+    }
+  }
+
+  .filterBtnRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .searchBtn {
+      padding: 9px 18px;
+      background: var(--color-brand-primary, #2563eb);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-md, 6px);
+      font-size: var(--font-size-sm, 13px);
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-brand-hover, #1d4ed8);
+      }
+    }
+
+    .clearBtn {
+      padding: 8px 14px;
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border-default, #cbd5e1);
+      border-radius: var(--radius-md, 6px);
+      font-size: var(--font-size-sm, 13px);
+      font-weight: 500;
+      color: var(--color-text-secondary, #475569);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-bg-hover, #f1f5f9);
+      }
+    }
+  }
+}
+
+/* Company Cards Grid */
+.companyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4, 16px);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.companyCard {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4, 16px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    border-color: var(--color-brand-primary, #2563eb);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  }
+
+  .cardTop {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    .logoBox {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md, 8px);
+      background: var(--color-bg-subtle, #f1f5f9);
+      border: 1px solid var(--color-border-subtle, #e2e8f0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .logoInitial {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--color-brand-primary, #2563eb);
+      }
+    }
+
+    .titleSection {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+
+      .nameRow {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .companyName {
+          font-size: var(--font-size-base, 15px);
+          font-weight: 700;
+          color: var(--color-text-primary, #0f172a);
+          margin: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .verifiedCheck {
+          color: var(--color-brand-primary, #2563eb);
+          flex-shrink: 0;
+        }
+      }
+
+      .industryText {
+        font-size: var(--font-size-xs, 12px);
+        color: var(--color-text-secondary, #64748b);
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  .cardMetaList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: var(--font-size-xs, 12px);
+    color: var(--color-text-secondary, #475569);
+
+    .metaLine {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      .metaIcon {
+        color: var(--color-text-muted, #94a3b8);
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .cardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+
+    .activeJobsCount {
+      font-size: var(--font-size-xs, 12px);
+      font-weight: 700;
+      color: var(--color-brand-primary, #2563eb);
+      background: var(--color-brand-subtle, #eff6ff);
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .viewDetailLink {
+      font-size: var(--font-size-xs, 12px);
+      font-weight: 600;
+      color: var(--color-text-secondary, #475569);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--color-brand-primary, #2563eb);
+      }
+    }
+  }
+}
+
+.emptyState {
+  background: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  padding: 60px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted, #94a3b8);
+
+  h3 {
+    font-size: var(--font-size-base, 16px);
+    font-weight: 700;
+    color: var(--color-text-primary, #0f172a);
+    margin: 0;
+  }
+
+  p {
+    font-size: var(--font-size-sm, 14px);
+    color: var(--color-text-secondary, #64748b);
+    margin: 0;
+  }
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: var(--space-4, 16px);
+
+  .pageBtn {
+    padding: 6px 12px;
+    background: var(--color-bg-card, #ffffff);
+    border: 1px solid var(--color-border-default, #cbd5e1);
+    border-radius: var(--radius-md, 6px);
+    font-size: var(--font-size-xs, 13px);
+    font-weight: 500;
+    color: var(--color-text-secondary, #475569);
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+
+    &:hover:not(:disabled) {
+      background: var(--color-bg-hover, #f1f5f9);
+      color: var(--color-text-primary, #0f172a);
+    }
+
+    &.active {
+      background: var(--color-brand-primary, #2563eb);
+      color: #ffffff;
+      border-color: var(--color-brand-primary, #2563eb);
+      font-weight: 700;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}

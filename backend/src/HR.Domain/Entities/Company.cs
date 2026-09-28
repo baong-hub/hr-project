@@ -14,8 +14,10 @@ public class Company : BaseEntity
     public string? Website { get; set; }
     public string SizeRange { get; set; } = string.Empty;
     public string Industry { get; set; } = string.Empty;
+    public string? IndustryCode { get; set; }
     public string AddressList { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public string? ProvinceCode { get; set; }
     public bool IsVerified { get; set; }
     public bool IsActive { get; set; } = true;
     public string? TaxCode { get; set; }

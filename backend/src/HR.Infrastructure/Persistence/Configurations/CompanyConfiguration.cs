@@ -54,6 +54,10 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(x => x.IndustryCode)
+            .HasColumnName("industry_code")
+            .HasMaxLength(60);
+
         builder.Property(x => x.AddressList)
             .HasColumnName("address_list")
             .HasColumnType("text")
@@ -63,6 +67,10 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
             .HasColumnName("address")
             .HasColumnType("text")
             .IsRequired();
+
+        builder.Property(x => x.ProvinceCode)
+            .HasColumnName("province_code")
+            .HasMaxLength(40);
 
         builder.Property(x => x.IsVerified)
             .HasColumnName("is_verified")
@@ -155,5 +163,9 @@ public class CompanyConfiguration : IEntityTypeConfiguration<Company>
 
         // Soft delete filter
         builder.HasQueryFilter(x => x.DeletedAt == null);
+
+        // Indexes
+        builder.HasIndex(x => x.ProvinceCode).HasDatabaseName("idx_companies_province_code");
+        builder.HasIndex(x => x.IndustryCode).HasDatabaseName("idx_companies_industry_code");
     }
 }

@@ -31,6 +31,10 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
             .HasMaxLength(100)
             .IsRequired();
 
+        builder.Property(x => x.CategoryCode)
+            .HasColumnName("category_code")
+            .HasMaxLength(60);
+
         builder.Property(x => x.EmploymentType)
             .HasColumnName("employment_type")
             .HasMaxLength(30)
@@ -46,6 +50,10 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
             .HasColumnName("city")
             .HasMaxLength(50)
             .IsRequired();
+
+        builder.Property(x => x.ProvinceCode)
+            .HasColumnName("province_code")
+            .HasMaxLength(40);
 
         builder.Property(x => x.District)
             .HasColumnName("district")
@@ -129,6 +137,54 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
             .HasColumnType("date")
             .IsRequired();
 
+        // Promotion & Monetization Add-ons
+        builder.Property(x => x.IsFeatured)
+            .HasColumnName("is_featured")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(x => x.FeaturedUntil)
+            .HasColumnName("featured_until")
+            .HasColumnType("datetime(6)");
+
+        builder.Property(x => x.IsUrgent)
+            .HasColumnName("is_urgent")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.Property(x => x.UrgentUntil)
+            .HasColumnName("urgent_until")
+            .HasColumnType("datetime(6)");
+
+        builder.Property(x => x.PriorityOrder)
+            .HasColumnName("priority_order")
+            .HasDefaultValue(0)
+            .IsRequired();
+
+        // Fraud Detection & AI / Rule-based Moderation
+        builder.Property(x => x.RiskScore)
+            .HasColumnName("risk_score")
+            .HasDefaultValue(0)
+            .IsRequired();
+
+        builder.Property(x => x.FraudWarningFlags)
+            .HasColumnName("fraud_warning_flags")
+            .HasColumnType("text");
+
+        builder.Property(x => x.ModerationStatus)
+            .HasColumnName("moderation_status")
+            .HasMaxLength(30)
+            .HasDefaultValue("APPROVED")
+            .IsRequired();
+
+        builder.Property(x => x.ModerationNotes)
+            .HasColumnName("moderation_notes")
+            .HasColumnType("text");
+
+        builder.Property(x => x.ModeratedAt)
+            .HasColumnName("moderated_at")
+            .HasColumnType("datetime(6)");
+
         // Audit columns
         builder.Property(x => x.CreatedAt)
             .HasColumnName("created_at")
@@ -170,5 +226,7 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
         // Indexes
         builder.HasIndex(x => new { x.Status, x.ExpiredAt }).HasDatabaseName("idx_jobs_status_expired");
         builder.HasIndex(x => x.EmployerId).HasDatabaseName("idx_jobs_employer");
+        builder.HasIndex(x => x.ProvinceCode).HasDatabaseName("idx_jobs_province_code");
+        builder.HasIndex(x => x.CategoryCode).HasDatabaseName("idx_jobs_category_code");
     }
 }

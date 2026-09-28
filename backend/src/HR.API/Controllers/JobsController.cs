@@ -30,6 +30,15 @@ public class JobsController(IMediator mediator) : ControllerBase
         return Ok(ApiResponse<PagedResult<JobDto>>.Ok(result));
     }
 
+    [HttpGet("facets")]
+    [AllowAnonymous]
+    [ResponseCache(Duration = 30)]
+    public async Task<IActionResult> GetFacets([FromQuery] HR.Application.Jobs.Queries.GetJobFacets.GetJobFacetsQuery query)
+    {
+        var result = await mediator.Send(query);
+        return Ok(ApiResponse<JobFacetsDto>.Ok(result));
+    }
+
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)

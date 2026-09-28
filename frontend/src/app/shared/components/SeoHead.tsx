@@ -17,7 +17,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
   keywords = 'tuyển dụng, việc làm, tìm việc nhanh, HR portal, ứng viên, nhà tuyển dụng, AI recruitment',
   canonicalUrl,
   ogType = 'website',
-  ogImage = '/hr.png',
+  ogImage = '/icon.png',
   jsonLd
 }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';

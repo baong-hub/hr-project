@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HR.Application.Common.Interfaces;
 using HR.Application.Common.Models;
+using HR.Application.Jobs.Common;
 using HR.Application.Jobs.Dtos;
 using HR.Domain.Enums;
 using MediatR;
@@ -70,88 +71,75 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
             query = query.Where(j => j.Status == JobStatus.PUBLISHED);
         }
 
-        // Filter by search / keyword
-        if (!string.IsNullOrWhiteSpace(request.Search))
-        {
-            var kw = request.Search.ToLower();
-            query = query.Where(j => j.Title.ToLower().Contains(kw) 
-                || j.Description.ToLower().Contains(kw)
-                || j.Requirements.ToLower().Contains(kw));
-        }
+        var now = DateTime.UtcNow;
 
-        // Filter by city (flexible matching: aliases, accents, abbreviations)
-        if (!string.IsNullOrWhiteSpace(request.City))
-        {
-            var rawCity = request.City.Trim().ToLower();
-            if (rawCity == "hcm" || rawCity.Contains("hồ chí minh") || rawCity.Contains("ho chi minh") || rawCity.Contains("sài gòn") || rawCity.Contains("saigon") || rawCity == "tp. hcm" || rawCity == "tp.hcm")
-            {
-                query = query.Where(j => 
-                    j.City.ToLower().Contains("hcm") || 
-                    j.City.ToLower().Contains("hồ chí minh") || 
-                    j.City.ToLower().Contains("ho chi minh") || 
-                    j.City.ToLower().Contains("sài gòn") || 
-                    j.City.ToLower().Contains("saigon"));
-            }
-            else if (rawCity == "hanoi" || rawCity.Contains("hà nội") || rawCity.Contains("ha noi") || rawCity == "hn")
-            {
-                query = query.Where(j => 
-                    j.City.ToLower().Contains("hà nội") || 
-                    j.City.ToLower().Contains("ha noi") || 
-                    j.City.ToLower().Contains("hanoi") || 
-                    j.City.ToLower().Contains("hn"));
-            }
-            else if (rawCity == "danang" || rawCity.Contains("đà nẵng") || rawCity.Contains("da nang") || rawCity == "dn")
-            {
-                query = query.Where(j => 
-                    j.City.ToLower().Contains("đà nẵng") || 
-                    j.City.ToLower().Contains("da nang") || 
-                    j.City.ToLower().Contains("danang") || 
-                    j.City.ToLower().Contains("dn"));
-            }
-            else if (rawCity == "haiphong" || rawCity.Contains("hải phòng") || rawCity.Contains("hai phong") || rawCity == "hp")
-            {
-                query = query.Where(j => 
-                    j.City.ToLower().Contains("hải phòng") || 
-                    j.City.ToLower().Contains("hai phong") || 
-                    j.City.ToLower().Contains("haiphong") || 
-                    j.City.ToLower().Contains("hp"));
-            }
-            else if (rawCity == "cantho" || rawCity.Contains("cần thơ") || rawCity.Contains("can tho") || rawCity == "ct")
-            {
-                query = query.Where(j => 
-                    j.City.ToLower().Contains("cần thơ") || 
-                    j.City.ToLower().Contains("can tho") || 
-                    j.City.ToLower().Contains("cantho") || 
-                    j.City.ToLower().Contains("ct"));
-            }
-            else if (rawCity == "remote" || rawCity.Contains("từ xa"))
-            {
-                query = query.Where(j => 
-                    j.City.ToLower().Contains("remote") || 
-                    j.City.ToLower().Contains("từ xa"));
-            }
-            else
-            {
-                query = query.Where(j => j.City.ToLower().Contains(rawCity) || rawCity.Contains(j.City.ToLower()));
-            }
-        }
-
-        // Filter by SalaryFrom
-        if (request.SalaryFrom.HasValue)
-        {
-            query = query.Where(j => j.SalaryTo >= request.SalaryFrom.Value || j.SalaryTo == null);
-        }
+        // Apply clean, normalized filtering
+        query = JobFilteringHelper.ApplyCommonFilters(
+            query,
+            request.Search,
+            request.Q,
+            request.Provinces,
+            request.Province,
+            request.City,
+            request.Categories,
+            request.Category,
+            request.Industry,
+            request.WorkMode,
+            request.Mode,
+            request.EmploymentType,
+            request.Type,
+            request.ExperienceLevel,
+            request.Level,
+            request.SalaryFrom,
+            request.SalaryTo,
+            request.Salary,
+            request.PostedWithinDays,
+            request.Posted,
+            request.IsFeatured,
+            request.IsUrgent,
+            now
+        );
 
         var total = await query.CountAsync(cancellationToken);
 
-        var now = DateTime.UtcNow;
+        // Sorting
+        var sortMode = (request.Sort ?? "newest").Trim().ToLowerInvariant();
+        if (sortMode == "salary_desc" || sortMode == "salary")
+        {
+            query = query
+                .OrderByDescending(j => j.SalaryTo ?? j.SalaryFrom ?? 0)
+                .ThenByDescending(j => j.CreatedAt);
+        }
+        else if (sortMode == "relevance")
+        {
+            var kw = (request.Search ?? request.Q)?.Trim().ToLowerInvariant();
+            if (!string.IsNullOrEmpty(kw))
+            {
+                query = query
+                    .OrderByDescending(j => j.Title.ToLower().Contains(kw))
+                    .ThenByDescending(j => j.CreatedAt);
+            }
+            else
+            {
+                query = query.OrderByDescending(j => j.CreatedAt);
+            }
+        }
+        else
+        {
+            // Default newest: featured first, then urgent, then priority, then newest created
+            query = query
+                .OrderByDescending(j => j.IsFeatured && (j.FeaturedUntil == null || j.FeaturedUntil > now))
+                .ThenByDescending(j => j.IsUrgent && (j.UrgentUntil == null || j.UrgentUntil > now))
+                .ThenByDescending(j => j.PriorityOrder)
+                .ThenByDescending(j => j.CreatedAt);
+        }
+
+        var page = request.Page > 0 ? request.Page : 1;
+        var pageSize = request.PageSize > 0 ? request.PageSize : 10;
+
         var rawItems = await query
-            .OrderByDescending(j => j.IsFeatured && (j.FeaturedUntil == null || j.FeaturedUntil > now))
-            .ThenByDescending(j => j.IsUrgent && (j.UrgentUntil == null || j.UrgentUntil > now))
-            .ThenByDescending(j => j.PriorityOrder)
-            .ThenByDescending(j => j.CreatedAt)
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
 
         var items = rawItems.Select(j => new JobDto(
@@ -190,13 +178,15 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
             j.Education,
             j.ProbationDuration,
             j.Openings,
-            j.HiredCount
+            j.HiredCount,
+            j.ProvinceCode,
+            j.CategoryCode
         )).ToList();
 
         return new PagedResult<JobDto>
         {
             Items = items,
-            Meta = new PagingMeta { Page = request.Page, PageSize = request.PageSize, Total = total }
+            Meta = new PagingMeta { Page = page, PageSize = pageSize, Total = total }
         };
     }
 }

@@ -206,7 +206,7 @@ export const CompaniesPage: React.FC = () => {
                 </div>
                 <div className={styles.profileHeaderInfo}>
                   <div className={styles.profileLogo}>
-                    <img src={selectedCompany.logoUrl || '/hr.png'} alt="Logo" />
+                    <img src={selectedCompany.logoUrl || '/logo.png'} alt="Logo" />
                   </div>
                   <div className={styles.profileTitleBlock}>
                     <h2>
@@ -294,7 +294,7 @@ export const CompaniesPage: React.FC = () => {
             </div>
             <div className={styles.profileHeaderInfo}>
               <div className={styles.profileLogo}>
-                <img src={selectedCompany.logoUrl || '/hr.png'} alt="Logo" />
+                <img src={selectedCompany.logoUrl || '/logo.png'} alt="Logo" />
               </div>
               <div className={styles.profileTitleBlock}>
                 <h2>
@@ -375,7 +375,7 @@ export const CompaniesPage: React.FC = () => {
               <div className={styles.cardBanner}>
                 {comp.bannerUrl && <img src={comp.bannerUrl} alt="Banner" className={styles.cardBannerImg} />}
                 <div className={styles.logoContainer}>
-                  <img src={comp.logoUrl || '/hr.png'} alt="Logo" />
+                  <img src={comp.logoUrl || '/logo.png'} alt="Logo" />
                 </div>
               </div>
               <div className={styles.cardContent}>

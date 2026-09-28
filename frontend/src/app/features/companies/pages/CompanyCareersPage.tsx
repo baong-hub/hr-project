@@ -36,19 +36,12 @@ import {
   Play
 } from 'lucide-react';
 
-const DEFAULT_GALLERY = [
-  'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=800&q=80'
-];
+const DEFAULT_GALLERY: string[] = [];
 
 const DEFAULT_CULTURE_HIGHLIGHTS: CultureHighlight[] = [
   {
     title: 'Đổi mới sáng tạo & Tự chủ cao',
-    description: 'Khuyến khích mọi thành viên chủ động đề xuất giải pháp, thử nghiệm công nghệ mới và kiến tạo giá trị đột phá.',
+    description: 'Khuyến khích mọi thành viên chủ động đề xuất giải pháp, thử nghiệm công nghệ mới và đóng góp hiệu quả vào mục tiêu chung.',
     icon: 'Sparkles'
   },
   {
@@ -95,21 +88,18 @@ const DEFAULT_TESTIMONIALS: CompanyTestimonial[] = [
   {
     authorName: 'Nguyễn Tuấn Anh',
     authorRole: 'Tech Lead / Senior Architect',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
     content: 'Gia nhập công ty được hơn 3 năm, điều tôi tâm đắc nhất là được tự do lựa chọn công nghệ và kiến trúc hệ thống hiện đại. Văn hóa tôn trọng kỹ sư và không ngại thử sai giúp đội ngũ phát triển rất nhanh.',
     rating: 5
   },
   {
     authorName: 'Trần Thu Trang',
     authorRole: 'Product Designer (UI/UX)',
-    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80',
     content: 'Môi trường làm việc tại đây cực kỳ năng động và tích cực. Pantry luôn đầy ắp đồ ăn nhẹ, thiết bị làm việc chuẩn xịn và đặc biệt là chế độ chăm sóc sức khỏe cho cả gia đình rất chu đáo.',
     rating: 5
   },
   {
     authorName: 'Lê Hoàng Nam',
     authorRole: 'Senior Fullstack Engineer',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
     content: 'Chính sách remote linh hoạt và cơ chế thưởng dự án rõ ràng là lý do tôi gắn bó lâu dài. Đội ngũ lãnh đạo luôn lắng nghe tâm tư và tạo mọi điều kiện để anh em cân bằng giữa công việc và gia đình.',
     rating: 5
   }
@@ -402,9 +392,9 @@ export const CompanyCareersPage: React.FC = () => {
       <section>
         <div className={styles.sectionHeader}>
           <span className={styles.subBadge}><Sparkles size={12} /> {t('companies.culture_sub', 'Văn hóa & Con người')}</span>
-          <h2>{t('companies.culture_title', 'Môi Trường Làm Việc Đột Phá')}</h2>
+          <h2>{t('companies.culture_title', 'Môi Trường Làm Việc Chuyên Nghiệp')}</h2>
           <p>
-            {t('companies.culture_desc', { name: company.name, defaultValue: `Tại ${company.name}, chúng tôi tin rằng thành công vượt bậc bắt đầu từ việc trao quyền, nuôi dưỡng tài năng và tạo ra một không gian nơi mỗi cá nhân đều có thể tỏa sáng.` })}
+            {t('companies.culture_desc', { name: company.name, defaultValue: `Tại ${company.name}, chúng tôi tin rằng thành công bắt đầu từ việc trao quyền, nuôi dưỡng tài năng và tạo ra một không gian nơi mỗi cá nhân đều có thể phát triển bền vững.` })}
           </p>
         </div>
 
@@ -453,25 +443,27 @@ export const CompanyCareersPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. OFFICE & WORKING ENVIRONMENT GALLERY */}
-      <section>
-        <div className={styles.sectionHeader}>
-          <span className={styles.subBadge}><Building2 size={12} /> {t('companies.workspace_sub', 'Không gian làm việc')}</span>
-          <h2>{t('companies.workspace_title', 'Góc Nhìn Thực Tế Tại Văn Phòng')}</h2>
-          <p>{t('companies.workspace_desc', 'Không gian làm việc mở chuẩn quốc tế, trang thiết bị tối tân và khu pantry thư giãn đầy năng lượng.')}</p>
-        </div>
+      {/* 3. OFFICE & WORKING ENVIRONMENT GALLERY (Only when uploaded by company) */}
+      {galleryList.length > 0 && (
+        <section>
+          <div className={styles.sectionHeader}>
+            <span className={styles.subBadge}><Building2 size={12} /> {t('companies.workspace_sub', 'Không gian làm việc')}</span>
+            <h2>{t('companies.workspace_title', 'Góc Nhìn Thực Tế Tại Văn Phòng')}</h2>
+            <p>{t('companies.workspace_desc', 'Không gian làm việc mở, trang thiết bị làm việc hiện đại và khu vực sinh hoạt chung tiện nghi.')}</p>
+          </div>
 
-        <div className={styles.galleryGrid}>
-          {galleryList.slice(0, 6).map((imgUrl, idx) => (
-            <div key={idx} className={styles.galleryItem}>
-              <img src={imgUrl} alt={`Office photo ${idx + 1}`} />
-              <div className={styles.galleryOverlay}>
-                <span>{t('companies.workspace_photo', { index: idx + 1, defaultValue: `Không gian làm việc sáng tạo #${idx + 1}` })}</span>
+          <div className={styles.galleryGrid}>
+            {galleryList.slice(0, 6).map((imgUrl, idx) => (
+              <div key={idx} className={styles.galleryItem}>
+                <img src={imgUrl} alt={`Office photo ${idx + 1}`} />
+                <div className={styles.galleryOverlay}>
+                  <span>{t('companies.workspace_photo', { index: idx + 1, defaultValue: `Không gian làm việc #${idx + 1}` })}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 4. PERKS & BENEFITS */}
       <section>
@@ -502,7 +494,7 @@ export const CompanyCareersPage: React.FC = () => {
             <div className={styles.bIcon}><Laptop /></div>
             <div className={styles.bContent}>
               <h3>{t('companies.benefit_tech_title', 'Thiết Bị Công Nghệ Tối Tân')}</h3>
-              <p>{t('companies.benefit_tech_desc', 'Trang bị MacBook Pro M-series thế hệ mới nhất, 2 màn hình 4K Dell UltraSharp cùng ghế công thái học cao cấp.')}</p>
+              <p>{t('companies.benefit_tech_desc', 'Trang bị máy tính làm việc cấu hình cao, màn hình chuyên dụng cùng không gian làm việc tiêu chuẩn.')}</p>
             </div>
           </div>
 

@@ -38,5 +38,7 @@ public record JobDto(
     string? Education = null,
     string? ProbationDuration = null,
     int? Openings = null,
-    int? HiredCount = null
+    int? HiredCount = null,
+    string? ProvinceCode = null,
+    string? CategoryCode = null
 );

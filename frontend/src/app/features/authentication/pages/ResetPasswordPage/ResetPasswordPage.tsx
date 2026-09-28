@@ -75,7 +75,7 @@ export const ResetPasswordPage: React.FC = () => {
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-          <img src="/hr.png" alt="Logo" style={{ height: '36px', width: 'auto' }} />
+          <img src="/logo.png" alt="Logo" style={{ height: '36px', width: 'auto' }} />
           <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>
             HR <span style={{ color: '#2563eb' }}>Portal</span>
           </span>

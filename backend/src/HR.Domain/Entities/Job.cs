@@ -10,9 +10,11 @@ public class Job : BaseEntity
     public string Title { get; set; } = string.Empty;
     public string? Department { get; set; }
     public string Category { get; set; } = string.Empty;
+    public string? CategoryCode { get; set; }
     public string EmploymentType { get; set; } = string.Empty;
     public string Country { get; set; } = "VIETNAM";
     public string City { get; set; } = string.Empty;
+    public string? ProvinceCode { get; set; }
     public string? District { get; set; }
     public string? Office { get; set; }
     public WorkMode WorkMode { get; set; } = WorkMode.ONSITE;

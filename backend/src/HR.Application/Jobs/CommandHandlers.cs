@@ -36,10 +36,23 @@ public class UpdateJobCommandHandler(IApplicationDbContext context, ICurrentUser
         job.SalaryFrom = request.SalaryFrom;
         job.SalaryTo = request.SalaryTo;
         job.City = request.City;
+        job.ProvinceCode = !string.IsNullOrWhiteSpace(request.ProvinceCode)
+            ? request.ProvinceCode
+            : HR.Domain.Reference.AdministrativeReference.MatchProvince(request.City);
         job.ExpiredAt = request.ExpiredAt;
 
         if (!string.IsNullOrWhiteSpace(request.Department)) job.Department = request.Department;
-        if (!string.IsNullOrWhiteSpace(request.Category)) job.Category = request.Category;
+        if (!string.IsNullOrWhiteSpace(request.Category))
+        {
+            job.Category = request.Category;
+            job.CategoryCode = !string.IsNullOrWhiteSpace(request.CategoryCode)
+                ? request.CategoryCode
+                : HR.Domain.Reference.AdministrativeReference.MatchCategory(request.Category);
+        }
+        else if (!string.IsNullOrWhiteSpace(request.CategoryCode))
+        {
+            job.CategoryCode = request.CategoryCode;
+        }
         if (!string.IsNullOrWhiteSpace(request.EmploymentType)) job.EmploymentType = request.EmploymentType;
         if (!string.IsNullOrWhiteSpace(request.District)) job.District = request.District;
         if (!string.IsNullOrWhiteSpace(request.Office)) job.Office = request.Office;
