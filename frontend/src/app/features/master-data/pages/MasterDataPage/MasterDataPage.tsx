@@ -113,11 +113,10 @@ export const MasterDataPage = () => {
       </div>
 
       <div className={styles.toolbar}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 320 }}>
-          <Search size={16} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+        <div className={styles.searchBox}>
+          <Search size={16} className={styles.searchIcon} />
           <input
             className={styles.searchInput}
-            style={{ paddingLeft: 32 }}
             placeholder="Tìm kiếm..."
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -141,7 +140,7 @@ export const MasterDataPage = () => {
               <th>Mô tả</th>
               <th>Thứ tự</th>
               <th>Trạng thái</th>
-              <th style={{ width: 80 }}></th>
+              <th className={styles.colActions}></th>
             </tr>
           </thead>
           <tbody>
@@ -149,7 +148,7 @@ export const MasterDataPage = () => {
               <tr key={item.id}>
                 <td><strong>{item.code}</strong></td>
                 <td>{item.name}</td>
-                <td style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{item.description || '—'}</td>
+                <td className={styles.colDescription}>{item.description || '—'}</td>
                 <td>{item.sortOrder}</td>
                 <td>
                   <span className={`${styles.badge} ${item.isActive ? styles.badgeActive : styles.badgeInactive}`}>
@@ -200,8 +199,8 @@ export const MasterDataPage = () => {
             </div>
             {editingId && (
               <div className={styles.formGroup}>
-                <label>
-                  <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} style={{ marginRight: 8, width: 'auto' }} />
+                <label className={styles.checkboxRow}>
+                  <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} className={styles.checkboxInput} />
                   Hoạt động
                 </label>
               </div>

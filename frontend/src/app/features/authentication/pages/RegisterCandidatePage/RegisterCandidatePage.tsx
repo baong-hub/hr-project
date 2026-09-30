@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, Phone, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { authService } from '../../../../core/services/auth.service';
 import styles from '../LoginPage/LoginPage.module.scss';
+import { FormField } from '../../../../shared/components/form-field/FormField';
 
 export const RegisterCandidatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,145 +68,103 @@ export const RegisterCandidatePage: React.FC = () => {
 
   return (
     <div className={styles.loginContainer}>
-      <div className={styles.loginCard} style={{ width: '480px', height: 'auto', padding: '24px 0' }}>
-        <div className={styles.formPanel} style={{ width: '100%', padding: '0 24px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-brand-primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Dành cho Ứng viên
-            </span>
-            <h2 className={styles.title} style={{ marginTop: '4px' }}>Đăng ký tài khoản</h2>
-            <p className={styles.subtitle}>Tạo tài khoản để ứng tuyển hàng nghìn công việc</p>
+      <div className={styles.authSingleCard}>
+        <div className={styles.authHeaderCenter}>
+          <span className={styles.authBadge}>
+            Dành cho Ứng viên
+          </span>
+          <h2 className={styles.title}>Đăng ký tài khoản</h2>
+          <p className={styles.subtitle}>
+            Tạo tài khoản để ứng tuyển hàng nghìn công việc hấp dẫn
+          </p>
+        </div>
+
+        {errorMsg && (
+          <div className={`${styles.alertBox} ${styles.alertDanger}`}>
+            <AlertCircle size={18} className={styles.authAlertIcon} />
+            <span>{errorMsg}</span>
           </div>
+        )}
 
-          {errorMsg && (
-            <div 
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                borderRadius: 'var(--radius-md)',
-                color: 'rgb(239, 68, 68)',
-                fontSize: 'var(--font-size-sm)',
-                marginBottom: '16px'
-              }}
+        {successMsg && (
+          <div className={`${styles.alertBox} ${styles.alertSuccess}`}>
+            <CheckCircle2 size={18} className={styles.authAlertIcon} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleRegister} className={styles.form}>
+          <FormField
+            label="Họ và tên"
+            required
+            placeholder="Nguyễn Văn A"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            disabled={isLoading || !!successMsg}
+          />
+
+          <FormField
+            label="Địa chỉ Email"
+            required
+            type="email"
+            placeholder="name@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={isLoading || !!successMsg}
+          />
+
+          <FormField
+            label="Số điện thoại"
+            required
+            placeholder="0901234567"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            disabled={isLoading || !!successMsg}
+          />
+
+          <div className={styles.passwordFieldWrapper}>
+            <FormField
+              label="Mật khẩu"
+              required
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Tối thiểu 8 ký tự (hoa, thường, số)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading || !!successMsg}
+              hint="Bao gồm ít nhất 8 ký tự, có chữ hoa, thường và số"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading || !!successMsg}
+              className={styles.eyeToggleBtn}
             >
-              {errorMsg}
-            </div>
-          )}
-
-          {successMsg && (
-            <div 
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                borderRadius: 'var(--radius-md)',
-                color: 'rgb(16, 185, 129)',
-                fontSize: 'var(--font-size-sm)',
-                marginBottom: '16px'
-              }}
-            >
-              {successMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleRegister} className={styles.form}>
-            {/* Full Name */}
-            <div className={styles.inputGroup}>
-              <label className={styles.label}>Họ và tên</label>
-              <div className={styles.inputWrapper}>
-                <User size={18} className={styles.inputIcon} />
-                <input
-                  type="text"
-                  placeholder="Nguyễn Văn A"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  disabled={isLoading || !!successMsg}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className={styles.inputGroup}>
-              <label className={styles.label}>Địa chỉ Email</label>
-              <div className={styles.inputWrapper}>
-                <Mail size={18} className={styles.inputIcon} />
-                <input
-                  type="text"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading || !!successMsg}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Phone Number */}
-            <div className={styles.inputGroup}>
-              <label className={styles.label}>Số điện thoại</label>
-              <div className={styles.inputWrapper}>
-                <Phone size={18} className={styles.inputIcon} />
-                <input
-                  type="text"
-                  placeholder="0901234567"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  disabled={isLoading || !!successMsg}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className={styles.inputGroup}>
-              <label className={styles.label}>Mật khẩu</label>
-              <div className={styles.inputWrapper}>
-                <Lock size={18} className={styles.inputIcon} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={isLoading || !!successMsg}
-                  required
-                />
-                <button
-                  type="button"
-                  className={styles.eyeBtn}
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading || !!successMsg}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button type="submit" className={styles.submitBtn} disabled={isLoading || !!successMsg}>
-              {isLoading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" style={{ marginRight: '8px' }} />
-                  Đang xử lý...
-                </>
-              ) : (
-                'Đăng ký ngay'
-              )}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
-          </form>
-
-          {/* Footer links */}
-          <div className={styles.formFooter} style={{ marginTop: '20px' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-              Đã có tài khoản?{' '}
-              <Link to="/auth/login" style={{ color: 'var(--color-brand-primary-dark)', fontWeight: 600 }}>
-                Đăng nhập ngay
-              </Link>
-            </span>
           </div>
+
+          <button type="submit" className={styles.submitBtn} disabled={isLoading || !!successMsg}>
+            {isLoading ? (
+              <>
+                <Loader2 size={18} className={`animate-spin ${styles.btnSpinner}`} />
+                Đang xử lý...
+              </>
+            ) : (
+              'Đăng ký tài khoản'
+            )}
+          </button>
+        </form>
+
+        <div className={styles.authLinksFooter}>
+          <span className={styles.authFooterText}>
+            Đã có tài khoản?{' '}
+            <Link to="/auth/login" className={styles.authLinkHighlight}>
+              Đăng nhập ngay
+            </Link>
+          </span>
         </div>
       </div>
     </div>
   );
 };
+export default RegisterCandidatePage;

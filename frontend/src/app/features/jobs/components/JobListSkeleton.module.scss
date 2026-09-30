@@ -5,8 +5,8 @@
 }
 
 .skeletonCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 12px);
   padding: 16px;
   display: flex;
@@ -17,23 +17,17 @@
 }
 
 .shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-bg-subtle, #f3f4f6) 0%,
-    var(--color-bg-hover, #e5e7eb) 50%,
-    var(--color-bg-subtle, #f3f4f6) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  background: var(--color-bg-subtle);
+  animation: pulse 1.5s ease-in-out infinite;
   border-radius: var(--radius-sm, 6px);
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
   }
-  100% {
-    background-position: 200% 0;
+  50% {
+    opacity: 0.4;
   }
 }
 
@@ -76,7 +70,7 @@
 .metaBadge {
   height: 22px;
   width: 90px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .footerRow {
@@ -84,7 +78,7 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 10px;
-  border-top: 1px solid var(--color-border-subtle, #f3f4f6);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .dateLine {

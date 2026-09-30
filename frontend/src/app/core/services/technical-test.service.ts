@@ -1,4 +1,5 @@
 import api from './api.service';
+import type { ApiResponse } from '../models/api.model';
 import type {
   AssessmentTemplate,
   AssessmentQuestion,
@@ -66,5 +67,14 @@ export const technicalTestService = {
 
   /** Danh sách bài test của các ứng viên ứng tuyển vào 1 Job */
   getTestsByJob: (jobId: number) =>
-    api.get<TechnicalTestSummary[]>(`/technical-tests/by-job/${jobId}`)
+    api.get<TechnicalTestSummary[]>(`/technical-tests/by-job/${jobId}`),
+
+  getTestSummary: (applicationId: number) =>
+    api.get<ApiResponse<TechnicalTestSummary>>(`/technical-tests/by-application/${applicationId}`),
+
+  inviteCandidateTest: (applicationId: number, testId?: number) =>
+    api.post<ApiResponse<TechnicalTestSummary>>('/technical-tests/invite', { applicationId, testId }),
+
+  getTestDetail: (testId: number) =>
+    api.get<ApiResponse<TestDetailResult>>(`/technical-tests/${testId}/result`)
 };

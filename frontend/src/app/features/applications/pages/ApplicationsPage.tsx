@@ -99,7 +99,7 @@ export const ApplicationsPage: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi hệ thống khi duyệt hồ sơ.');
+      toast.error('Lỗi khi duyệt ứng viên & mở chat.');
     } finally {
       setShortlistingAppId(null);
     }
@@ -107,13 +107,14 @@ export const ApplicationsPage: React.FC = () => {
 
   const handleOpenChat = async (app: any) => {
     try {
-      const res = await messagesService.getByApplicationId(app.id);
-      if (res.data?.success && res.data.data?.conversationId) {
-        navigate(`/messages?conversationId=${res.data.data.conversationId}`);
+      const res = await messagesService.getOrCreateDirectConversation(app.candidateId);
+      if (res.data?.success && res.data.data?.id) {
+        navigate(`/messages?conversationId=${res.data.data.id}`);
       } else {
         navigate('/messages');
       }
     } catch (err) {
+      console.error(err);
       navigate('/messages');
     }
   };
@@ -121,20 +122,12 @@ export const ApplicationsPage: React.FC = () => {
   useEffect(() => {
     fetchJobs();
     fetchApplications();
-  }, []);
+  }, [isCandidate]);
 
-  // Filter application by job select
-  const handleJobSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const jobId = e.target.value ? Number(e.target.value) : '';
-    setSelectedJobId(jobId);
-    fetchApplications(jobId || undefined);
-  };
-
-  // DRAG & DROP HANDLERS
-  const handleDragStart = (e: React.DragEvent, appId: number) => {
-    setDraggingCardId(appId);
-    e.dataTransfer.setData('text/plain', appId.toString());
-    e.dataTransfer.effectAllowed = 'move';
+  // Handle Drag & Drop
+  const handleDragStart = (e: React.DragEvent, id: number) => {
+    setDraggingCardId(id);
+    e.dataTransfer.setData('text/plain', id.toString());
   };
 
   const handleDragEnd = () => {
@@ -145,41 +138,42 @@ export const ApplicationsPage: React.FC = () => {
     e.preventDefault();
   };
 
-  const handleDrop = async (e: React.DragEvent, targetStatus: string) => {
+  const handleDrop = async (e: React.DragEvent, targetStageKey: string) => {
     e.preventDefault();
-    const appIdStr = e.dataTransfer.getData('text/plain');
-    if (!appIdStr) return;
-    const appId = Number(appIdStr);
+    const appId = e.dataTransfer.getData('text/plain');
+    if (!appId) return;
 
-    // Find local app object to check if status actually changed
-    const app = applications.find(a => a.id === appId);
-    if (!app || app.status === targetStatus) return;
+    const id = parseInt(appId, 10);
+    const targetApp = applications.find(a => a.id === id);
+    if (!targetApp || targetApp.status.toUpperCase() === targetStageKey) return;
 
-    // Call API to update status
+    // Optimistic UI update
+    setApplications(prev => prev.map(a => a.id === id ? { ...a, status: targetStageKey } : a));
+
     try {
-      // Optimistic UI update
-      setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: targetStatus } : a));
-
-      const res = await applicationsService.updateStatus(appId, targetStatus);
-      if (!res.data?.success) {
-        // Rollback on fail
-        fetchApplications(selectedJobId || undefined);
-      } else {
-        toast.success(`Chuyển trạng thái ứng viên thành công.`);
-      }
+      await applicationsService.updateApplicationStatus(id, { status: targetStageKey });
+      toast.success(`Đã chuyển trạng thái sang: ${targetStageKey}`);
     } catch (err) {
       console.error(err);
-      fetchApplications(selectedJobId || undefined);
+      toast.error('Cập nhật trạng thái thất bại. Đang khôi phục...');
+      fetchApplications(selectedJobId ? Number(selectedJobId) : undefined);
     }
   };
 
-  // Schedule Interview action
+  // Handle Filter by Job
+  const handleJobSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value ? Number(e.target.value) : '';
+    setSelectedJobId(val);
+    fetchApplications(val ? Number(val) : undefined);
+  };
+
+  // Schedule Interview
   const handleScheduleInterview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schedulingApp) return;
 
     try {
-      const res = await interviewsService.createInterview({
+      await interviewsService.createInterview({
         applicationId: schedulingApp.id,
         scheduledAt: new Date(interviewForm.scheduledAt).toISOString(),
         location: interviewForm.location,
@@ -187,53 +181,56 @@ export const ApplicationsPage: React.FC = () => {
         notes: interviewForm.notes
       });
 
-      if (res.data?.success) {
-        setShowInterviewModal(false);
-        // Refresh board
-        fetchApplications(selectedJobId || undefined);
-      }
+      // Tự động chuyển ứng viên sang cột INTERVIEW
+      await applicationsService.updateApplicationStatus(schedulingApp.id, { status: 'INTERVIEW' });
+      
+      toast.success('Lên lịch phỏng vấn và gửi thông báo thành công!');
+      setShowInterviewModal(false);
+      fetchApplications(selectedJobId ? Number(selectedJobId) : undefined);
     } catch (err) {
       console.error(err);
+      toast.error('Lỗi khi lưu lịch phỏng vấn.');
     }
   };
 
-  // Helper score color
+  // Helper styles based on match score
   const getScoreStyle = (score: number) => {
-    if (score >= 85) return styles.scoreHigh;
-    if (score >= 60) return styles.scoreMedium;
+    if (score >= 80) return styles.scoreHigh;
+    if (score >= 50) return styles.scoreMedium;
     return styles.scoreLow;
   };
 
-  // RENDER: CANDIDATE APPLICATIONS TRACKING WITH PROGRESS BAR
-  if (isCandidate) {
-    // Helper to calculate progress active line
-    const getActiveLineIndex = (status: string) => {
-      const statuses = ['APPLIED', 'SCREENING', 'SHORTLISTED', 'INTERVIEW', 'OFFER', 'HIRED'];
-      const index = statuses.indexOf(status.toUpperCase());
-      if (index === -1) return 0;
-      if (status === 'REJECTED') return index; // stops at rejection
-      return index;
-    };
+  // Candidate Progress Stepper Helper
+  const getActiveLineIndex = (status: string) => {
+    const statuses = ['APPLIED', 'SCREENING', 'SHORTLISTED', 'INTERVIEW', 'OFFER', 'HIRED'];
+    const index = statuses.indexOf(status.toUpperCase());
+    if (index === -1) return 0;
+    return index;
+  };
 
+  // RENDER: CANDIDATE TRACKING VIEW (If role is candidate)
+  if (isCandidate) {
     return (
       <div className={styles.applicationsPage}>
         <div className={styles.titleArea}>
           <div>
             <h1>Theo dõi Lịch sử Ứng tuyển</h1>
-            <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+            <p className={styles.titleSubtitle}>
               Theo dõi trực quan quy trình đánh giá CV và tuyển dụng của nhà tuyển dụng đối với hồ sơ của bạn
             </p>
           </div>
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)' }}>Đang tải lịch sử ứng tuyển...</div>
+          <div className={styles.loadingCard}>
+            <p className={styles.titleSubtitle}>Đang tải lịch sử ứng tuyển...</p>
+          </div>
         ) : applications.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)', background: 'var(--color-bg-card)', borderRadius: '12px', border: '1px solid var(--color-border-default)' }}>
+          <div className={styles.emptyStateCard}>
             Bạn chưa nộp hồ sơ vào tin tuyển dụng nào.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className={styles.listColumnLayout}>
             {applications.map(app => {
               const activeIndex = getActiveLineIndex(app.status);
               const isRejected = app.status === 'REJECTED';
@@ -243,14 +240,14 @@ export const ApplicationsPage: React.FC = () => {
                   <div className={styles.candidateJobCard}>
                     <div>
                       <h3>{app.jobTitle}</h3>
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                      <span className={styles.companyNameText}>
                         🏢 {app.companyName}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                    <div className={styles.candidateJobMeta}>
                       <span>Ngày nộp: {app.appliedAt ? app.appliedAt.split('T')[0] : '—'}</span>
                       {app.coverLetter && (
-                        <span style={{ background: 'var(--color-bg-subtle)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px' }}>
+                        <span className={styles.statusPill}>
                           Có Thư giới thiệu
                         </span>
                       )}
@@ -261,8 +258,7 @@ export const ApplicationsPage: React.FC = () => {
                   <div className={styles.candidateStepper}>
                     <div className={styles.stepperLine}></div>
                     <div 
-                      className={styles.stepperLineActive}
-                      style={{ width: `${(activeIndex / 5) * 100}%`, backgroundColor: isRejected ? '#ef4444' : 'var(--color-brand-primary)' }}
+                      className={`${styles.stepperLineActive} ${isRejected ? styles.stepperLineActiveRejected : ''} ${styles[`progress${Math.min(100, Math.max(0, activeIndex * 20))}`]}`}
                     ></div>
 
                     <div className={`${styles.candStep} ${activeIndex >= 0 ? (isRejected && activeIndex === 0 ? styles.candStepFailed : styles.candStepCompleted) : ''}`}>
@@ -311,11 +307,11 @@ export const ApplicationsPage: React.FC = () => {
       <div className={styles.titleArea}>
         <div>
           <h1>ATS Candidate Tracking System</h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+          <p className={styles.titleSubtitle}>
             Quản lý phễu ứng viên thông minh. Kéo thả thẻ ứng viên giữa các cột để cập nhật trạng thái tuyển dụng.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className={styles.cardActions}>
           <button 
             className={styles.btnSecondary} 
             onClick={() => navigate('/employer/applications')}
@@ -329,8 +325,8 @@ export const ApplicationsPage: React.FC = () => {
 
       {/* Selector: Choose which job board to view */}
       <div className={styles.jobSelectorBar}>
-        <Building size={18} color="var(--color-brand-primary)" />
-        <span style={{ fontWeight: 600, fontSize: '14px' }}>Bộ lọc phễu theo tin tuyển dụng:</span>
+        <Building size={18} />
+        <span className={styles.filterLabel}>Bộ lọc phễu theo tin tuyển dụng:</span>
         <select value={selectedJobId} onChange={handleJobSelectChange}>
           <option value="">Tất cả việc làm của công ty</option>
           {jobs.map(j => (
@@ -359,7 +355,7 @@ export const ApplicationsPage: React.FC = () => {
 
               <div className={styles.cardsContainer}>
                 {stageApps.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '24px 8px', fontSize: '11px', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border-light)', borderRadius: '8px' }}>
+                  <div className={styles.emptyColumnNotice}>
                     Kéo thả ứng viên vào đây
                   </div>
                 ) : (
@@ -381,7 +377,7 @@ export const ApplicationsPage: React.FC = () => {
                       <div className={styles.cardJobTitle}>Ứng tuyển: {app.jobTitle}</div>
                       
                       {app.coverLetter && (
-                        <div style={{ fontSize: '11px', background: 'var(--color-bg-subtle)', padding: '6px', borderRadius: '4px', color: 'var(--color-text-secondary)', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        <div className={styles.cardSnippet}>
                           " {app.coverLetter} "
                         </div>
                       )}
@@ -401,11 +397,10 @@ export const ApplicationsPage: React.FC = () => {
                           {/* Shortlist & Chat Action */}
                           {stage.key !== 'SHORTLISTED' && stage.key !== 'HIRED' && stage.key !== 'REJECTED' && (
                             <button 
-                              className={styles.cardBtn} 
+                              className={`${styles.cardBtn} ${styles.cardBtnInfo}`} 
                               onClick={() => handleShortlistAndChat(app)}
                               disabled={shortlistingAppId === app.id}
                               title="Duyệt phù hợp, gửi Email & Mở chat ngay"
-                              style={{ color: '#0284c7' }}
                             >
                               <Sparkles size={12} />
                             </button>
@@ -413,10 +408,9 @@ export const ApplicationsPage: React.FC = () => {
 
                           {/* Direct Chat Action */}
                           <button 
-                            className={styles.cardBtn} 
+                            className={`${styles.cardBtn} ${styles.cardBtnPrimary}`} 
                             onClick={() => handleOpenChat(app)}
                             title="Nhắn tin với ứng viên"
-                            style={{ color: '#2563eb' }}
                           >
                             <MessageSquare size={12} />
                           </button>
@@ -424,10 +418,9 @@ export const ApplicationsPage: React.FC = () => {
                           {/* Schedule Interview Quick Action */}
                           {stage.key !== 'INTERVIEW' && stage.key !== 'HIRED' && stage.key !== 'REJECTED' && (
                             <button 
-                              className={styles.cardBtn} 
+                              className={`${styles.cardBtn} ${styles.cardBtnSuccess}`} 
                               onClick={() => { setSchedulingApp(app); setShowInterviewModal(true); }}
                               title="Lên lịch phỏng vấn"
-                              style={{ color: '#2e7d32' }}
                             >
                               <Calendar size={12} />
                             </button>

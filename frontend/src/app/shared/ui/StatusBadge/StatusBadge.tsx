@@ -1,36 +1,37 @@
 import React from 'react';
-import styles from './StatusBadge.module.scss';
+import { StatusBadge as BaseStatusBadge, type StatusContextType } from '../../components/status-badge';
 
-export type StatusType = 'Draft' | 'Save' | 'Processing' | 'Completed' | 'Cancelled' | 'Unpaid' | 'Partial' | 'Paid' | 'Refunded' | 'PendingApproval' | 'Approved' | 'Rejected';
+export type StatusType = 
+  | 'Draft' 
+  | 'Save' 
+  | 'Processing' 
+  | 'Completed' 
+  | 'Cancelled' 
+  | 'Unpaid' 
+  | 'Partial' 
+  | 'Paid' 
+  | 'Refunded' 
+  | 'PendingApproval' 
+  | 'Approved' 
+  | 'Rejected'
+  | string;
 
-interface StatusBadgeProps {
+export interface StatusBadgeProps {
   status: StatusType;
+  type?: StatusContextType;
   label?: string;
   className?: string;
 }
 
-const statusConfig: Record<StatusType, { color: string; text: string }> = {
-  Draft: { color: 'secondary', text: 'Nháp' },
-  Save: { color: 'success', text: 'Đã lưu' },
-  Processing: { color: 'info', text: 'Đang xử lý' },
-  Completed: { color: 'success', text: 'Hoàn thành' }, // Map to success (green) for completed
-  Cancelled: { color: 'secondary', text: 'Đã hủy' },
-  Unpaid: { color: 'danger', text: 'Chưa thanh toán' },
-  Partial: { color: 'warning', text: 'Thanh toán một phần' },
-  Paid: { color: 'success', text: 'Đã thanh toán' },
-  Refunded: { color: 'secondary', text: 'Đã hoàn tiền' },
-  PendingApproval: { color: 'warning', text: 'Chờ duyệt' },
-  Approved: { color: 'info', text: 'Đã duyệt' },
-  Rejected: { color: 'danger', text: 'Từ chối' }
-};
-
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label, className = '' }) => {
-  const config = statusConfig[status] || { color: 'default', text: status };
-  const displayText = label || config.text;
-
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, type = 'payment', label, className = '' }) => {
   return (
-    <span className={`${styles.badge} ${styles[config.color]} ${className}`}>
-      {displayText}
-    </span>
+    <BaseStatusBadge
+      status={status}
+      type={type}
+      label={label}
+      className={className}
+    />
   );
 };
+
+export default StatusBadge;

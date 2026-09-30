@@ -490,7 +490,7 @@ export const EmployerAssessmentsPage: React.FC = () => {
 
                   {templateForm.questions.length === 0 ? (
                     <div className={styles.emptyQuestions}>
-                      <BookOpen size={40} color="#94a3b8" />
+                      <BookOpen size={40} color="var(--color-text-muted)" />
                       <p>Chưa có câu hỏi nào trong đề thi này.</p>
                       <p className={styles.emptySub}>
                         Bạn có thể bấm <strong>&quot;Sinh câu hỏi bằng AI&quot;</strong> để hệ thống tự tạo bộ câu hỏi trắc nghiệm chuẩn xác theo JD, hoặc tự thêm thủ công.
@@ -620,7 +620,7 @@ export const EmployerAssessmentsPage: React.FC = () => {
             </div>
           ) : filteredResults.length === 0 ? (
             <div className={styles.emptyResults}>
-              <Users size={48} color="#94a3b8" />
+              <Users size={48} color="var(--color-text-muted)" />
               <h3>Chưa có bài kiểm tra nào</h3>
               <p>Khi ứng viên làm bài thi năng lực, kết quả chấm điểm tự động sẽ hiển thị tại đây.</p>
             </div>

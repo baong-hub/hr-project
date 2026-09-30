@@ -236,16 +236,16 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
               <div>
                 <strong>Ứng viên gửi đề xuất thương lượng lại điều khoản:</strong>
                 {existingOffer.candidateDesiredSalary && (
-                  <div style={{ marginTop: '4px', fontWeight: 600 }}>
+                  <div className={styles.counterSalary}>
                     Mức lương mong muốn: {formatMoney(existingOffer.candidateDesiredSalary)}
                   </div>
                 )}
                 {existingOffer.candidateResponseNote && (
-                  <div style={{ marginTop: '2px', fontStyle: 'italic' }}>
+                  <div className={styles.counterNote}>
                     "{existingOffer.candidateResponseNote}"
                   </div>
                 )}
-                <div style={{ marginTop: '4px', fontSize: '0.8rem', opacity: 0.85 }}>
+                <div className={styles.counterHelp}>
                   Bạn có thể điều chỉnh các điều khoản bên dưới và nhấn "Cập nhật & Gửi lại Offer".
                 </div>
               </div>
@@ -305,23 +305,23 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
           </div>
 
           {/* Section: Email Notification (Gmail) */}
-          <div className={styles.sectionCard} style={{ border: '1px solid #c7d2fe', background: '#f8faff' }}>
-            <h3 className={styles.sectionTitle} style={{ color: '#4338ca' }}>
+          <div className={`${styles.sectionCard} ${styles.emailSectionCard}`}>
+            <h3 className={`${styles.sectionTitle} ${styles.emailSectionTitle}`}>
               <Mail size={18} />
               Gửi Thư Mời Trực Tiếp Qua Email (Gmail) Của Ứng Viên
             </h3>
             <div className={styles.formGrid}>
-              <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <label style={{ margin: 0, fontWeight: 700, color: '#1e293b' }}>
+              <div className={`${styles.formGroup} ${styles.spanTwo}`}>
+                <div className={styles.emailLabelRow}>
+                  <label className={styles.emailLabel}>
                     Địa chỉ Gmail nhận Thư mời của ứng viên <span className={styles.required}>*</span>
                   </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', cursor: 'pointer', color: '#4338ca', fontWeight: 600 }}>
+                  <label className={styles.emailToggleLabel}>
                     <input 
                       type="checkbox" 
                       checked={sendEmailNotification} 
                       onChange={(e) => setSendEmailNotification(e.target.checked)}
-                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                      className={styles.emailCheckbox}
                     />
                     Tự động gửi email thông báo kèm văn bản PDF
                   </label>
@@ -333,15 +333,9 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
                   placeholder="Nhập địa chỉ Gmail của ứng viên (ví dụ: ungvien@gmail.com)"
                   required={sendEmailNotification}
                   disabled={!sendEmailNotification}
-                  style={{
-                    border: '1px solid #818cf8',
-                    padding: '9px 14px',
-                    borderRadius: '8px',
-                    fontSize: '0.9rem',
-                    background: sendEmailNotification ? '#ffffff' : '#f1f5f9'
-                  }}
+                  className={styles.emailInput}
                 />
-                <div style={{ marginTop: '6px', fontSize: '0.8rem', color: '#6366f1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div className={styles.emailHelpText}>
                   Hệ thống sẽ gửi email trang trọng tới địa chỉ Gmail này, bao gồm: chức danh, thu nhập, thời gian thử việc, quyền lợi, tệp PDF đính kèm và đường link để ứng viên ký duyệt chấp thuận hoặc phản hồi.
                 </div>
               </div>
@@ -404,7 +398,7 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
               </div>
 
               {/* Live total official salary banner */}
-              <div className={styles.summaryBanner} style={{ gridColumn: '1 / -1' }}>
+              <div className={`${styles.summaryBanner} ${styles.fullSpan}`}>
                 <div className={styles.summaryCol}>
                   <span className={styles.label}>Tổng thu nhập chính thức</span>
                   <span className={styles.value}>{formatMoney(totalOfficialSalary)} / tháng</span>
@@ -412,7 +406,7 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
                     Lương {salaryType}: {formatMoney(basicSalary)} + Phụ cấp: {formatMoney(allowance)}
                   </span>
                 </div>
-                <ShieldCheck size={36} color="#059669" />
+                <ShieldCheck size={36} className={styles.shieldIcon} />
               </div>
             </div>
           </div>
@@ -457,11 +451,11 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
                 </div>
               </div>
 
-              <div className={styles.summaryBanner} style={{ gridColumn: '1 / -1', background: '#f8fafc', borderColor: '#e2e8f0' }}>
+              <div className={`${styles.summaryBanner} ${styles.probationSummaryBanner}`}>
                 <div className={styles.summaryCol}>
-                  <span className={styles.label} style={{ color: '#475569' }}>Lương thực tế trong giai đoạn thử việc</span>
-                  <span className={styles.value} style={{ color: '#0f172a' }}>{formatMoney(totalProbationSalary)} / tháng</span>
-                  <span className={styles.sub} style={{ color: '#64748b' }}>
+                  <span className={styles.label}>Lương thực tế trong giai đoạn thử việc</span>
+                  <span className={styles.value}>{formatMoney(totalProbationSalary)} / tháng</span>
+                  <span className={styles.sub}>
                     {probationRate}% lương cứng ({formatMoney(probationBaseSalary)}) + 100% phụ cấp ({formatMoney(allowance)}) trong {probationMonths} tháng
                   </span>
                 </div>
@@ -550,14 +544,14 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
             {fileUrl ? (
               <div className={styles.fileBadge}>
                 <div className={styles.fileInfo}>
-                  <FileText size={20} color="#2563eb" />
+                  <FileText size={20} />
                   <div>
                     <div>{fileName || 'Thu_Moi_Nhan_Viec.pdf'}</div>
                     <a
                       href={fileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ fontSize: '0.75rem', color: '#2563eb', textDecoration: 'underline' }}
+                      className={styles.filePreviewLink}
                     >
                       Xem trước file đã tải lên
                     </a>
@@ -581,7 +575,7 @@ export const JobOfferModal: React.FC<JobOfferModalProps> = ({
                   type="file"
                   accept="application/pdf"
                   onChange={handleFileUpload}
-                  style={{ display: 'none' }}
+                  className={styles.hiddenInput}
                   disabled={uploadingFile}
                 />
                 <Upload size={32} className={styles.uploadIcon} />

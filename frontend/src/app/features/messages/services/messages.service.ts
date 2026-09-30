@@ -52,5 +52,7 @@ export const messagesService = {
     api.post('/messages/send', data),
   markAsRead: (id: number) => api.post(`/messages/conversations/${id}/read`),
   shortlistAndChat: (data: { applicationId: number; initialMessage?: string }) =>
-    api.post('/messages/shortlist-and-chat', data)
+    api.post('/messages/shortlist-and-chat', data),
+  getOrCreateDirectConversation: (candidateUserId: number) =>
+    api.post<any>('/messages/direct', { candidateUserId })
 };

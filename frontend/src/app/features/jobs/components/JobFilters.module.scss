@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4, 16px);
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 12px);
   padding: var(--space-4, 16px);
   position: sticky;
@@ -15,8 +15,8 @@
     width: 5px;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--color-border-default, #cbd5e1);
-    border-radius: 3px;
+    background: var(--color-border-default);
+    border-radius: var(--radius-xs);
   }
 }
 
@@ -25,12 +25,12 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  border-bottom: 1px solid var(--color-border-subtle);
 
   h2 {
     font-size: var(--font-size-base, 15px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
     display: flex;
     align-items: center;
@@ -41,7 +41,7 @@
     background: none;
     border: none;
     font-size: var(--font-size-xs, 12px);
-    color: var(--color-brand-primary, #2563eb);
+    color: var(--color-brand-primary);
     font-weight: 600;
     cursor: pointer;
     padding: 0;
@@ -53,7 +53,7 @@
 }
 
 .filterSection {
-  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  border-bottom: 1px solid var(--color-border-subtle);
   padding-bottom: 14px;
 
   &:last-child {
@@ -74,14 +74,14 @@
   text-align: left;
   font-size: var(--font-size-sm, 13px);
   font-weight: 700;
-  color: var(--color-text-primary, #1e293b);
+  color: var(--color-text-primary);
 
   &:hover {
-    color: var(--color-brand-primary, #2563eb);
+    color: var(--color-brand-primary);
   }
 
   .chevron {
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--color-text-muted);
     transition: transform var(--transition-fast, 0.15s ease);
   }
 
@@ -101,16 +101,16 @@
   width: 100%;
   padding: 6px 10px;
   margin-bottom: 8px;
-  border: 1px solid var(--color-border-default, #cbd5e1);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-sm, 6px);
   font-size: var(--font-size-xs, 12px);
-  color: var(--color-text-primary, #0f172a);
-  background: var(--color-bg-page, #f8fafc);
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
   outline: none;
 
   &:focus {
-    border-color: var(--color-brand-primary, #2563eb);
-    background: var(--color-bg-card, #ffffff);
+    border-color: var(--color-brand-primary);
+    background: var(--color-bg-card);
   }
 }
 
@@ -126,8 +126,8 @@
     width: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--color-border-subtle, #e2e8f0);
-    border-radius: 2px;
+    background: var(--color-border-subtle);
+    border-radius: var(--radius-xs);
   }
 }
 
@@ -138,24 +138,24 @@
   padding: 5px 8px;
   border-radius: var(--radius-sm, 4px);
   font-size: var(--font-size-xs, 12px);
-  color: var(--color-text-secondary, #334155);
+  color: var(--color-text-secondary);
   cursor: pointer;
   user-select: none;
   transition: background-color var(--transition-fast, 0.15s ease);
 
   &:hover {
-    background-color: var(--color-bg-subtle, #f1f5f9);
-    color: var(--color-text-primary, #0f172a);
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-primary);
   }
 
   &.active {
-    background-color: var(--color-brand-subtle, #eff6ff);
-    color: var(--color-brand-primary, #2563eb);
+    background-color: var(--color-brand-subtle);
+    color: var(--color-brand-primary);
     font-weight: 600;
 
     .countBadge {
-      background-color: var(--color-brand-primary, #2563eb);
-      color: #ffffff;
+      background-color: var(--color-brand-primary);
+      color: var(--color-white);
     }
   }
 
@@ -175,7 +175,7 @@
 
   input[type="radio"],
   input[type="checkbox"] {
-    accent-color: var(--color-brand-primary, #2563eb);
+    accent-color: var(--color-brand-primary);
     cursor: pointer;
     margin: 0;
   }
@@ -185,9 +185,9 @@
     font-weight: 500;
     font-variant-numeric: tabular-nums;
     padding: 1px 6px;
-    background: var(--color-bg-subtle, #f1f5f9);
-    border-radius: 999px;
-    color: var(--color-text-muted, #64748b);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-muted);
   }
 }
 
@@ -197,7 +197,7 @@
   padding: 6px 0;
   font-size: var(--font-size-xs, 12px);
   font-weight: 600;
-  color: var(--color-brand-primary, #2563eb);
+  color: var(--color-brand-primary);
   cursor: pointer;
   text-align: left;
 

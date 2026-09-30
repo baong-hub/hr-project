@@ -68,7 +68,7 @@ export const CandidateAppHistoryPage: React.FC = () => {
       <div className={styles.titleArea}>
         <div>
           <h1>{t('applications.history_title', 'Lịch sử việc làm đã ứng tuyển')}</h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+          <p className={styles.titleSubtitle}>
             {t('applications.history_subtitle', 'Theo dõi trực quan quy trình tuyển dụng của nhà tuyển dụng đối với hồ sơ của bạn.')}
           </p>
         </div>
@@ -78,60 +78,50 @@ export const CandidateAppHistoryPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '80px', color: 'var(--color-text-secondary)' }}>
-          <div className="spinner" style={{ marginBottom: '12px' }}></div>
-          {t('applications.loading', 'Đang tải lịch sử ứng tuyển...')}
+        <div className={styles.loadingCard}>
+          <div className="spinner"></div>
+          <p className={styles.titleSubtitle}>{t('applications.loading', 'Đang tải lịch sử ứng tuyển...')}</p>
         </div>
       ) : error ? (
-        <div style={{
-          textAlign: 'center',
-          padding: '40px',
-          color: 'var(--color-error)',
-          background: 'var(--color-bg-card)',
-          borderRadius: '12px',
-          border: '1px solid var(--color-border-default)'
-        }}>
+        <div className={styles.emptyStateCard}>
           <p>{error}</p>
-          <button className={styles.btnPrimary} onClick={fetchApplications} style={{ marginTop: '12px' }}>
+          <button className={styles.btnPrimary} onClick={fetchApplications}>
             {t('common.retry', 'Thử lại')}
           </button>
         </div>
       ) : applications.length === 0 ? (
-        <div style={{
-          textAlign: 'center',
-          padding: '80px 40px',
-          color: 'var(--color-text-muted)',
-          background: 'var(--color-bg-card)',
-          borderRadius: '12px',
-          border: '1px solid var(--color-border-default)'
-        }}>
+        <div className={styles.emptyStateCard}>
           <h3>{t('applications.empty_title', 'Chưa có hồ sơ ứng tuyển')}</h3>
-          <p style={{ marginTop: '8px' }}>{t('applications.empty_desc', 'Bạn chưa nộp hồ sơ vào tin tuyển dụng nào.')}</p>
+          <p className={styles.titleSubtitle}>{t('applications.empty_desc', 'Bạn chưa nộp hồ sơ vào tin tuyển dụng nào.')}</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className={styles.listColumnLayout}>
           {applications.map(app => {
             const activeIndex = getActiveLineIndex(app.status);
             const isRejected = app.status === 'REJECTED';
             const isWithdrawn = app.status === 'WITHDRAWN';
+            const offer = offersMap[app.id];
+
+            let offerBannerClass = styles.offerBannerPending;
+            if (offer?.status === 'ACCEPTED') offerBannerClass = styles.offerBannerAccepted;
+            else if (offer?.status === 'NEGOTIATING') offerBannerClass = styles.offerBannerNegotiating;
 
             return (
               <div key={app.id} className={styles.stepperContainer}>
                 <div className={styles.candidateJobCard}>
                   <div>
                     <h3>{app.jobTitle}</h3>
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                    <span className={styles.companyNameText}>
                       {app.companyName}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px' }}>
+                  <div className={styles.candidateJobMeta}>
                     <span>{t('applications.applied_at', { date: app.appliedAt ? app.appliedAt.split('T')[0] : '—', defaultValue: `Ngày nộp: ${app.appliedAt ? app.appliedAt.split('T')[0] : '—'}` })}</span>
                     <a 
                       href={app.cvFileUrl} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className={styles.btnSecondary}
-                      style={{ padding: '4px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center' }}
                     >
                       {t('cvs.preview_online', 'Xem CV đã nộp')}
                     </a>
@@ -139,62 +129,26 @@ export const CandidateAppHistoryPage: React.FC = () => {
                 </div>
 
                 {/* Offer Action Banner if an offer is received */}
-                {offersMap[app.id] && (
-                  <div
-                    style={{
-                      marginTop: '14px',
-                      padding: '14px 20px',
-                      borderRadius: '12px',
-                      background: offersMap[app.id].status === 'ACCEPTED'
-                        ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
-                        : offersMap[app.id].status === 'NEGOTIATING'
-                          ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)'
-                          : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                      border: `1px solid ${
-                        offersMap[app.id].status === 'ACCEPTED'
-                          ? '#a7f3d0'
-                          : offersMap[app.id].status === 'NEGOTIATING'
-                            ? '#fde68a'
-                            : '#bfdbfe'
-                      }`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '16px',
-                      flexWrap: 'wrap'
-                    }}
-                  >
+                {offer && (
+                  <div className={`${styles.offerBanner} ${offerBannerClass}`}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0f172a' }}>
-                        {offersMap[app.id].status === 'ACCEPTED'
+                      <div className={styles.offerBannerTitle}>
+                        {offer.status === 'ACCEPTED'
                           ? t('offers.status_hired', 'Bạn đã chính thức ký duyệt nhận việc thành công!')
-                          : offersMap[app.id].status === 'NEGOTIATING'
+                          : offer.status === 'NEGOTIATING'
                             ? t('offers.status_negotiating', 'Đang chờ phản hồi thương lượng từ Nhà tuyển dụng')
                             : t('offers.title', 'Bạn nhận được Thư Mời Nhận Việc (Job Offer)!')}
                       </div>
-                      <div style={{ fontSize: '0.825rem', color: '#475569', marginTop: '2px' }}>
-                        {t('offers.salary_official', 'Tổng thu nhập')}: <strong>{new Intl.NumberFormat(t('common.locale', 'vi-VN'), { style: 'currency', currency: 'VND' }).format(offersMap[app.id].totalSalary)} {t('offers.per_month', '/ tháng')}</strong> • {t('offers.start_date', 'Ngày bắt đầu')}: <strong>{new Date(offersMap[app.id].startDate).toLocaleDateString(t('common.locale', 'vi-VN'))}</strong>
+                      <div className={styles.offerBannerSubtitle}>
+                        {t('offers.salary_official', 'Tổng thu nhập')}: <strong>{new Intl.NumberFormat(t('common.locale', 'vi-VN'), { style: 'currency', currency: 'VND' }).format(offer.totalSalary)} {t('offers.per_month', '/ tháng')}</strong> • {t('offers.start_date', 'Ngày bắt đầu')}: <strong>{new Date(offer.startDate).toLocaleDateString(t('common.locale', 'vi-VN'))}</strong>
                       </div>
                     </div>
 
                     <button
-                      onClick={() => setActiveOfferModal(offersMap[app.id])}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        background: offersMap[app.id].status === 'PENDING' ? '#2563eb' : '#ffffff',
-                        color: offersMap[app.id].status === 'PENDING' ? '#ffffff' : '#0f172a',
-                        border: offersMap[app.id].status === 'PENDING' ? 'none' : '1px solid #cbd5e1',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        boxShadow: offersMap[app.id].status === 'PENDING' ? '0 4px 8px rgba(37,99,235,0.25)' : 'none'
-                      }}
+                      onClick={() => setActiveOfferModal(offer)}
+                      className={offer.status === 'PENDING' ? styles.btnPrimary : styles.btnSecondary}
                     >
-                      {offersMap[app.id].status === 'PENDING'
+                      {offer.status === 'PENDING'
                         ? t('offers.btn_view_respond', 'Xem Thư Mời & Phản Hồi')
                         : t('offers.btn_view_respond', 'Xem Chi Tiết Thư Mời')}
                     </button>
@@ -202,25 +156,14 @@ export const CandidateAppHistoryPage: React.FC = () => {
                 )}
 
                 {isWithdrawn ? (
-                  <div style={{
-                    padding: '16px',
-                    borderRadius: '8px',
-                    background: 'var(--color-bg-subtle)',
-                    color: 'var(--color-text-secondary)',
-                    textAlign: 'center',
-                    fontWeight: 600
-                  }}>
+                  <div className={styles.withdrawnNotice}>
                     {t('applications.withdrawn_msg', 'Bạn đã rút hồ sơ ứng tuyển này.')}
                   </div>
                 ) : (
                   <div className={styles.candidateStepper}>
                     <div className={styles.stepperLine}></div>
                     <div 
-                      className={styles.stepperLineActive}
-                      style={{ 
-                        width: `${(activeIndex / 5) * 100}%`, 
-                        backgroundColor: isRejected ? '#ef4444' : 'var(--color-brand-primary)' 
-                      }}
+                      className={`${styles.stepperLineActive} ${isRejected ? styles.stepperLineActiveRejected : ''} ${styles[`progress${Math.min(100, Math.max(0, activeIndex * 20))}`]}`}
                     ></div>
 
                     <div className={`${styles.candStep} ${activeIndex >= 0 ? (isRejected && activeIndex === 0 ? styles.candStepFailed : styles.candStepCompleted) : ''}`}>

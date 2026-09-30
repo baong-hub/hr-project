@@ -12,7 +12,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-4);
-  background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
+  background: var(--color-bg-card);
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-default);
@@ -23,10 +23,7 @@
   font-size: var(--font-size-2xl);
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(90deg, var(--color-text-primary) 0%, var(--color-brand-primary) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-text-primary);
 }
 
 .titleActions {
@@ -40,14 +37,14 @@
   align-items: center;
   gap: var(--space-2);
   padding: 10px 20px;
-  background: linear-gradient(135deg, var(--color-brand-primary) 0%, #1e88e5 100%);
-  color: #fff;
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+  box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
 }
 .btnPrimary:hover {
@@ -104,7 +101,7 @@
 }
 .jobListColumn::-webkit-scrollbar-thumb {
   background: var(--color-border-default);
-  border-radius: 3px;
+  border-radius: var(--radius-xs);
 }
 
 .jobSearchBox {
@@ -153,7 +150,7 @@
 
 .jobCardActive {
   border-color: var(--color-brand-primary);
-  background: linear-gradient(135deg, var(--color-bg-card) 0%, rgba(30, 136, 229, 0.04) 100%);
+  background: var(--color-bg-subtle);
   box-shadow: var(--shadow-sm);
 }
 
@@ -211,7 +208,7 @@
 }
 
 .salaryText {
-  color: #2e7d32;
+  color: var(--color-success);
   font-weight: 600;
 }
 
@@ -239,7 +236,7 @@
 .detailHeader {
   padding: var(--space-6);
   border-bottom: 1px solid var(--color-border-default);
-  background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
+  background: var(--color-bg-subtle);
 }
 
 .detailHeaderTitle {
@@ -332,13 +329,13 @@
 
 .dataTable td {
   padding: 16px var(--space-4);
-  border-bottom: 1px solid var(--color-border-light, #f0f0f0);
+  border-bottom: 1px solid var(--color-border-default);
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
 }
 
 .dataTable tbody tr:hover {
-  background: var(--color-bg-hover, #f8fafc);
+  background: var(--color-bg-subtle);
 }
 
 .actionBtns {
@@ -377,8 +374,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  background: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -99,7 +99,7 @@ export const AdminDashboardPage: React.FC = () => {
             className={`${styles.filterBtn} ${filterRange === 'custom' ? styles.filterBtn_active : ''}`}
             onClick={() => setFilterRange('custom')}
           >
-            <Calendar size={14} style={{ marginRight: 4 }} /> Tùy chọn
+            <Calendar size={14} /> Tùy chọn
           </button>
         </div>
       </div>
@@ -108,14 +108,14 @@ export const AdminDashboardPage: React.FC = () => {
         <>
           <div className={styles.kpis}>
             <div className={styles.kpiCard}>
-              <div className={styles.kpiIconWrapper} style={{ backgroundColor: 'rgba(52, 152, 219, 0.1)' }}>
-                <Users size={22} style={{ color: '#3498db' }} />
+              <div className={`${styles.kpiIconWrapper} ${styles.iconInfo}`}>
+                <Users size={22} />
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Ứng viên đăng ký</span>
                 <span className={styles.kpiVal}>{(summary.totalCandidates || 0).toLocaleString()}</span>
                 {summary.candidatesTrendPercentage !== undefined && (
-                  <span style={{ fontSize: '11px', color: summary.candidatesTrendPercentage >= 0 ? '#10b981' : '#ef4444', marginTop: '2px' }}>
+                  <span className={`${styles.trendText} ${summary.candidatesTrendPercentage >= 0 ? styles.trendPositive : styles.trendNegative}`}>
                     {summary.candidatesTrendPercentage >= 0 ? `+${summary.candidatesTrendPercentage}%` : `${summary.candidatesTrendPercentage}%`} so với kỳ trước
                   </span>
                 )}
@@ -123,14 +123,14 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
 
             <div className={styles.kpiCard}>
-              <div className={styles.kpiIconWrapper} style={{ backgroundColor: 'rgba(46, 204, 113, 0.1)' }}>
-                <Building size={22} style={{ color: 'var(--color-success)' }} />
+              <div className={`${styles.kpiIconWrapper} ${styles.iconSuccess}`}>
+                <Building size={22} />
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Doanh nghiệp đăng ký</span>
                 <span className={styles.kpiVal}>{(summary.totalCompanies || 0).toLocaleString()}</span>
                 {summary.companiesTrendPercentage !== undefined && (
-                  <span style={{ fontSize: '11px', color: summary.companiesTrendPercentage >= 0 ? '#10b981' : '#ef4444', marginTop: '2px' }}>
+                  <span className={`${styles.trendText} ${summary.companiesTrendPercentage >= 0 ? styles.trendPositive : styles.trendNegative}`}>
                     {summary.companiesTrendPercentage >= 0 ? `+${summary.companiesTrendPercentage}%` : `${summary.companiesTrendPercentage}%`} so với kỳ trước
                   </span>
                 )}
@@ -138,14 +138,14 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
 
             <div className={styles.kpiCard}>
-              <div className={styles.kpiIconWrapper} style={{ backgroundColor: 'rgba(241, 196, 15, 0.1)' }}>
-                <FileClock size={22} style={{ color: '#f1c40f' }} />
+              <div className={`${styles.kpiIconWrapper} ${styles.iconWarning}`}>
+                <FileClock size={22} />
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Tin tuyển dụng</span>
                 <span className={styles.kpiVal}>{(summary.totalJobs || 0).toLocaleString()}</span>
                 {summary.jobsTrendPercentage !== undefined && (
-                  <span style={{ fontSize: '11px', color: summary.jobsTrendPercentage >= 0 ? '#10b981' : '#ef4444', marginTop: '2px' }}>
+                  <span className={`${styles.trendText} ${summary.jobsTrendPercentage >= 0 ? styles.trendPositive : styles.trendNegative}`}>
                     {summary.jobsTrendPercentage >= 0 ? `+${summary.jobsTrendPercentage}%` : `${summary.jobsTrendPercentage}%`} so với kỳ trước
                   </span>
                 )}
@@ -153,14 +153,14 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
 
             <div className={styles.kpiCard}>
-              <div className={styles.kpiIconWrapper} style={{ backgroundColor: 'rgba(155, 89, 182, 0.1)' }}>
-                <ClipboardList size={22} style={{ color: '#9b59b6' }} />
+              <div className={`${styles.kpiIconWrapper} ${styles.iconPrimary}`}>
+                <ClipboardList size={22} />
               </div>
               <div className={styles.kpiInfo}>
                 <span className={styles.kpiLabel}>Tổng số đơn ứng tuyển</span>
                 <span className={styles.kpiVal}>{(summary.totalApplications || 0).toLocaleString()}</span>
                 {summary.applicationsTrendPercentage !== undefined && (
-                  <span style={{ fontSize: '11px', color: summary.applicationsTrendPercentage >= 0 ? '#10b981' : '#ef4444', marginTop: '2px' }}>
+                  <span className={`${styles.trendText} ${summary.applicationsTrendPercentage >= 0 ? styles.trendPositive : styles.trendNegative}`}>
                     {summary.applicationsTrendPercentage >= 0 ? `+${summary.applicationsTrendPercentage}%` : `${summary.applicationsTrendPercentage}%`} so với kỳ trước
                   </span>
                 )}
@@ -175,29 +175,18 @@ export const AdminDashboardPage: React.FC = () => {
               
               <div className={styles.barChartContainer}>
                 <svg viewBox="0 0 400 200" width="100%" height="100%">
-                  <line x1="40" y1="20" x2="380" y2="20" stroke="#f1f2f6" strokeWidth="1" />
-                  <line x1="40" y1="70" x2="380" y2="70" stroke="#f1f2f6" strokeWidth="1" />
-                  <line x1="40" y1="120" x2="380" y2="120" stroke="#f1f2f6" strokeWidth="1" />
-                  <line x1="40" y1="160" x2="380" y2="160" stroke="#a4b0be" strokeWidth="1.5" />
+                  <line x1="40" y1="20" x2="380" y2="20" stroke="var(--color-border-default)" strokeWidth="1" />
+                  <line x1="40" y1="70" x2="380" y2="70" stroke="var(--color-border-default)" strokeWidth="1" />
+                  <line x1="40" y1="120" x2="380" y2="120" stroke="var(--color-border-default)" strokeWidth="1" />
+                  <line x1="40" y1="160" x2="380" y2="160" stroke="var(--color-border-strong)" strokeWidth="1.5" />
 
-                  <text x="10" y="25" fill="#747d8c" fontSize="10">{maxVal}</text>
-                  <text x="10" y="75" fill="#747d8c" fontSize="10">{Math.round(maxVal * 0.66)}</text>
-                  <text x="10" y="125" fill="#747d8c" fontSize="10">{Math.round(maxVal * 0.33)}</text>
-                  <text x="10" y="165" fill="#747d8c" fontSize="10">0</text>
+                  <text x="10" y="25" fill="var(--color-text-muted)" fontSize="10">{maxVal}</text>
+                  <text x="10" y="75" fill="var(--color-text-muted)" fontSize="10">{Math.round(maxVal * 0.66)}</text>
+                  <text x="10" y="125" fill="var(--color-text-muted)" fontSize="10">{Math.round(maxVal * 0.33)}</text>
+                  <text x="10" y="165" fill="var(--color-text-muted)" fontSize="10">0</text>
 
-                  <text x="80" y="180" fill="#747d8c" fontSize="10" fontWeight="bold">Ứng viên</text>
-                  <text x="260" y="180" fill="#747d8c" fontSize="10" fontWeight="bold">Doanh nghiệp</text>
-
-                  <defs>
-                    <linearGradient id="blue-bar-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#3498db" />
-                      <stop offset="100%" stopColor="#2980b9" />
-                    </linearGradient>
-                    <linearGradient id="green-bar-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#2ecc71" />
-                      <stop offset="100%" stopColor="#27ae60" />
-                    </linearGradient>
-                  </defs>
+                  <text x="80" y="180" fill="var(--color-text-secondary)" fontSize="10" fontWeight="bold">Ứng viên</text>
+                  <text x="260" y="180" fill="var(--color-text-secondary)" fontSize="10" fontWeight="bold">Doanh nghiệp</text>
 
                   <rect 
                     x="85" 
@@ -205,9 +194,9 @@ export const AdminDashboardPage: React.FC = () => {
                     width="40" 
                     height={candHeight} 
                     rx="4" 
-                    fill="url(#blue-bar-gradient)" 
+                    fill="var(--color-primary)" 
                   />
-                  <text x="105" y={Math.max(16, candY - 8)} textAnchor="middle" fill="#2980b9" fontSize="11" fontWeight="bold">
+                  <text x="105" y={Math.max(16, candY - 8)} textAnchor="middle" fill="var(--color-primary)" fontSize="11" fontWeight="bold">
                     {summary.totalCandidates}
                   </text>
 
@@ -217,9 +206,9 @@ export const AdminDashboardPage: React.FC = () => {
                     width="40" 
                     height={compHeight} 
                     rx="4" 
-                    fill="url(#green-bar-gradient)" 
+                    fill="var(--color-success)" 
                   />
-                  <text x="295" y={Math.max(16, compY - 8)} textAnchor="middle" fill="#27ae60" fontSize="11" fontWeight="bold">
+                  <text x="295" y={Math.max(16, compY - 8)} textAnchor="middle" fill="var(--color-success)" fontSize="11" fontWeight="bold">
                     {summary.totalCompanies}
                   </text>
                 </svg>
@@ -233,7 +222,7 @@ export const AdminDashboardPage: React.FC = () => {
               <div className={styles.pieContainer}>
                 <div className={styles.pieChart}>
                   <svg viewBox="0 0 100 100" width="120" height="120">
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f1f2f6" strokeWidth="10" />
+                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="var(--color-border-default)" strokeWidth="10" />
                     <circle 
                       cx="50" 
                       cy="50" 
@@ -250,11 +239,11 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
                 <div className={styles.pieLegend}>
                   <div className={styles.legendItem}>
-                    <span className={styles.legendDot} style={{ backgroundColor: 'var(--color-brand-primary)' }} />
+                    <span className={`${styles.legendDot} ${styles.dotPrimary}`} />
                     <span>Tin đang tuyển ({summary.activeJobs || 0})</span>
                   </div>
                   <div className={styles.legendItem}>
-                    <span className={styles.legendDot} style={{ backgroundColor: '#f1f2f6' }} />
+                    <span className={`${styles.legendDot} ${styles.dotMuted}`} />
                     <span>Đã đóng/Tạm dừng ({Math.max(0, (summary.totalJobs || 0) - (summary.activeJobs || 0))})</span>
                   </div>
                 </div>
@@ -276,7 +265,7 @@ export const AdminDashboardPage: React.FC = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td style={{ fontWeight: 'semibold' }}>Tin tuyển dụng hoạt động</td>
+                    <td className={styles.tableLabelCell}>Tin tuyển dụng hoạt động</td>
                     <td>{summary.totalJobs} tin đăng</td>
                     <td>
                       <span className={styles.badge_success}>
@@ -285,7 +274,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ fontWeight: 'semibold' }}>Hồ sơ ứng tuyển phát sinh</td>
+                    <td className={styles.tableLabelCell}>Hồ sơ ứng tuyển phát sinh</td>
                     <td>{summary.totalApplications} lượt nộp</td>
                     <td>
                       <span className={styles.badge_success}>

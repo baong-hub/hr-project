@@ -1,32 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Mail, Phone, MapPin, Building } from 'lucide-react';
+import { ShieldCheck, Mail, Phone, MapPin, Building, Sparkles, TrendingUp, Zap, Flame } from 'lucide-react';
 import { COMPANY_INFO } from '../../config/company-info';
-import { metaService, type ProvinceItem, type IndustryItem, STATIC_PROVINCES, STATIC_INDUSTRIES } from '../../core/services/meta.service';
 import styles from './PublicFooter.module.scss';
 import logoImg from '@/assets/logo.png';
 
+const VALUE_PILLARS = [
+  {
+    icon: Sparkles,
+    title: 'AI So Khớp Nhanh Chóng',
+    desc: 'Tự động chấm điểm và so khớp kỹ năng giữa hồ sơ ứng viên và yêu cầu tuyển dụng với độ chính xác cao.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Doanh Nghiệp Đã Xác Thực',
+    desc: '100% doanh nghiệp và tin tuyển dụng được kiểm duyệt minh bạch, nói không với tin ảo và lừa đảo.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Thị Trường Lương Minh Bạch',
+    desc: 'Dữ liệu khảo sát lương thực tế từ hàng nghìn vị trí, giúp bạn tự tin nắm bắt mức thu nhập xứng đáng.',
+  },
+  {
+    icon: Zap,
+    title: 'Quy Trình Ứng Tuyển 1-Chạm',
+    desc: 'Nộp hồ sơ trực tiếp tới nhà tuyển dụng, nhận phản hồi trạng thái hồ sơ theo thời gian thực.',
+  },
+];
+
+const TRENDING_KEYWORDS = [
+  { label: 'ReactJS', query: 'React' },
+  { label: 'Node.js', query: 'Node' },
+  { label: 'Java', query: 'Java' },
+  { label: 'Python / AI', query: 'Python' },
+  { label: 'Frontend Developer', query: 'Frontend' },
+  { label: 'Marketing Online', query: 'Marketing' },
+  { label: 'Kế toán tổng hợp', query: 'Kế toán' },
+  { label: 'Nhân viên kinh doanh', query: 'Kinh doanh' },
+  { label: 'Chuyên viên Nhân sự', query: 'HR' },
+  { label: 'Việc làm Remote', query: 'Remote' },
+];
+
 export const PublicFooter: React.FC = () => {
-  const [industries, setIndustries] = useState<IndustryItem[]>(STATIC_INDUSTRIES.slice(0, 12));
-  const [provinces, setProvinces] = useState<ProvinceItem[]>(STATIC_PROVINCES.slice(0, 12));
-
-  useEffect(() => {
-    metaService.getIndustries().then((data) => {
-      if (data && data.length > 0) {
-        setIndustries(data.slice(0, 12));
-      }
-    });
-
-    metaService.getProvinces().then((data) => {
-      if (data && data.length > 0) {
-        // Prefer 6 cities first, then next 6 provinces
-        const cities = data.filter((p) => p.type === 'city');
-        const others = data.filter((p) => p.type === 'province');
-        setProvinces([...cities, ...others].slice(0, 12));
-      }
-    });
-  }, []);
-
   const isFilled = (val?: string): boolean => {
     if (!val) return false;
     const trimmed = val.trim();
@@ -56,44 +71,38 @@ export const PublicFooter: React.FC = () => {
 
   return (
     <footer className={styles.footer}>
-      {/* Top Section: Quick SEO Links (White surface background) */}
+      {/* Top Section: Ecosystem Value Pillars & Trending Tags */}
       <div className={styles.topSection}>
         <div className="container-public">
-          <div className={styles.topSectionGrid}>
-            {/* Column 1: Việc làm theo ngành */}
-            <div>
-              <h4 className={styles.sectionHeading}>Việc làm theo ngành nghề</h4>
-              <ul className={styles.seoLinksGrid}>
-                {industries.map((ind) => (
-                  <li key={ind.code}>
-                    <Link
-                      to={`/jobs?industry=${encodeURIComponent(ind.code)}`}
-                      className={styles.seoLink}
-                      title={ind.name}
-                    >
-                      {ind.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className={styles.pillarsGrid}>
+            {VALUE_PILLARS.map((pillar, idx) => {
+              const IconComp = pillar.icon;
+              return (
+                <div key={idx} className={styles.pillarCard}>
+                  <div className={styles.pillarIconBox}>
+                    <IconComp size={20} />
+                  </div>
+                  <h4 className={styles.pillarTitle}>{pillar.title}</h4>
+                  <p className={styles.pillarDesc}>{pillar.desc}</p>
+                </div>
+              );
+            })}
+          </div>
 
-            {/* Column 2: Việc làm theo địa điểm */}
-            <div>
-              <h4 className={styles.sectionHeading}>Việc làm theo địa điểm</h4>
-              <ul className={styles.seoLinksGrid}>
-                {provinces.map((prov) => (
-                  <li key={prov.code}>
-                    <Link
-                      to={`/jobs?province=${encodeURIComponent(prov.code)}`}
-                      className={styles.seoLink}
-                      title={prov.name}
-                    >
-                      Việc làm tại {prov.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+          <div className={styles.trendingStrip}>
+            <span className={styles.trendingLabel}>
+              <Flame size={15} color="#f97316" /> Từ khóa xu hướng:
+            </span>
+            <div className={styles.trendingTagsList}>
+              {TRENDING_KEYWORDS.map((item, idx) => (
+                <Link
+                  key={idx}
+                  to={`/jobs?q=${encodeURIComponent(item.query)}`}
+                  className={styles.trendingTag}
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
         </div>

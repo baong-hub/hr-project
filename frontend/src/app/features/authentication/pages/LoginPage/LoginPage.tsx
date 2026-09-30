@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { authService } from '../../../../core/services/auth.service';
 import styles from './LoginPage.module.scss';
 import logoImg from '@/assets/logo.png';
@@ -91,18 +91,9 @@ export const LoginPage: React.FC = () => {
           <p className={styles.subtitle}>Chào mừng bạn quay trở lại với HR Portal</p>
 
           {errorMsg && (
-            <div 
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                borderRadius: 'var(--radius-md)',
-                color: 'rgb(239, 68, 68)',
-                fontSize: 'var(--font-size-sm)',
-                marginBottom: '16px'
-              }}
-            >
-              {errorMsg}
+            <div className={`${styles.alertBox} ${styles.alertDanger}`}>
+              <AlertCircle size={18} className={styles.authAlertIcon} />
+              <span>{errorMsg}</span>
             </div>
           )}
 
@@ -113,7 +104,7 @@ export const LoginPage: React.FC = () => {
               <div className={styles.inputWrapper}>
                 <Mail size={18} className={styles.inputIcon} />
                 <input
-                  type="text"
+                  type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -158,16 +149,16 @@ export const LoginPage: React.FC = () => {
                 />
                 <span>Ghi nhớ đăng nhập</span>
               </label>
-              <a href="#forgot" className={styles.forgotLink}>
+              <Link to="/auth/reset-password" className={styles.forgotLink}>
                 Quên mật khẩu?
-              </a>
+              </Link>
             </div>
 
             {/* Submit button */}
             <button type="submit" className={styles.submitBtn} disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 size={18} className="animate-spin" style={{ marginRight: '8px' }} />
+                  <Loader2 size={18} className={`animate-spin ${styles.btnSpinner}`} />
                   Đang đăng nhập...
                 </>
               ) : (
@@ -177,18 +168,18 @@ export const LoginPage: React.FC = () => {
           </form>
 
           {/* Footer links */}
-          <div className={styles.formFooter} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+          <div className={styles.authLinksFooter}>
+            <span className={styles.authFooterText}>
               Chưa có tài khoản?{' '}
-              <Link to="/auth/register/candidate" style={{ color: 'var(--color-brand-primary-dark)', fontWeight: 600 }}>
+              <Link to="/auth/register/candidate" className={styles.authLinkHighlight}>
                 Đăng ký Ứng viên
               </Link>
               {' hoặc '}
-              <Link to="/auth/register/employer" style={{ color: 'var(--color-brand-primary-dark)', fontWeight: 600 }}>
+              <Link to="/auth/register/employer" className={styles.authLinkHighlight}>
                 Đăng ký Nhà tuyển dụng
               </Link>
             </span>
-            <p className={styles.copyright} style={{ marginTop: '16px' }}>
+            <p className={styles.copyright}>
               © 2026 HR Portal. Kết nối cơ hội nghề nghiệp.
             </p>
           </div>
@@ -197,3 +188,4 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+export default LoginPage;

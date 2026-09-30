@@ -129,11 +129,11 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  background-color: #fff1f0;
-  border: 1px solid #ffa39e;
+  background-color: var(--color-danger-bg);
+  border: 1px solid var(--color-danger);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  color: #cf1322;
+  color: var(--color-danger);
   margin-bottom: var(--space-6);
   font-size: var(--font-size-sm);
 

@@ -273,7 +273,7 @@ export const JobDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.jobDetailPage}>
-        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary, #475569)' }}>
+        <div className={styles.loadingState}>
           Đang tải thông tin chi tiết công việc...
         </div>
       </div>
@@ -283,15 +283,14 @@ export const JobDetailPage: React.FC = () => {
   if (error || !job) {
     return (
       <div className={styles.jobDetailPage}>
-        <div style={{ padding: '60px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-error, #dc2626)', marginBottom: '16px' }}>
+        <div className={styles.errorState}>
+          <p className={styles.errorMessage}>
             {error || 'Công việc không tồn tại.'}
           </p>
           <button
             type="button"
             onClick={() => navigate('/jobs')}
-            className={styles.mainApplyBtn}
-            style={{ width: 'auto', display: 'inline-flex', padding: '8px 20px' }}
+            className={`${styles.mainApplyBtn} ${styles.btnAuto}`}
           >
             Quay lại danh sách việc làm
           </button>
@@ -552,9 +551,8 @@ export const JobDetailPage: React.FC = () => {
 
               <button
                 type="button"
-                className={styles.secondaryActionBtn}
+                className={`${styles.secondaryActionBtn} ${isEmployer ? styles.colSpan2 : ''}`}
                 onClick={handleShareJob}
-                style={{ gridColumn: isEmployer ? 'span 2' : undefined }}
               >
                 <Share2 size={14} />
                 <span>Chia sẻ tin</span>

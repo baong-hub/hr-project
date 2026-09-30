@@ -4,8 +4,9 @@ import { Pencil, Trash2, X, Check, Sparkles, ExternalLink, Star } from 'lucide-r
 import { jobsService } from '../../../core/services/jobs.service';
 import { toast } from '../../../core/services/toast.service';
 import type { JobDto, JobStatus } from '../../../core/models/job.model';
+import { StatusBadge } from '../../../shared/components/status-badge/StatusBadge';
 import { PromoteJobModal } from '../components/PromoteJobModal';
-import styles from './JobsPage.module.scss';
+import styles from './EmployerJobListPage.module.scss';
 
 export const EmployerJobListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -88,90 +89,52 @@ export const EmployerJobListPage: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi kết nối khi xóa tin tuyển dụng.');
+      toast.error('Lỗi khi xóa tin tuyển dụng.');
     }
   };
 
   const handleToggleStatus = async (id: number, currentStatus: JobStatus) => {
     const nextStatus: JobStatus = currentStatus === 'PUBLISHED' ? 'PAUSED' : 'PUBLISHED';
-    const actionText = nextStatus === 'PUBLISHED' ? 'mở tuyển dụng' : 'tạm dừng nhận hồ sơ';
-    
-    const confirmed = window.confirm(`Bạn có muốn ${actionText} tin tuyển dụng này?`);
-    if (!confirmed) return;
-
     try {
       const res = await jobsService.updateJobStatus(id, { status: nextStatus });
       if (res.data?.success) {
-        toast.success('Cập nhật trạng thái thành công!');
+        toast.success(`Đã cập nhật trạng thái thành công sang [${nextStatus}]!`);
         fetchJobs();
       } else {
-        toast.error(res.data?.error?.message || 'Cập nhật thất bại.');
+        toast.error(res.data?.error?.message || 'Không thể cập nhật trạng thái tin.');
       }
     } catch (err) {
       console.error(err);
-      toast.error('Lỗi khi cập nhật trạng thái.');
+      toast.error('Lỗi khi cập nhật trạng thái tin.');
     }
   };
 
   const formatSalary = (from?: number, to?: number) => {
     if (!from && !to) return 'Thỏa thuận';
-    const fmt = (n: number) => (n / 1000000).toFixed(0) + 'tr';
-    if (from && to) return `${fmt(from)} - ${fmt(to)}`;
-    if (from) return `Từ ${fmt(from)}`;
-    return `Đến ${fmt(to!)}`;
+    if (from && !to) return `Từ ${from.toLocaleString('vi-VN')} đ`;
+    if (!from && to) return `Đến ${to.toLocaleString('vi-VN')} đ`;
+    return `${from?.toLocaleString('vi-VN')} - ${to?.toLocaleString('vi-VN')} đ`;
   };
 
-  const getStatusBadgeClass = (s: JobStatus) => {
-    switch (s) {
-      case 'PUBLISHED':
-        return 'status-green'; // Custom classes mapped in stylesheet
-      case 'PENDING_REVIEW':
-        return 'status-amber';
-      case 'REJECTED':
-      case 'CLOSED':
-        return 'status-red';
-      default:
-        return 'status-gray';
-    }
-  };
 
-  const getStatusText = (s: JobStatus) => {
-    switch (s) {
-      case 'PUBLISHED':
-        return 'Đang tuyển';
-      case 'PENDING_REVIEW':
-        return 'Chờ duyệt';
-      case 'REJECTED':
-        return 'Từ chối';
-      case 'CLOSED':
-        return 'Đã đóng';
-      case 'EXPIRED':
-        return 'Hết hạn';
-      case 'PAUSED':
-        return 'Tạm dừng';
-      default:
-        return 'Nháp';
-    }
-  };
 
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
   return (
-    <div className={styles.jobsPage}>
+    <div className={styles.container}>
       {/* Title Area */}
       <div className={styles.titleArea}>
         <div>
-          <h1>Quản lý tin tuyển dụng</h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+          <h1 className={styles.pageTitle}>Quản lý tin tuyển dụng</h1>
+          <p className={styles.pageSubtitle}>
             Đăng tin tuyển dụng và quản lý hồ sơ ứng viên của doanh nghiệp
           </p>
         </div>
-        <div className={styles.titleActions} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div className={styles.titleActions}>
           <button 
             type="button" 
             onClick={() => navigate('/employer/candidates')} 
-            className={styles.btnSecondary}
-            style={{ display: 'inline-flex', alignItems: 'center', color: '#4f46e5', borderColor: '#c7d2fe', background: '#f5f3ff', fontWeight: 600 }}
+            className={styles.btnSecondaryAction}
             title="Tìm kiếm ứng viên IT chủ động với bộ lọc nâng cao"
           >
             Săn ứng viên (Talent Pool)
@@ -179,8 +142,7 @@ export const EmployerJobListPage: React.FC = () => {
           <button 
             type="button" 
             onClick={() => navigate('/employer/assessments')} 
-            className={styles.btnSecondary}
-            style={{ display: 'inline-flex', alignItems: 'center', color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff', fontWeight: 600 }}
+            className={styles.btnSecondaryAction}
             title="Ngân hàng đề thi trắc nghiệm & đánh giá năng lực online"
           >
             Đề thi năng lực
@@ -191,8 +153,7 @@ export const EmployerJobListPage: React.FC = () => {
               const compId = jobs[0]?.companyId || 1;
               navigate(`/companies/${compId}/careers`);
             }} 
-            className={styles.btnSecondary}
-            style={{ display: 'inline-flex', alignItems: 'center', color: '#d97706', borderColor: '#fde68a', background: '#fffbeb', fontWeight: 600 }}
+            className={styles.btnSecondaryAction}
             title="Xem Cổng tuyển dụng thương hiệu cao cấp của công ty"
           >
             Cổng Careers Portal
@@ -200,54 +161,42 @@ export const EmployerJobListPage: React.FC = () => {
           <button 
             type="button" 
             onClick={() => navigate('/jobs?view=public')} 
-            className={styles.btnSecondary}
+            className={styles.btnSecondaryAction}
             title="Xem danh sách việc làm hiển thị cho ứng viên"
           >
             Xem việc làm trên sàn
           </button>
-          <button onClick={() => navigate('/employer/jobs/new')} className={styles.btnPrimary}>
+          <button onClick={() => navigate('/employer/jobs/new')} className={styles.btnPrimaryAction}>
             Đăng tin mới
           </button>
         </div>
       </div>
 
       {/* Modern Ecosystem Highlights Banner */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)',
-        borderRadius: '12px',
-        padding: '16px 20px',
-        color: '#ffffff',
-        marginBottom: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '16px',
-        boxShadow: '0 4px 20px rgba(67, 56, 202, 0.25)'
-      }}>
-        <div style={{ maxWidth: '650px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.5px' }}>
+      <div className={styles.ecosystemBanner}>
+        <div>
+          <div className={styles.bannerPill}>
             HỆ SINH THÁI TUYỂN DỤNG THÔNG MINH MỚI
           </div>
-          <h3 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', fontWeight: 700, color: '#ffffff' }}>
+          <h3 className={styles.bannerHeading}>
             AI Copilot • Săn Ứng Viên Chủ Động • Đánh Giá Năng Lực • Cổng Thương Hiệu Doanh Nghiệp
           </h3>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#c7d2fe', lineHeight: 1.4 }}>
+          <p className={styles.bannerText}>
             Tự động sinh JD bằng AI, sàng lọc ứng viên thông minh, tạo bài thi trắc nghiệm online và phát hành Thư mời nhận việc (Offer Letter) ngay trên hệ thống.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className={styles.bannerButtons}>
           <button
             type="button"
             onClick={() => navigate('/employer/candidates')}
-            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '8px', background: '#ffffff', color: '#312e81', border: 'none', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+            className={styles.btnPrimaryAction}
           >
             Săn ứng viên Talent Pool
           </button>
           <button
             type="button"
             onClick={() => navigate('/employer/assessments')}
-            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+            className={styles.btnSecondaryAction}
           >
             Ngân hàng đề thi
           </button>
@@ -257,7 +206,7 @@ export const EmployerJobListPage: React.FC = () => {
               const compId = jobs[0]?.companyId || 1;
               navigate(`/companies/${compId}/careers`);
             }}
-            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 14px', borderRadius: '8px', background: 'rgba(255,255,255,0.15)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
+            className={styles.btnSecondaryAction}
           >
             Cổng Careers Portal
           </button>
@@ -265,8 +214,8 @@ export const EmployerJobListPage: React.FC = () => {
       </div>
 
       {/* Filter Panel */}
-      <form onSubmit={handleSearch} className={styles.jobSearchBox}>
-        <div className={styles.searchInputs} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+      <form onSubmit={handleSearch} className={styles.filterCard}>
+        <div className={styles.filterGrid}>
           <input
             type="text"
             placeholder="Tìm theo tiêu đề, mã tin..."
@@ -284,11 +233,11 @@ export const EmployerJobListPage: React.FC = () => {
             <option value="REJECTED">Từ chối</option>
           </select>
         </div>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '12px' }}>
-          <button type="submit" className={styles.btnPrimary}>
+        <div className={styles.filterActions}>
+          <button type="submit" className={styles.btnPrimaryAction}>
             Tìm kiếm
           </button>
-          <button type="button" onClick={handleClearFilters} className={styles.btnSecondary}>
+          <button type="button" onClick={handleClearFilters} className={styles.btnSecondaryAction}>
             Xóa bộ lọc
           </button>
         </div>
@@ -296,16 +245,16 @@ export const EmployerJobListPage: React.FC = () => {
 
       {/* Data Table Area */}
       {loading ? (
-        <div className={styles.tableCard} style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-          Đang tải dữ liệu tin tuyển dụng...
+        <div className={styles.tableCard}>
+          <div className={styles.statusMessage}>Đang tải dữ liệu tin tuyển dụng...</div>
         </div>
       ) : error ? (
-        <div className={styles.tableCard} style={{ padding: '60px', textAlign: 'center', color: 'var(--color-error)' }}>
-          {error}
+        <div className={styles.tableCard}>
+          <div className={`${styles.statusMessage} ${styles.error}`}>{error}</div>
         </div>
       ) : jobs.length === 0 ? (
-        <div className={styles.tableCard} style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-          Doanh nghiệp của bạn chưa đăng tin tuyển dụng nào.
+        <div className={styles.tableCard}>
+          <div className={`${styles.statusMessage} ${styles.muted}`}>Doanh nghiệp của bạn chưa đăng tin tuyển dụng nào.</div>
         </div>
       ) : (
         <div className={styles.tableCard}>
@@ -313,12 +262,12 @@ export const EmployerJobListPage: React.FC = () => {
             <table className={styles.dataTable}>
               <thead>
                 <tr>
-                  <th style={{ position: 'sticky', left: 0, background: 'var(--color-bg-subtle)', width: '160px', zIndex: 10 }}>Hành động</th>
+                  <th className={styles.stickyActionTh}>Hành động</th>
                   <th>Mã tin</th>
                   <th>Tiêu đề tin tuyển dụng</th>
-                  <th style={{ textAlign: 'right' }}>Mức lương</th>
-                  <th style={{ textAlign: 'right' }}>Ngày đăng</th>
-                  <th style={{ textAlign: 'right' }}>Hạn nộp</th>
+                  <th className={styles.alignRight}>Mức lương</th>
+                  <th className={styles.alignRight}>Ngày đăng</th>
+                  <th className={styles.alignRight}>Hạn nộp</th>
                   <th>Trạng thái</th>
                 </tr>
               </thead>
@@ -326,28 +275,25 @@ export const EmployerJobListPage: React.FC = () => {
                 {jobs.map((job) => (
                   <tr key={job.id}>
                     {/* Sticky Action Column */}
-                    <td style={{ position: 'sticky', left: 0, background: 'var(--color-bg-card)', zIndex: 5, borderRight: '1px solid var(--color-border-light)' }}>
+                    <td className={styles.stickyActionTd}>
                       <div className={styles.actionBtns}>
                         <button
                           onClick={() => navigate(`/employer/applications?jobId=${job.id}`)}
-                          className={styles.actionBtn}
-                          style={{ color: '#4f46e5', borderColor: '#c7d2fe', background: '#f5f3ff' }}
+                          className={`${styles.actionBtn} ${styles.actionBtnAi}`}
                           title="Xem hồ sơ ứng viên & Phân tích AI Match Score"
                         >
                           <Sparkles size={14} />
                         </button>
                         <button
                           onClick={() => { setPromotingJob(job); setIsPromoteModalOpen(true); }}
-                          className={styles.actionBtn}
-                          style={{ color: '#d97706', borderColor: '#fcd34d', background: '#fffbeb' }}
+                          className={`${styles.actionBtn} ${styles.actionBtnPromote}`}
                           title="Đẩy tin / Ghim VIP (Pay-per-job)"
                         >
-                          <Star size={14} fill={job.isFeatured ? '#d97706' : 'none'} />
+                          <Star size={14} fill={job.isFeatured ? 'currentColor' : 'none'} />
                         </button>
                         <button
                           onClick={() => navigate(`/companies/${job.companyId || 1}/careers`)}
-                          className={styles.actionBtn}
-                          style={{ color: '#d97706', borderColor: '#fde68a', background: '#fffbeb' }}
+                          className={`${styles.actionBtn} ${styles.actionBtnCareers}`}
                           title="Xem Cổng tuyển dụng thương hiệu (Careers Portal)"
                         >
                           <ExternalLink size={14} />
@@ -378,41 +324,39 @@ export const EmployerJobListPage: React.FC = () => {
                     <td>
                       <span
                         onClick={() => navigate(`/jobs/${job.id}`)}
-                        style={{ color: 'var(--color-brand-primary)', cursor: 'pointer', fontWeight: 600, textDecoration: 'underline' }}
+                        className={styles.jobCodeLink}
                       >
                         JOB-{String(job.id).padStart(4, '0')}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 600 }}>
+                    <td>
                       <div>{job.title}</div>
                       {(job.isFeatured || job.isUrgent) && (
-                        <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+                        <div className={styles.jobBadgeRow}>
                           {job.isFeatured && (
-                            <span style={{ fontSize: '10px', background: '#f59e0b', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                            <span className={styles.vipBadge}>
                               VIP NỔI BẬT
                             </span>
                           )}
                           {job.isUrgent && (
-                            <span style={{ fontSize: '10px', background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                            <span className={styles.urgentBadge}>
                               TUYỂN GẤP
                             </span>
                           )}
                         </div>
                       )}
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 600, color: '#2e7d32' }}>
+                    <td className={styles.salaryCol}>
                       {formatSalary(job.salaryFrom, job.salaryTo)}
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className={styles.alignRight}>
                       {new Date(job.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className={styles.alignRight}>
                       {new Date(job.expiredAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td>
-                      <span className={`status-badge ${getStatusBadgeClass(job.status)}`}>
-                        {getStatusText(job.status)}
-                      </span>
+                      <StatusBadge status={job.status} type="job" />
                     </td>
                   </tr>
                 ))}
@@ -421,8 +365,8 @@ export const EmployerJobListPage: React.FC = () => {
           </div>
 
           {/* Pagination */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid var(--color-border-default)', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+          <div className={styles.paginationArea}>
+            <div className={styles.paginationInfo}>
               Xem{' '}
               <select
                 value={pageSize}
@@ -430,7 +374,7 @@ export const EmployerJobListPage: React.FC = () => {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                style={{ padding: '4px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)' }}
+                className={styles.pageSizeSelect}
               >
                 <option value={10}>10</option>
                 <option value={50}>50</option>
@@ -440,12 +384,11 @@ export const EmployerJobListPage: React.FC = () => {
             </div>
             
             {totalPages > 1 && (
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div className={styles.pageBtnGroup}>
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className={styles.btnSecondary}
-                  style={{ padding: '6px 12px' }}
+                  className={styles.pageBtn}
                 >
                   ‹
                 </button>
@@ -453,8 +396,7 @@ export const EmployerJobListPage: React.FC = () => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={page === p ? styles.btnPrimary : styles.btnSecondary}
-                    style={{ padding: '6px 12px', border: page === p ? 'none' : '1px solid var(--color-border-default)' }}
+                    className={`${styles.pageBtn} ${page === p ? styles.pageBtnActive : ''}`}
                   >
                     {p}
                   </button>
@@ -462,8 +404,7 @@ export const EmployerJobListPage: React.FC = () => {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className={styles.btnSecondary}
-                  style={{ padding: '6px 12px' }}
+                  className={styles.pageBtn}
                 >
                   ›
                 </button>
@@ -483,3 +424,5 @@ export const EmployerJobListPage: React.FC = () => {
     </div>
   );
 };
+
+export default EmployerJobListPage;

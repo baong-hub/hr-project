@@ -1,9 +1,11 @@
+@use '../../../../styles/tokens' as *;
+
 .pageContainer {
   width: 100%;
-  padding: var(--space-2);
+  padding: var(--spacing-2);
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--spacing-5);
   box-sizing: border-box;
 }
 
@@ -12,39 +14,81 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--space-4);
-  background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
-  padding: var(--space-5) var(--space-6);
+  gap: var(--spacing-4);
+  background: var(--color-bg-card);
+  padding: var(--spacing-5) var(--spacing-6);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-default);
   box-shadow: var(--shadow-sm);
 
   .title {
-    font-size: var(--font-size-2xl);
-    font-weight: 800;
+    font-size: 24px;
+    font-weight: 700;
     margin: 0 0 6px 0;
-    background: linear-gradient(90deg, var(--color-text-primary) 0%, var(--color-brand-primary) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--color-text-primary);
   }
 
   .subtitle {
     margin: 0;
     color: var(--color-text-secondary);
-    font-size: 0.95rem;
+    font-size: 14px;
   }
 
   .badgeTop {
-    font-size: 0.875rem;
-    color: var(--color-brand-primary);
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border-default);
+    font-size: 14px;
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    border: 1px solid var(--color-primary);
     padding: 8px 16px;
     border-radius: var(--radius-md);
     font-weight: 600;
-    box-shadow: var(--shadow-xs);
   }
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 60px;
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border-default);
+  border-top: 3px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-default);
+
+  h3 {
+    margin: 0 0 8px 0;
+    color: var(--color-text-primary);
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+  }
+}
+
+.emptyIcon {
+  margin: 0 auto 16px auto;
+  opacity: 0.7;
+  color: var(--color-text-muted);
 }
 
 .offersList {
@@ -56,7 +100,7 @@
 
 .offerCard {
   background: var(--color-bg-card);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-default);
   padding: 20px 24px;
   box-shadow: var(--shadow-sm);
@@ -98,7 +142,7 @@
   .logo {
     width: 52px;
     height: 52px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     background: var(--color-bg-subtle);
     border: 1px solid var(--color-border-default);
     display: flex;
@@ -114,13 +158,17 @@
     }
   }
 
+  .companyIcon {
+    color: var(--color-primary);
+  }
+
   .companyInfo {
     min-width: 0;
     overflow: hidden;
 
     .positionTitle {
       margin: 0 0 4px 0;
-      font-size: 1.1rem;
+      font-size: 16px;
       font-weight: 700;
       color: var(--color-text-primary);
       white-space: nowrap;
@@ -129,7 +177,7 @@
     }
 
     .companyName {
-      font-size: 0.875rem;
+      font-size: 14px;
       color: var(--color-text-secondary);
       font-weight: 500;
       white-space: nowrap;
@@ -143,7 +191,7 @@
   min-width: 0;
 
   .label {
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 600;
     color: var(--color-text-muted);
     text-transform: uppercase;
@@ -151,9 +199,9 @@
   }
 
   .value {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #10b981;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-success);
     margin-top: 2px;
     white-space: nowrap;
   }
@@ -163,7 +211,7 @@
   min-width: 0;
 
   .label {
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 600;
     color: var(--color-text-muted);
     text-transform: uppercase;
@@ -171,7 +219,7 @@
   }
 
   .value {
-    font-size: 0.95rem;
+    font-size: 14px;
     font-weight: 600;
     color: var(--color-text-primary);
     margin-top: 2px;
@@ -186,11 +234,41 @@
   .badge {
     display: inline-block;
     padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 700;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
     text-align: center;
+  }
+
+  .badgeHired {
+    background: var(--color-success-subtle);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+  }
+
+  .badgeNegotiating {
+    background: var(--color-warning-subtle);
+    color: var(--color-warning);
+    border: 1px solid var(--color-warning);
+  }
+
+  .badgeDeclined {
+    background: var(--color-danger-subtle);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+  }
+
+  .badgePending {
+    background: var(--color-primary-subtle);
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+
+  .badgeMuted {
+    background: var(--color-bg-subtle);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border-default);
   }
 }
 
@@ -204,25 +282,23 @@
     justify-content: center;
     gap: 8px;
     padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 0.875rem;
-    font-weight: 700;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.15s ease;
+    transition: all var(--transition-fast);
     width: 100%;
     max-width: 220px;
   }
 
   .btnPending {
-    background: linear-gradient(135deg, var(--color-brand-primary, #0284c7) 0%, #0369a1 100%);
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border: 1px solid transparent;
 
     &:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
+      background: var(--color-primary-hover);
     }
   }
 
@@ -233,16 +309,6 @@
 
     &:hover {
       background: var(--color-bg-card);
-      border-color: var(--color-border-strong);
     }
   }
-}
-
-.emptyState {
-  text-align: center;
-  padding: 80px 24px;
-  background: var(--color-bg-card);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-default);
-  box-shadow: var(--shadow-sm);
 }

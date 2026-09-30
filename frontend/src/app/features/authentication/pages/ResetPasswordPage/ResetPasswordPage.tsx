@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Eye, EyeOff, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { authService } from '../../../../core/services/auth.service';
+import styles from '../LoginPage/LoginPage.module.scss';
+import { FormField } from '../../../../shared/components/form-field/FormField';
+import logoImg from '@/assets/logo.png';
 
 export const ResetPasswordPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -57,201 +60,96 @@ export const ResetPasswordPage: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#0f172a',
-      padding: '20px'
-    }}>
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '20px',
-        padding: '40px 32px',
-        maxWidth: '460px',
-        width: '100%',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-      }}>
+    <div className={styles.loginContainer}>
+      <div className={styles.authSingleCard}>
         {/* Logo */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-          <img src="/logo.png" alt="Logo" style={{ height: '36px', width: 'auto' }} />
-          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>
-            HR <span style={{ color: '#2563eb' }}>Portal</span>
+        <div className={styles.brandTitleRow}>
+          <img src={logoImg} alt="Logo" className={styles.brandLogoImg} />
+          <span className={styles.brandPortalText}>
+            HR <span className={styles.authLinkHighlight}>Portal</span>
           </span>
         </div>
 
         {success ? (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: '#ecfdf5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 20px'
-            }}>
-              <CheckCircle2 size={40} color="#059669" />
+          <div>
+            <div className={`${styles.statusIconCircle} ${styles.statusIconSuccess}`}>
+              <CheckCircle2 size={40} />
             </div>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: '#065f46', marginBottom: '8px' }}>
+            <h2 className={`${styles.title} ${styles.successTitle}`}>
               Đặt Lại Mật Khẩu Thành Công!
             </h2>
-            <p style={{ color: '#475569', fontSize: '0.925rem', marginBottom: '28px', lineHeight: 1.6 }}>
-              Mật khẩu mới của bạn đã được cập nhật. Bạn có thể sử dụng mật khẩu mới này để đăng nhập vào hệ thống.
+            <p className={styles.subtitle}>
+              Mật khẩu mới của bạn đã được cập nhật thành công. Bạn có thể sử dụng mật khẩu mới này để đăng nhập vào hệ thống.
             </p>
             <Link
               to="/auth/login"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                width: '100%',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                padding: '12px',
-                borderRadius: '10px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                boxSizing: 'border-box'
-              }}
+              className={styles.submitBtn}
             >
-              Đăng nhập ngay <ArrowRight size={18} />
+              <span>Đăng nhập ngay</span>
+              <ArrowRight size={18} />
             </Link>
           </div>
         ) : (
           <div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1e293b', marginBottom: '6px', textAlign: 'center' }}>
+            <h2 className={styles.title}>
               Thiết Lập Mật Khẩu Mới
             </h2>
-            <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '24px', textAlign: 'center' }}>
+            <p className={styles.subtitle}>
               {email ? `Dành cho tài khoản: ${email}` : 'Nhập mật khẩu mới của bạn'}
             </p>
 
             {errorMessage && (
-              <div style={{
-                padding: '12px',
-                borderRadius: '10px',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                color: '#b91c1c',
-                fontSize: '0.875rem',
-                marginBottom: '20px',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '8px'
-              }}>
-                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div className={`${styles.alertBox} ${styles.alertDanger}`}>
+                <AlertCircle size={18} className={styles.authAlertIcon} />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Mật khẩu mới
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="Tối thiểu 6 ký tự"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 42px 12px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '0.95rem',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#64748b'
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+            <form onSubmit={handleSubmit} className={styles.form}>
+              <div className={styles.passwordFieldWrapper}>
+                <FormField
+                  label="Mật khẩu mới"
+                  required
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Tối thiểu 6 ký tự"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={styles.eyeToggleBtn}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Xác nhận mật khẩu mới
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    required
-                    placeholder="Nhập lại mật khẩu mới"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 42px 12px 14px',
-                      borderRadius: '10px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '0.95rem',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#64748b'
-                    }}
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+              <div className={styles.passwordFieldWrapper}>
+                <FormField
+                  label="Xác nhận mật khẩu mới"
+                  required
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Nhập lại mật khẩu mới"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className={styles.eyeToggleBtn}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#2563eb',
-                  color: '#ffffff',
-                  padding: '13px',
-                  borderRadius: '10px',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  marginTop: '6px'
-                }}
+                className={styles.submitBtn}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" />
+                    <Loader2 size={18} className={`animate-spin ${styles.btnSpinner}`} />
                     Đang cập nhật...
                   </>
                 ) : (
@@ -260,8 +158,8 @@ export const ResetPasswordPage: React.FC = () => {
               </button>
             </form>
 
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
-              <Link to="/auth/login" style={{ fontSize: '0.9rem', color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}>
+            <div className={styles.authLinksFooter}>
+              <Link to="/auth/login" className={styles.backToLoginLink}>
                 Quay lại Đăng nhập
               </Link>
             </div>
@@ -271,3 +169,4 @@ export const ResetPasswordPage: React.FC = () => {
     </div>
   );
 };
+export default ResetPasswordPage;

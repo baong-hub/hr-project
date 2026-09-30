@@ -122,3 +122,70 @@ export const SIDEBAR_MENU: SidebarItem[] = [
     ]
   }
 ];
+
+export const GUEST_SIDEBAR_MENU: SidebarItem[] = [
+  {
+    label: 'Trang chủ',
+    shortName: 'Trang chủ',
+    icon: 'Home',
+    route: '/',
+    code: 'public:home'
+  },
+  {
+    label: 'Tìm việc làm',
+    shortName: 'Việc làm',
+    icon: 'Briefcase',
+    route: '/jobs',
+    code: 'public:jobs'
+  },
+  {
+    label: 'Tạo & Quản lý CV',
+    shortName: 'Tạo CV',
+    icon: 'FileText',
+    route: '/cvs',
+    code: 'public:cvs'
+  },
+  {
+    label: 'Doanh nghiệp',
+    shortName: 'Công ty',
+    icon: 'Building2',
+    route: '/companies',
+    code: 'public:companies'
+  },
+  {
+    label: 'Báo cáo thị trường lương',
+    shortName: 'Báo cáo lương',
+    icon: 'BarChart3',
+    route: '/salary-insights',
+    code: 'public:salary'
+  },
+  {
+    label: 'Cẩm nang nghề nghiệp',
+    shortName: 'Cẩm nang',
+    icon: 'BookOpen',
+    route: '/blog',
+    code: 'public:blog'
+  },
+  {
+    label: 'Bảng giá dịch vụ',
+    shortName: 'Bảng giá',
+    icon: 'CreditCard',
+    route: '/pricing',
+    code: 'public:pricing'
+  },
+  {
+    label: 'Về chúng tôi',
+    shortName: 'Giới thiệu',
+    icon: 'Info',
+    route: '/about',
+    code: 'public:about'
+  },
+  {
+    label: 'Liên hệ & Hỗ trợ',
+    shortName: 'Liên hệ',
+    icon: 'HelpCircle',
+    route: '/contact',
+    code: 'public:contact'
+  }
+];
+

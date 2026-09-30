@@ -223,7 +223,7 @@ export const CandidateAssessmentPage: React.FC = () => {
   if (!testData) {
     return (
       <div className={styles.errorContainer}>
-        <AlertTriangle size={48} color="#ef4444" />
+        <AlertTriangle size={48} color="var(--color-danger)" />
         <h2>Không tìm thấy bài kiểm tra</h2>
         <p>Bài kiểm tra không tồn tại hoặc bạn không có quyền truy cập.</p>
         <button className={styles.btnSecondary} onClick={() => navigate('/candidate/applications')}>
@@ -634,7 +634,7 @@ export const CandidateAssessmentPage: React.FC = () => {
 
             {answeredCount < questions.length && (
               <div className={styles.unansweredWarning}>
-                <AlertTriangle size={20} color="#f59e0b" />
+                <AlertTriangle size={20} color="var(--color-warning)" />
                 <span>
                   Bạn vẫn còn <strong>{questions.length - answeredCount} câu chưa trả lời</strong>.
                   Bạn có chắc chắn muốn nộp bài ngay bây giờ?

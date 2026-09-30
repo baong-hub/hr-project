@@ -58,8 +58,10 @@
   --color-warning-bg:          #FEF3C7;
   --color-danger:              #DC2626;
   --color-danger-bg:           #FEE2E2;
+  --color-neutral:             #64748B;
+  --color-neutral-bg:          #F1F5F9;
 
-  --color-overlay:             rgba(17, 24, 39, 0.5);
+  --color-overlay:             rgba(15, 23, 42, 0.5);
 
   /* === Typography === */
   --font-family-base: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -90,10 +92,12 @@
   --spacing-3xl:  3rem;     /* 48px */
 
   /* === Border Radius === */
+  --radius-xs:     2px;
   --radius-sm:     4px;
   --radius-md:     6px;
   --radius-lg:     8px;
   --radius-xl:     12px;
+  --radius-pill:   9999px;
   --radius-circle: 50%;
 
   /* === Shadow === */
@@ -120,6 +124,7 @@
   --footer-bg:                 #1E2130;   /* FIXED navy background in both light and dark mode */
   --header-topbar-bg:          #1E2130;   /* Header top bar navy */
   --header-nav-bg:             #FFFFFF;
+  --color-white:               #FFFFFF;
 
   /* === Public Theme Tokens (Legacy Fallbacks) === */
   --color-paper:               #F4F5F7;
@@ -190,6 +195,10 @@ body.dark-mode {
   --color-success-bg:          rgba(5, 150, 105, 0.15);
   --color-warning-bg:          rgba(217, 119, 6, 0.15);
   --color-danger-bg:           rgba(220, 38, 38, 0.15);
+  --color-neutral:             #94A3B8;
+  --color-neutral-bg:          rgba(148, 163, 184, 0.15);
+
+  --color-overlay:             rgba(0, 0, 0, 0.7);
 
   /* === Shadows in Dark Mode === */
   --shadow-sm:     0 1px 2px 0 rgba(0, 0, 0, 0.4);

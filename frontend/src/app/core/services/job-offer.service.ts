@@ -44,6 +44,9 @@ export const jobOfferService = {
   getOfferByApplicationId: (applicationId: number) =>
     api.get<ApiResponse<JobOffer | null>>(`/job-offers/application/${applicationId}`),
 
+  getOfferByApplication: (applicationId: number) =>
+    api.get<ApiResponse<JobOffer | null>>(`/job-offers/application/${applicationId}`),
+
   /** Danh sách Offers cho Nhà tuyển dụng */
   getEmployerOffers: (jobId?: number, status?: JobOfferStatus) => {
     const params = new URLSearchParams();

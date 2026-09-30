@@ -15,11 +15,11 @@
 
 .resultCount {
   font-size: var(--font-size-base, 14px);
-  color: var(--color-text-secondary, #475569);
+  color: var(--color-text-secondary);
   font-weight: 500;
 
   strong {
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
@@ -30,14 +30,14 @@
   align-items: center;
   gap: 8px;
   font-size: var(--font-size-sm, 13px);
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
 
   select {
     padding: 6px 12px;
-    border: 1px solid var(--color-border-default, #cbd5e1);
+    border: 1px solid var(--color-border-default);
     border-radius: var(--radius-md, 6px);
-    background: var(--color-bg-card, #ffffff);
-    color: var(--color-text-primary, #0f172a);
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
     font-size: var(--font-size-sm, 13px);
     font-weight: 500;
     cursor: pointer;
@@ -45,7 +45,7 @@
     transition: border-color var(--transition-fast, 0.15s ease);
 
     &:focus {
-      border-color: var(--color-brand-primary, #2563eb);
+      border-color: var(--color-brand-primary);
     }
   }
 }
@@ -62,20 +62,20 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  background: var(--color-bg-subtle, #f1f5f9);
-  border: 1px solid var(--color-border-default, #cbd5e1);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md, 6px);
   font-size: var(--font-size-xs, 12px);
-  color: var(--color-text-primary, #1e293b);
+  color: var(--color-text-primary);
   line-height: 1.4;
 
   .chipLabel {
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
   }
 
   .chipValue {
     font-weight: 600;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
   }
 
   .removeBtn {
@@ -87,11 +87,11 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--color-text-muted);
     transition: color var(--transition-fast, 0.15s ease);
 
     &:hover {
-      color: var(--color-error, #dc2626);
+      color: var(--color-error);
     }
   }
 }
@@ -102,7 +102,7 @@
   padding: 4px 8px;
   font-size: var(--font-size-xs, 12px);
   font-weight: 600;
-  color: var(--color-brand-primary, #2563eb);
+  color: var(--color-brand-primary);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;

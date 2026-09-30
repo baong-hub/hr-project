@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes, Navigate, Outlet, useLocation, useSearchParams, useParams } from 'react-router-dom';
 import { AppShell } from './core/layout/AppShell/AppShell';
-import { PublicLayout } from './core/layout/PublicLayout/PublicLayout';
 import { authService } from './core/services/auth.service';
+import { toast } from './core/services/toast.service';
 import { userRoleRoutes } from './features/user-role/routes';
 
 // Auth Module Pages
 import { LoginPage } from './features/authentication/pages/LoginPage/LoginPage';
 const RegisterCandidatePage = React.lazy(() => import('./features/authentication/pages/RegisterCandidatePage/RegisterCandidatePage').then(m => ({ default: m.RegisterCandidatePage })));
 const RegisterEmployerPage = React.lazy(() => import('./features/authentication/pages/RegisterEmployerPage/RegisterEmployerPage').then(m => ({ default: m.RegisterEmployerPage })));
+const VerifyEmailPage = React.lazy(() => import('./features/authentication/pages/VerifyEmailPage/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
+const ResetPasswordPage = React.lazy(() => import('./features/authentication/pages/ResetPasswordPage/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 
 // Public Pages (Landing, Pricing, About, Contact, Policies)
 const LandingPage = React.lazy(() => import('./features/public/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -58,6 +60,7 @@ const MasterDataPage = React.lazy(() => import('./features/master-data/pages/Mas
 const OrganizationPage = React.lazy(() => import('./features/organization/pages/OrganizationPage/OrganizationPage').then(m => ({ default: m.OrganizationPage })));
 const MessagesPage = React.lazy(() => import('./features/messages/pages/MessagesPage').then(m => ({ default: m.MessagesPage })));
 const FraudModerationPage = React.lazy(() => import('./features/jobs/pages/FraudModerationPage').then(m => ({ default: m.FraudModerationPage })));
+const ComponentShowcasePage = React.lazy(() => import('./features/public/ComponentShowcasePage').then(m => ({ default: m.ComponentShowcasePage })));
 
 // Dynamic dispatcher for /reports route based on user roles
 const ReportsDispatcherPage: React.FC = () => {
@@ -92,6 +95,13 @@ const CompanyCareersRedirect: React.FC = () => {
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = authService.isAuthenticated();
   const location = useLocation();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để tiếp tục.');
+    }
+  }, [isAuthenticated]);
+
   return isAuthenticated ? (
     <>{children}</>
   ) : (
@@ -186,9 +196,50 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* =========================================================================
-          1. PUBLIC LAYOUT ROUTES (Header & Footer công khai, SEO Friendly)
+          1. AUTHENTICATION & GUEST ROUTES (Standalone Authentication)
          ========================================================================= */}
-      <Route element={<PublicLayout />}>
+      <Route path="/auth/login" element={
+        <GuestRoute>
+          <LoginPage />
+        </GuestRoute>
+      } />
+      <Route path="/auth/register/candidate" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <GuestRoute>
+            <RegisterCandidatePage />
+          </GuestRoute>
+        </React.Suspense>
+      } />
+      <Route path="/auth/register/employer" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <GuestRoute>
+            <RegisterEmployerPage />
+          </GuestRoute>
+        </React.Suspense>
+      } />
+
+      <Route path="/auth/verify-email" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <VerifyEmailPage />
+        </React.Suspense>
+      } />
+      <Route path="/auth/reset-password" element={
+        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
+          <ResetPasswordPage />
+        </React.Suspense>
+      } />
+
+      {/* Shortcuts & Redirects */}
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/register" element={<Navigate to="/auth/register/candidate" replace />} />
+      <Route path="/verify-email" element={<Navigate to="/auth/verify-email" replace />} />
+      <Route path="/reset-password" element={<Navigate to="/auth/reset-password" replace />} />
+
+      {/* =========================================================================
+          2. UNIFIED PORTAL SHELL (Sidebar + Header + Workspace for ALL Pages)
+         ========================================================================= */}
+      <Route element={<AppShell />}>
+        {/* 2.1 Public & SEO Pages (Accessible before & after login) */}
         {/* Landing Page */}
         <Route path="/" element={
           <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải trang chủ...</div>}>
@@ -207,6 +258,13 @@ export const AppRoutes: React.FC = () => {
         <Route path="/jobs/:id" element={
           <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải chi tiết công việc...</div>}>
             <JobDetailPage />
+          </React.Suspense>
+        } />
+
+        {/* Tạo & Quản lý mẫu CV trực tuyến */}
+        <Route path="/cvs" element={
+          <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải công cụ tạo CV...</div>}>
+            <CvsPage />
           </React.Suspense>
         } />
 
@@ -284,39 +342,16 @@ export const AppRoutes: React.FC = () => {
             <TermsOfServicePage />
           </React.Suspense>
         } />
-      </Route>
 
-      {/* =========================================================================
-          2. AUTHENTICATION & GUEST ROUTES
-         ========================================================================= */}
-      <Route path="/auth/login" element={
-        <GuestRoute>
-          <LoginPage />
-        </GuestRoute>
-      } />
-      <Route path="/auth/register/candidate" element={
-        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
-          <GuestRoute>
-            <RegisterCandidatePage />
-          </GuestRoute>
-        </React.Suspense>
-      } />
-      <Route path="/auth/register/employer" element={
-        <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
-          <GuestRoute>
-            <RegisterEmployerPage />
-          </GuestRoute>
-        </React.Suspense>
-      } />
+        {/* Development Component Showcase */}
+        <Route path="/dev/components" element={
+          <React.Suspense fallback={<div style={{ padding: '60px', textAlign: 'center' }}>Đang tải thư viện thành phần...</div>}>
+            <ComponentShowcasePage />
+          </React.Suspense>
+        } />
 
-      {/* Shortcuts & Redirects */}
-      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-      <Route path="/register" element={<Navigate to="/auth/register/candidate" replace />} />
-
-      {/* =========================================================================
-          3. PROTECTED APP ROUTES (AppShell Layout, yêu cầu đăng nhập)
-         ========================================================================= */}
-      <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+        {/* 2.2 Protected App Routes (Yêu cầu đăng nhập - Guarded by ProtectedRoute) */}
+        <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
         {/* Module Tuyển Dụng Dành Cho Nhà Tuyển Dụng */}
         <Route path="employer/jobs" element={
           <PermissionRoute code="job:manage">
@@ -374,7 +409,6 @@ export const AppRoutes: React.FC = () => {
         } />
 
         {/* Module Dành Cho Ứng Viên */}
-        <Route path="cvs" element={<CvsPage />} />
         <Route path="candidate/profile" element={
           <PermissionRoute code="cv:manage">
             <React.Suspense fallback={<div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Đang tải...</div>}>
@@ -526,6 +560,7 @@ export const AppRoutes: React.FC = () => {
               element={route.element}
             />
           ))}
+        </Route>
         </Route>
       </Route>
 

@@ -60,17 +60,17 @@ export const CandidateOfferDetailPage: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACCEPTED':
-        return { text: t('offers.status_hired', 'Đã nhận việc (Hired)'), bg: 'rgba(5, 150, 105, 0.15)', color: '#10b981', border: 'rgba(16, 185, 129, 0.3)' };
+        return { text: t('offers.status_hired', 'Đã nhận việc (Hired)'), className: styles.badgeHired };
       case 'NEGOTIATING':
-        return { text: t('offers.status_negotiating', 'Đang thương lượng'), bg: 'rgba(217, 119, 6, 0.15)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' };
+        return { text: t('offers.status_negotiating', 'Đang thương lượng'), className: styles.badgeNegotiating };
       case 'DECLINED':
-        return { text: t('offers.status_declined', 'Đã từ chối'), bg: 'rgba(220, 38, 38, 0.15)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.3)' };
+        return { text: t('offers.status_declined', 'Đã từ chối'), className: styles.badgeDeclined };
       case 'EXPIRED':
-        return { text: t('offers.status_expired', 'Hết hạn'), bg: 'var(--color-bg-subtle)', color: 'var(--color-text-muted)', border: 'var(--color-border-default)' };
+        return { text: t('offers.status_expired', 'Hết hạn'), className: styles.badgeMuted };
       case 'CANCELLED':
-        return { text: t('offers.status_cancelled', 'Đã thu hồi'), bg: 'var(--color-bg-subtle)', color: 'var(--color-text-muted)', border: 'var(--color-border-default)' };
+        return { text: t('offers.status_cancelled', 'Đã thu hồi'), className: styles.badgeMuted };
       default:
-        return { text: t('offers.status_pending', 'Chờ bạn phản hồi'), bg: 'rgba(37, 99, 235, 0.15)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.3)' };
+        return { text: t('offers.status_pending', 'Chờ bạn phản hồi'), className: styles.badgePending };
     }
   };
 
@@ -93,15 +93,15 @@ export const CandidateOfferDetailPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: 'var(--color-text-secondary)' }}>
-          <div className="spinner" style={{ marginBottom: '12px' }} />
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner} />
           {t('offers.loading', 'Đang tải thông tin thư mời nhận việc...')}
         </div>
       ) : offers.length === 0 ? (
         <div className={styles.emptyState}>
-          <Inbox size={56} color="var(--color-text-muted)" style={{ margin: '0 auto 16px auto', opacity: 0.7 }} />
-          <h3 style={{ margin: '0 0 8px 0', color: 'var(--color-text-primary)', fontSize: '1.25rem' }}>{t('offers.empty_title', 'Chưa có Thư Mời Nhận Việc nào')}</h3>
-          <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
+          <Inbox size={56} className={styles.emptyIcon} />
+          <h3>{t('offers.empty_title', 'Chưa có Thư Mời Nhận Việc nào')}</h3>
+          <p>
             {t('offers.empty_desc', 'Khi nhà tuyển dụng hoàn tất đánh giá phỏng vấn và gửi đề xuất, bạn sẽ nhận được thông báo tại đây.')}
           </p>
         </div>
@@ -120,7 +120,7 @@ export const CandidateOfferDetailPage: React.FC = () => {
                         alt={item.companyName}
                       />
                     ) : (
-                      <Building size={26} color="var(--color-brand-primary, #0284c7)" />
+                      <Building size={26} className={styles.companyIcon} />
                     )}
                   </div>
 
@@ -156,14 +156,7 @@ export const CandidateOfferDetailPage: React.FC = () => {
 
                 {/* Column 4: Status Badge */}
                 <div className={styles.colStatus}>
-                  <span
-                    className={styles.badge}
-                    style={{
-                      background: badge.bg,
-                      color: badge.color,
-                      border: `1px solid ${badge.border}`
-                    }}
-                  >
+                  <span className={`${styles.badge} ${badge.className}`}>
                     {badge.text}
                   </span>
                 </div>

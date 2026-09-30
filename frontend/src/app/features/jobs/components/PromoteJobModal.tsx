@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import type { JobDto } from '../../../core/models/job.model';
+import styles from './PromoteJobModal.module.scss';
 
 interface PromoteJobModalProps {
   job: JobDto | null;
@@ -54,9 +55,8 @@ export const PromoteJobModal: React.FC<PromoteJobModalProps> = ({
       name: 'Gói Tuyển Gấp',
       duration: '7 ngày',
       price: '199.000đ',
-      icon: <Flame size={22} color="#ea580c" />,
-      color: '#ea580c',
-      bg: 'rgba(234, 88, 12, 0.08)',
+      icon: <Flame size={22} />,
+      typeClass: 'Urgent',
       badge: '🔥 TUYỂN GẤP',
       features: [
         'Gắn nhãn Đỏ Nổi Bật thu hút ứng viên',
@@ -69,9 +69,8 @@ export const PromoteJobModal: React.FC<PromoteJobModalProps> = ({
       name: 'Gói Ghim VIP Nổi Bật',
       duration: '14 ngày',
       price: '399.000đ',
-      icon: <Star size={22} color="#d97706" />,
-      color: '#d97706',
-      bg: 'rgba(217, 119, 6, 0.08)',
+      icon: <Star size={22} />,
+      typeClass: 'Featured',
       badge: '⭐ VIP NỔI BẬT',
       recommended: true,
       features: [
@@ -86,9 +85,8 @@ export const PromoteJobModal: React.FC<PromoteJobModalProps> = ({
       name: 'Gói Combo Đột Phá',
       duration: '30 ngày',
       price: '699.000đ',
-      icon: <Sparkles size={22} color="#7c3aed" />,
-      color: '#7c3aed',
-      bg: 'rgba(124, 58, 237, 0.08)',
+      icon: <Sparkles size={22} />,
+      typeClass: 'Combo',
       badge: '🚀 VIP + TUYỂN GẤP',
       features: [
         'Bao gồm cả 2 huy hiệu: VIP & Tuyển gấp',
@@ -100,186 +98,109 @@ export const PromoteJobModal: React.FC<PromoteJobModalProps> = ({
   ];
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(15, 23, 42, 0.65)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 9999,
-      padding: '20px'
-    }}>
-      <div style={{
-        background: '#ffffff',
-        borderRadius: '24px',
-        width: '100%',
-        maxWidth: '820px',
-        padding: '32px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        position: 'relative',
-        maxHeight: '90vh',
-        overflowY: 'auto'
-      }}>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
         <button
           onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            border: 'none',
-            background: '#f1f5f9',
-            borderRadius: '50%',
-            width: '36px',
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#64748b',
-            cursor: 'pointer'
-          }}
+          className={styles.closeButton}
+          aria-label="Đóng"
         >
           <X size={20} />
         </button>
 
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <span style={{
-            background: 'rgba(37, 99, 235, 0.1)',
-            color: '#2563eb',
-            padding: '4px 14px',
-            borderRadius: '999px',
-            fontSize: '13px',
-            fontWeight: 600,
-            display: 'inline-block',
-            marginBottom: '10px'
-          }}>
+        <div className={styles.header}>
+          <span className={styles.tagline}>
             Pay-Per-Job & Promotion Add-ons
           </span>
-          <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: '0 0 8px 0' }}>
+          <h2 className={styles.title}>
             Nâng cấp hiển thị tin tuyển dụng
           </h2>
-          <p style={{ fontSize: '14px', color: '#64748b', margin: 0 }}>
-            Đang áp dụng cho: <strong style={{ color: '#1e293b' }}>{job.title}</strong>
+          <p className={styles.subtitle}>
+            Đang áp dụng cho: <strong>{job.title}</strong>
           </p>
         </div>
 
         {successMessage ? (
-          <div style={{
-            padding: '40px 24px',
-            textAlign: 'center',
-            background: '#f0fdf4',
-            borderRadius: '16px',
-            border: '1px solid #bbf7d0',
-            color: '#166534'
-          }}>
-            <ShieldCheck size={48} style={{ margin: '0 auto 16px auto', color: '#16a34a' }} />
-            <h3 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 8px 0' }}>{successMessage}</h3>
-            <p style={{ margin: 0, fontSize: '14px', color: '#15803d' }}>Đang làm mới danh sách...</p>
+          <div className={styles.successCard}>
+            <ShieldCheck size={48} className={styles.successIcon} />
+            <h3>{successMessage}</h3>
+            <p>Đang làm mới danh sách...</p>
           </div>
         ) : (
           <>
             {/* Packages Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-              gap: '16px',
-              marginBottom: '28px'
-            }}>
+            <div className={styles.grid}>
               {packages.map((pkg) => {
                 const isSelected = selectedPackage === pkg.id;
+                const cardClass = [
+                  styles.packageCard,
+                  isSelected && styles[`selected${pkg.typeClass}`]
+                ].filter(Boolean).join(' ');
+
+                const iconClass = [
+                  styles.iconBox,
+                  styles[`icon${pkg.typeClass}`]
+                ].filter(Boolean).join(' ');
+
+                const badgeClass = [
+                  styles.typeBadge,
+                  styles[`badge${pkg.typeClass}`]
+                ].filter(Boolean).join(' ');
+
+                const priceClass = [
+                  styles.packagePrice,
+                  styles[`price${pkg.typeClass}`]
+                ].filter(Boolean).join(' ');
+
+                const selectBtnClass = [
+                  styles.selectButton,
+                  isSelected && styles[`selected${pkg.typeClass}Btn`]
+                ].filter(Boolean).join(' ');
+
                 return (
                   <div
                     key={pkg.id}
                     onClick={() => setSelectedPackage(pkg.id)}
-                    style={{
-                      border: isSelected ? `2px solid ${pkg.color}` : '1px solid #e2e8f0',
-                      borderRadius: '16px',
-                      padding: '22px 18px',
-                      background: isSelected ? pkg.bg : '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      position: 'relative',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      boxShadow: isSelected ? '0 8px 20px rgba(0, 0, 0, 0.08)' : 'none'
-                    }}
+                    className={cardClass}
                   >
                     {pkg.recommended && (
-                      <span style={{
-                        position: 'absolute',
-                        top: '-12px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        background: '#d97706',
-                        color: '#ffffff',
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        padding: '2px 10px',
-                        borderRadius: '999px',
-                        letterSpacing: '0.04em'
-                      }}>
+                      <span className={styles.popularBadge}>
                         PHỔ BIẾN NHẤT
                       </span>
                     )}
 
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <div style={{
-                          width: '42px',
-                          height: '42px',
-                          borderRadius: '12px',
-                          background: pkg.bg,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
+                      <div className={styles.cardHeader}>
+                        <div className={iconClass}>
                           {pkg.icon}
                         </div>
-                        <span style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          background: pkg.color,
-                          color: '#ffffff'
-                        }}>
+                        <span className={badgeClass}>
                           {pkg.badge}
                         </span>
                       </div>
 
-                      <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#1e293b', margin: '0 0 6px 0' }}>
+                      <h3 className={styles.packageName}>
                         {pkg.name}
                       </h3>
-                      <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '14px' }}>
+                      <div className={styles.packageDuration}>
                         Thời lượng: <strong>{pkg.duration}</strong>
                       </div>
 
-                      <div style={{ fontSize: '24px', fontWeight: 800, color: pkg.color, marginBottom: '18px' }}>
+                      <div className={priceClass}>
                         {pkg.price}
                       </div>
 
-                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#475569' }}>
+                      <ul className={styles.featuresList}>
                         {pkg.features.map((f, i) => (
-                          <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
-                            <Check size={14} style={{ color: pkg.color, flexShrink: 0, marginTop: '2px' }} />
+                          <li key={i}>
+                            <Check size={14} />
                             <span>{f}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    <div style={{
-                      marginTop: '20px',
-                      padding: '8px',
-                      textAlign: 'center',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      background: isSelected ? pkg.color : '#f1f5f9',
-                      color: isSelected ? '#ffffff' : '#64748b'
-                    }}>
+                    <div className={selectBtnClass}>
                       {isSelected ? 'Đang chọn gói này' : 'Chọn gói'}
                     </div>
                   </div>
@@ -288,34 +209,17 @@ export const PromoteJobModal: React.FC<PromoteJobModalProps> = ({
             </div>
 
             {/* Modal Actions */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingTop: '20px',
-              borderTop: '1px solid #f1f5f9',
-              flexWrap: 'wrap',
-              gap: '12px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748b' }}>
-                <CreditCard size={18} color="#2563eb" />
+            <div className={styles.modalFooter}>
+              <div className={styles.paymentNotice}>
+                <CreditCard size={18} />
                 <span>Thanh toán tức thì qua VietQR / Chuyển khoản ngân hàng tự động</span>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div className={styles.actions}>
                 <button
                   type="button"
                   onClick={onClose}
-                  style={{
-                    padding: '10px 18px',
-                    borderRadius: '8px',
-                    border: '1px solid #e2e8f0',
-                    background: '#ffffff',
-                    color: '#64748b',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    cursor: 'pointer'
-                  }}
+                  className={styles.cancelBtn}
                 >
                   Huỷ bỏ
                 </button>
@@ -323,18 +227,7 @@ export const PromoteJobModal: React.FC<PromoteJobModalProps> = ({
                   type="button"
                   onClick={handlePromote}
                   disabled={loading}
-                  style={{
-                    padding: '10px 24px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                    color: '#ffffff',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-                    opacity: loading ? 0.7 : 1
-                  }}
+                  className={styles.submitBtn}
                 >
                   {loading ? 'Đang xử lý kích hoạt...' : 'Kích hoạt ngay'}
                 </button>

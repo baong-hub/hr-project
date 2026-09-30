@@ -138,7 +138,7 @@ const RoleListPage: React.FC = () => {
                   <th>{t('user_role.staff_count') || 'Nhân viên'}</th>
                   <th>{t('user_role.perm_count') || 'Số quyền'}</th>
                   <th>{t('common.status') || 'Trạng thái'}</th>
-                  <th style={{ width: 80 }}></th>
+                  <th className={styles.colActions}></th>
                 </tr>
               </thead>
               <tbody>

@@ -233,7 +233,7 @@ export const InterviewsPage: React.FC = () => {
       <div className={styles.titleArea}>
         <div>
           <h1>{t('interviews.title', 'Quản lý Lịch phỏng vấn')}</h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+          <p>
             {isCandidate 
               ? t('interviews.subtitle_candidate', 'Theo dõi lời mời phỏng vấn và phản hồi xác nhận tham gia trực tiếp') 
               : t('interviews.subtitle_employer', 'Xem danh sách, đánh giá chuyên môn và cập nhật tiến độ các buổi phỏng vấn')}
@@ -242,49 +242,24 @@ export const InterviewsPage: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div style={{
-        display: 'flex',
-        gap: '12px',
-        marginBottom: '16px',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        background: 'var(--color-bg-card)',
-        padding: '12px 16px',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--color-border-default)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '1 1 260px', position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', color: 'var(--color-text-secondary)' }} />
+      <div className={styles.filterBar}>
+        <div className={styles.searchBox}>
+          <Search size={16} className={styles.searchIcon} />
           <input 
             type="text"
             placeholder={isCandidate ? t('interviews.search_candidate', 'Tìm theo vị trí hoặc người phỏng vấn...') : t('interviews.search_employer', 'Tìm theo vị trí hoặc tên ứng viên...')}
             value={searchKeyword}
             onChange={e => setSearchKeyword(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 12px 8px 36px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border-default)',
-              fontSize: '14px',
-              outline: 'none'
-            }}
+            className={styles.searchInput}
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: '0 0 auto' }}>
-          <Filter size={16} style={{ color: 'var(--color-text-secondary)' }} />
+        <div className={styles.filterGroup}>
+          <Filter size={16} className={styles.filterIcon} />
           <select 
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border-default)',
-              fontSize: '14px',
-              outline: 'none',
-              backgroundColor: 'var(--color-bg-card)',
-              color: 'var(--color-text-primary)'
-            }}
+            className={styles.filterSelect}
           >
             <option value="">{t('interviews.all_status', 'Tất cả trạng thái')}</option>
             <option value="SCHEDULED">{t('interviews.filter_scheduled', 'Chờ phản hồi')}</option>
@@ -299,24 +274,14 @@ export const InterviewsPage: React.FC = () => {
           <button 
             type="button"
             onClick={() => { setSearchKeyword(''); setStatusFilter(''); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '8px 14px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border-default)',
-              background: 'transparent',
-              fontSize: '13px',
-              cursor: 'pointer',
-              color: 'var(--color-text-secondary)'
-            }}
+            className={styles.btnSecondary}
             title={t('interviews.btn_clear_filter', 'Xóa bộ lọc')}
           >
             {t('interviews.btn_clear_filter', 'Xóa lọc')}
           </button>
         )}
 
-        <div style={{ marginLeft: 'auto', fontSize: '13px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+        <div className={styles.filterCount}>
           {t('interviews.filter_count', { count: filteredInterviews.length, defaultValue: `${filteredInterviews.length} lịch phỏng vấn` })}
         </div>
       </div>
@@ -334,21 +299,21 @@ export const InterviewsPage: React.FC = () => {
                 <th>{t('interviews.col_link', 'Link phòng họp')}</th>
                 <th>{t('interviews.col_notes', 'Ghi chú')}</th>
                 <th>{t('interviews.col_status', 'Trạng thái')}</th>
-                <th style={{ textAlign: 'right' }}>{t('interviews.col_actions', 'Thao tác')}</th>
+                <th className={styles.textRight}>{t('interviews.col_actions', 'Thao tác')}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '24px' }}>{t('interviews.loading', 'Đang tải lịch hẹn...')}</td></tr>
+                <tr><td colSpan={8} className={styles.centerLoadingRow}>{t('interviews.loading', 'Đang tải lịch hẹn...')}</td></tr>
               ) : (!Array.isArray(interviews) || interviews.length === 0) ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                  <td colSpan={8} className={styles.centerEmptyRow}>
                     {t('interviews.empty', 'Bạn chưa có lịch hẹn phỏng vấn nào.')}
                   </td>
                 </tr>
               ) : filteredInterviews.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                  <td colSpan={8} className={styles.centerEmptyRow}>
                     {t('interviews.not_found', 'Không tìm thấy lịch hẹn nào khớp với bộ lọc tìm kiếm.')}
                   </td>
                 </tr>
@@ -358,9 +323,9 @@ export const InterviewsPage: React.FC = () => {
                   const st = getStatusBadge(statusUpper);
                   return (
                     <tr key={i.id}>
-                      <td style={{ fontWeight: 600 }}>{i.jobTitle}</td>
+                      <td className={styles.jobTitleCell}>{i.jobTitle}</td>
                       <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className={styles.meetingCell}>
                           <User size={14} color="var(--color-text-secondary)" />
                           <span>{isCandidate ? i.employerName : i.candidateName}</span>
                         </div>
@@ -373,24 +338,23 @@ export const InterviewsPage: React.FC = () => {
                             {t('interviews.meeting_link', 'Link phòng họp')}
                           </a>
                         ) : (
-                          <span style={{ color: 'var(--color-text-muted)' }}>{t('interviews.direct_meeting', 'Trực tiếp')}</span>
+                          <span className={styles.meetingDirectSpan}>{t('interviews.direct_meeting', 'Trực tiếp')}</span>
                         )}
                       </td>
-                      <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={i.notes}>
+                      <td className={styles.notesCell} title={i.notes}>
                         {i.notes || '—'}
                       </td>
                       <td>
                         <span className={`${styles.badge} ${st.className}`}>{st.label}</span>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div className={styles.actionBtns} style={{ justifyContent: 'flex-end' }}>
+                      <td className={styles.textRight}>
+                        <div className={styles.actionBtns}>
                           {/* 1-Click Calendar Sync */}
                           <a
                             href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`[Phỏng vấn] ${i.jobTitle || 'Vị trí tuyển dụng'}`)}&dates=${new Date(i.startTime || i.scheduledAt || Date.now()).toISOString().replace(/-|:|\.\d\d\d/g, "")}/${new Date(i.endTime || new Date(Date.now() + 3600000)).toISOString().replace(/-|:|\.\d\d\d/g, "")}&details=${encodeURIComponent(`Phỏng vấn vòng: ${i.roundName || 'Phỏng vấn'}\nĐịa điểm/Meeting: ${i.locationOrLink || i.meetingLink || 'Online'}`)}&location=${encodeURIComponent(i.locationOrLink || i.meetingLink || 'Online')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={styles.actionBtn}
-                            style={{ color: '#2563eb', borderColor: '#bfdbfe', background: '#eff6ff', textDecoration: 'none' }}
+                            className={`${styles.actionBtn} ${styles.actionBtnCalendar}`}
                             title="Thêm vào Google Calendar (1-Click)"
                           >
                             <Calendar size={14} />
@@ -398,8 +362,7 @@ export const InterviewsPage: React.FC = () => {
                           <a
                             href={`/api/v1/interviews/${i.id}/calendar.ics`}
                             download={`Lich_phong_van_${i.id}.ics`}
-                            className={styles.actionBtn}
-                            style={{ color: '#0d9488', borderColor: '#99f6e4', background: '#f0fdfa', textDecoration: 'none' }}
+                            className={`${styles.actionBtn} ${styles.actionBtnDownload}`}
                             title="Tải lịch iCal (.ics) cho Outlook/Apple"
                           >
                             <Download size={14} />
@@ -434,8 +397,7 @@ export const InterviewsPage: React.FC = () => {
                               </button>
                               {i.applicationId && (
                                 <button
-                                  className={styles.actionBtn}
-                                  style={{ color: '#0284c7', borderColor: '#bae6fd', background: '#f0f9ff' }}
+                                  className={`${styles.actionBtn} ${styles.actionBtnOffer}`}
                                   onClick={() => setOfferModalData({
                                     applicationId: i.applicationId,
                                     candidateName: i.candidateName || 'Ứng viên',
@@ -450,8 +412,7 @@ export const InterviewsPage: React.FC = () => {
                               {statusUpper !== 'CANCELLED' && statusUpper !== 'COMPLETED' && statusUpper !== 'INTERVIEW_COMPLETED' && (
                                 <>
                                   <button 
-                                    className={styles.actionBtn} 
-                                    style={{ color: '#2e7d32', borderColor: '#c6f6d5' }} 
+                                    className={`${styles.actionBtn} ${styles.actionBtnComplete}`} 
                                     onClick={() => handleUpdateStatus(i.id, 'COMPLETED')} 
                                     title={t('interviews.btn_complete', 'Đánh dấu hoàn thành')}
                                   >
@@ -497,7 +458,7 @@ export const InterviewsPage: React.FC = () => {
               <div className={styles.scoreBanner}>
                 <div>
                   <div className={styles.scoreBannerTitle}>{t('interviews.eval_overall_title', 'Điểm Đánh Giá Tổng Kết (Overall Score)')}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '2px' }}>
+                  <div className={styles.scoreBannerSub}>
                     {t('interviews.eval_position', { jobTitle: selectedInterview.jobTitle, defaultValue: `Vị trí: ${selectedInterview.jobTitle}` })}
                   </div>
                 </div>
@@ -611,7 +572,7 @@ export const InterviewsPage: React.FC = () => {
 
               {/* Evaluation Result Decision */}
               <div className={styles.resultGroup}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                <label>
                   {t('interviews.eval_conclusion', 'Kết Luận Đánh Giá:')}
                 </label>
                 <div className={styles.resultOptions}>
@@ -649,17 +610,17 @@ export const InterviewsPage: React.FC = () => {
 
               {/* Previous evaluations history if exists */}
               {evalHistory.length > 0 && (
-                <div style={{ marginTop: '10px' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px', color: '#6b7280' }}>
+                <div className={styles.evalHistoryWrapper}>
+                  <div className={styles.evalHistoryTitle}>
                     {t('interviews.eval_history', 'Lịch sử các lần chấm trước:')}
                   </div>
                   {evalHistory.map((h, idx) => (
                     <div key={h.id || idx} className={styles.evalHistoryItem}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <div className={styles.evalHistoryHeader}>
                         <strong>{t('common.status', 'Kết quả')}: {h.result} ({h.overallScore}/10)</strong>
-                        <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>{formatDateTime(h.createdAt)}</span>
+                        <span className={styles.evalHistoryDate}>{formatDateTime(h.createdAt)}</span>
                       </div>
-                      {h.comments && <div style={{ color: '#4b5563', fontSize: '0.8rem' }}>"{h.comments}"</div>}
+                      {h.comments && <div className={styles.evalHistoryComment}>"{h.comments}"</div>}
                     </div>
                   ))}
                 </div>
@@ -674,7 +635,6 @@ export const InterviewsPage: React.FC = () => {
                 className={styles.btnPrimary} 
                 onClick={handleSubmitEvaluation}
                 disabled={submittingEval}
-                style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
               >
                 {submittingEval ? t('interviews.eval_saving', 'Đang lưu...') : t('interviews.eval_btn_save', 'Lưu Kết Quả Đánh Giá')}
               </button>

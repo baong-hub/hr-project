@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Sparkles, SlidersHorizontal, Inbox } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { applicationsService } from '../../../core/services/applications.service';
@@ -21,6 +21,7 @@ import styles from './JobListPage.module.scss';
 
 export const JobListPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const user = authService.getUser();
@@ -253,7 +254,7 @@ export const JobListPage: React.FC = () => {
   const handleToggleSaveJob = async (jobId: number) => {
     if (!authService.isAuthenticated()) {
       toast.info('Vui lòng đăng nhập để lưu việc làm yêu thích.');
-      navigate(`/auth/login?redirect=${encodeURIComponent('/jobs')}`);
+      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
       return;
     }
     if (!isCandidate) {

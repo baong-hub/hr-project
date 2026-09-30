@@ -306,7 +306,7 @@ export const ProfilePage: React.FC = () => {
                 </button>
               </div>
               {confirmPassword.length > 0 && !isMatch && (
-                <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+                <span className={styles.passwordMismatch}>
                   ✕ {t('profile.password_mismatch', 'Mật khẩu nhập lại không trùng khớp với mật khẩu mới')}
                 </span>
               )}

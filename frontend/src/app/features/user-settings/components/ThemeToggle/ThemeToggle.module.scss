@@ -5,12 +5,12 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--text-color, #4a4a4a);
+  color: var(--color-text-primary);
   padding: 8px;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-base);
 
   &:hover {
-    background-color: rgba(128, 128, 128, 0.1);
+    background-color: var(--color-bg-hover);
   }
 }

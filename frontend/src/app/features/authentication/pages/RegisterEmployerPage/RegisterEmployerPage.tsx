@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, Phone, Briefcase, Building, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { authService } from '../../../../core/services/auth.service';
 import styles from '../LoginPage/LoginPage.module.scss';
+import { FormField } from '../../../../shared/components/form-field/FormField';
 
 export const RegisterEmployerPage: React.FC = () => {
   const navigate = useNavigate();
@@ -79,179 +80,122 @@ export const RegisterEmployerPage: React.FC = () => {
 
   return (
     <div className={styles.loginContainer}>
-      <div className={styles.loginCard} style={{ width: '600px', height: 'auto', padding: '24px 0' }}>
-        <div className={styles.formPanel} style={{ width: '100%', padding: '0 32px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-brand-primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Dành cho Nhà tuyển dụng
-            </span>
-            <h2 className={styles.title} style={{ marginTop: '4px' }}>Đăng ký tài khoản tuyển dụng</h2>
-            <p className={styles.subtitle}>Tạo tài khoản để đăng tuyển dụng và tìm kiếm nhân sự chất lượng cao</p>
+      <div className={`${styles.authSingleCard} ${styles.authFullWidthCard}`}>
+        <div className={styles.authHeaderCenter}>
+          <span className={styles.authBadge}>
+            Dành cho Nhà tuyển dụng
+          </span>
+          <h2 className={styles.title}>Đăng ký tài khoản tuyển dụng</h2>
+          <p className={styles.subtitle}>
+            Tạo tài khoản để đăng tin tuyển dụng và tiếp cận hàng ngàn ứng viên chất lượng
+          </p>
+        </div>
+
+        {errorMsg && (
+          <div className={`${styles.alertBox} ${styles.alertDanger}`}>
+            <AlertCircle size={18} className={styles.authAlertIcon} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className={`${styles.alertBox} ${styles.alertSuccess}`}>
+            <CheckCircle2 size={18} className={styles.authAlertIcon} />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleRegister} className={styles.form}>
+          <div className={styles.authTwoColGrid}>
+            <FormField
+              label="Email doanh nghiệp"
+              required
+              type="email"
+              placeholder="email@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading || !!successMsg}
+            />
+
+            <div className={styles.passwordFieldWrapper}>
+              <FormField
+                label="Mật khẩu"
+                required
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Tối thiểu 8 ký tự"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading || !!successMsg}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading || !!successMsg}
+                className={styles.eyeToggleBtn}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <FormField
+              label="Họ và tên người liên hệ"
+              required
+              placeholder="Nguyễn Văn B"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              disabled={isLoading || !!successMsg}
+            />
+
+            <FormField
+              label="Số điện thoại liên hệ"
+              required
+              placeholder="0912345678"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={isLoading || !!successMsg}
+            />
+
+            <FormField
+              label="Chức vụ người đại diện"
+              required
+              placeholder="Trưởng phòng HR"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+              disabled={isLoading || !!successMsg}
+            />
+
+            <FormField
+              label="Tên doanh nghiệp / Công ty"
+              required
+              placeholder="Công ty TNHH Hamo"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              disabled={isLoading || !!successMsg}
+            />
           </div>
 
-          {errorMsg && (
-            <div 
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                borderRadius: 'var(--radius-md)',
-                color: 'rgb(239, 68, 68)',
-                fontSize: 'var(--font-size-sm)',
-                marginBottom: '16px'
-              }}
-            >
-              {errorMsg}
-            </div>
-          )}
+          <button type="submit" className={styles.submitBtn} disabled={isLoading || !!successMsg}>
+            {isLoading ? (
+              <>
+                <Loader2 size={18} className={`animate-spin ${styles.btnSpinner}`} />
+                Đang xử lý...
+              </>
+            ) : (
+              'Đăng ký Nhà tuyển dụng'
+            )}
+          </button>
+        </form>
 
-          {successMsg && (
-            <div 
-              style={{
-                padding: '12px',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                borderRadius: 'var(--radius-md)',
-                color: 'rgb(16, 185, 129)',
-                fontSize: 'var(--font-size-sm)',
-                marginBottom: '16px'
-              }}
-            >
-              {successMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleRegister} className={styles.form}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              {/* Email */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Email đăng ký</label>
-                <div className={styles.inputWrapper}>
-                  <Mail size={18} className={styles.inputIcon} />
-                  <input
-                    type="text"
-                    placeholder="email@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading || !!successMsg}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Mật khẩu</label>
-                <div className={styles.inputWrapper}>
-                  <Lock size={18} className={styles.inputIcon} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="********"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading || !!successMsg}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className={styles.eyeBtn}
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={isLoading || !!successMsg}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Họ tên */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Họ và tên</label>
-                <div className={styles.inputWrapper}>
-                  <User size={18} className={styles.inputIcon} />
-                  <input
-                    type="text"
-                    placeholder="Nguyễn Văn B"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    disabled={isLoading || !!successMsg}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Số điện thoại */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Số điện thoại</label>
-                <div className={styles.inputWrapper}>
-                  <Phone size={18} className={styles.inputIcon} />
-                  <input
-                    type="text"
-                    placeholder="0912345678"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    disabled={isLoading || !!successMsg}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Chức vụ */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Chức vụ</label>
-                <div className={styles.inputWrapper}>
-                  <Briefcase size={18} className={styles.inputIcon} />
-                  <input
-                    type="text"
-                    placeholder="Trưởng phòng HR"
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
-                    disabled={isLoading || !!successMsg}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Tên doanh nghiệp */}
-              <div className={styles.inputGroup}>
-                <label className={styles.label}>Tên doanh nghiệp</label>
-                <div className={styles.inputWrapper}>
-                  <Building size={18} className={styles.inputIcon} />
-                  <input
-                    type="text"
-                    placeholder="Công ty TNHH Hamo"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    disabled={isLoading || !!successMsg}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button type="submit" className={styles.submitBtn} disabled={isLoading || !!successMsg}>
-              {isLoading ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" style={{ marginRight: '8px' }} />
-                  Đang xử lý...
-                </>
-              ) : (
-                'Đăng ký Doanh nghiệp'
-              )}
-            </button>
-          </form>
-
-          {/* Footer links */}
-          <div className={styles.formFooter} style={{ marginTop: '20px' }}>
-            <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-              Đã có tài khoản?{' '}
-              <Link to="/auth/login" style={{ color: 'var(--color-brand-primary-dark)', fontWeight: 600 }}>
-                Đăng nhập ngay
-              </Link>
-            </span>
-          </div>
+        <div className={styles.authLinksFooter}>
+          <span className={styles.authFooterText}>
+            Đã có tài khoản?{' '}
+            <Link to="/auth/login" className={styles.authLinkHighlight}>
+              Đăng nhập ngay
+            </Link>
+          </span>
         </div>
       </div>
     </div>
   );
 };
+export default RegisterEmployerPage;

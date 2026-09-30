@@ -95,7 +95,7 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({
                     className={styles.uploadCvLink}
                     onClick={() => {
                       onClose();
-                      navigate('/candidate/cv');
+                      navigate('/candidate/cvs');
                     }}
                   >
                     Tạo / Tải lên CV ngay →

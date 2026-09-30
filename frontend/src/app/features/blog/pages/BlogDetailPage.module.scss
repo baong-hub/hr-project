@@ -11,7 +11,7 @@
 .loadingState {
   padding: 60px 24px;
   text-align: center;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-base, 15px);
 }
 
@@ -26,18 +26,18 @@
   h2 {
     font-size: var(--font-size-xl, 20px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
   p {
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     font-size: var(--font-size-sm, 14px);
     margin: 0;
   }
 
   .backLink {
-    color: var(--color-brand-primary, #2563eb);
+    color: var(--color-brand-primary);
     font-weight: 600;
     text-decoration: none;
 
@@ -52,25 +52,25 @@
   align-items: center;
   gap: 6px;
   font-size: var(--font-size-xs, 12px);
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   overflow-x: auto;
   white-space: nowrap;
 
   a {
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     text-decoration: none;
 
     &:hover {
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
     }
   }
 
   .separator {
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--color-text-muted);
   }
 
   .current {
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     font-weight: 600;
   }
 }
@@ -99,7 +99,7 @@
   flex-direction: column;
   gap: 12px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  border-bottom: 1px solid var(--color-border-subtle);
 
   .tagRow {
     display: flex;
@@ -110,15 +110,15 @@
     .categoryPill {
       font-size: 11px;
       font-weight: 700;
-      color: var(--color-brand-primary, #2563eb);
-      background: var(--color-brand-subtle, #eff6ff);
+      color: var(--color-brand-primary);
+      background: var(--color-brand-subtle);
       padding: 3px 10px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
     }
 
     .readTime {
       font-size: 12px;
-      color: var(--color-text-muted, #94a3b8);
+      color: var(--color-text-muted);
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -128,7 +128,7 @@
   .articleTitle {
     font-size: var(--font-size-2xl, 26px);
     font-weight: 800;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
     line-height: 1.35;
   }
@@ -138,14 +138,14 @@
     align-items: center;
     gap: 16px;
     font-size: var(--font-size-xs, 12px);
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
 
     .authorItem {
       display: inline-flex;
       align-items: center;
       gap: 5px;
       font-weight: 600;
-      color: var(--color-text-primary, #1e293b);
+      color: var(--color-text-primary);
     }
   }
 }
@@ -154,12 +154,12 @@
 .articleProse {
   font-size: 16px;
   line-height: 1.8;
-  color: var(--color-text-primary, #1e293b);
+  color: var(--color-text-primary);
 
   h2 {
     font-size: var(--font-size-xl, 20px);
     font-weight: 800;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 28px 0 12px;
     line-height: 1.35;
   }
@@ -167,18 +167,18 @@
   h3 {
     font-size: var(--font-size-lg, 17px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 20px 0 10px;
   }
 
   p {
     margin: 0 0 16px;
-    color: var(--color-text-secondary, #334155);
+    color: var(--color-text-secondary);
   }
 
   ul, ol {
     margin: 0 0 16px 20px;
-    color: var(--color-text-secondary, #334155);
+    color: var(--color-text-secondary);
 
     li {
       margin-bottom: 6px;
@@ -188,11 +188,11 @@
   blockquote {
     margin: 20px 0;
     padding: 12px 18px;
-    border-left: 4px solid var(--color-brand-primary, #2563eb);
-    background: var(--color-bg-subtle, #f8fafc);
+    border-left: 4px solid var(--color-brand-primary);
+    background: var(--color-bg-subtle);
     border-radius: 0 var(--radius-md, 6px) var(--radius-md, 6px) 0;
     font-style: italic;
-    color: var(--color-text-primary, #1e293b);
+    color: var(--color-text-primary);
   }
 
   img {
@@ -209,19 +209,19 @@
   gap: 8px;
   flex-wrap: wrap;
   padding-top: 16px;
-  border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+  border-top: 1px solid var(--color-border-subtle);
 
   .tagIcon {
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--color-text-muted);
   }
 
   .tagItem {
     font-size: 12px;
     padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--color-bg-subtle, #f1f5f9);
-    color: var(--color-text-secondary, #475569);
-    border: 1px solid var(--color-border-subtle, #e2e8f0);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-subtle);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-subtle);
   }
 }
 
@@ -235,8 +235,8 @@
 }
 
 .shareCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-4, 18px);
   display: flex;
@@ -246,18 +246,18 @@
   h3 {
     font-size: var(--font-size-sm, 14px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
   .copyBtn {
     padding: 8px 14px;
-    background: var(--color-bg-subtle, #f8fafc);
-    border: 1px solid var(--color-border-default, #cbd5e1);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-default);
     border-radius: var(--radius-md, 6px);
     font-size: var(--font-size-xs, 12px);
     font-weight: 600;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -266,20 +266,20 @@
     transition: all var(--transition-fast, 0.15s ease);
 
     .copiedIcon {
-      color: var(--color-success, #16a34a);
+      color: var(--color-success);
     }
 
     &:hover {
-      background: var(--color-brand-subtle, #eff6ff);
-      color: var(--color-brand-primary, #2563eb);
-      border-color: var(--color-brand-border, #bfdbfe);
+      background: var(--color-brand-subtle);
+      color: var(--color-brand-primary);
+      border-color: var(--color-brand-border);
     }
   }
 }
 
 .relatedJobsCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-4, 18px);
   display: flex;
@@ -289,7 +289,7 @@
   h3 {
     font-size: var(--font-size-sm, 14px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
@@ -301,8 +301,8 @@
 
   .jobItem {
     padding: 8px 10px;
-    background: var(--color-bg-subtle, #f8fafc);
-    border: 1px solid var(--color-border-subtle, #f1f5f9);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-md, 8px);
     text-decoration: none;
     display: flex;
@@ -311,28 +311,28 @@
     transition: all var(--transition-fast, 0.15s ease);
 
     &:hover {
-      background: var(--color-brand-subtle, #eff6ff);
-      border-color: var(--color-brand-border, #bfdbfe);
+      background: var(--color-brand-subtle);
+      border-color: var(--color-brand-border);
     }
 
     .jobTitle {
       font-size: var(--font-size-xs, 13px);
       font-weight: 700;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
       margin: 0;
       line-height: 1.3;
     }
 
     .jobCompany {
       font-size: 11px;
-      color: var(--color-text-secondary, #64748b);
+      color: var(--color-text-secondary);
       margin: 0;
     }
 
     .jobSalary {
       font-size: 11px;
       font-weight: 700;
-      color: var(--color-salary, #8C6B28);
+      color: var(--color-salary);
       font-variant-numeric: tabular-nums;
     }
   }
@@ -341,12 +341,12 @@
 .emptyState {
   padding: 60px 20px;
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 
   h2 {
     font-size: var(--font-size-lg, 18px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0 0 8px;
   }
 

@@ -1,3 +1,5 @@
+@use '../../../../styles/tokens' as *;
+
 .cvsPage {
   display: flex;
   flex-direction: column;
@@ -11,7 +13,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-4);
-  background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-subtle) 100%);
+  background: var(--color-bg-card);
   padding: var(--space-5) var(--space-6);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-default);
@@ -22,10 +24,7 @@
   font-size: var(--font-size-2xl);
   font-weight: 800;
   margin: 0;
-  background: linear-gradient(90deg, var(--color-text-primary) 0%, var(--color-brand-primary) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-text-primary);
 }
 
 .btnPrimary {
@@ -33,19 +32,19 @@
   align-items: center;
   gap: var(--space-2);
   padding: 10px 20px;
-  background: linear-gradient(135deg, var(--color-brand-primary) 0%, #1e88e5 100%);
-  color: #fff;
-  border: none;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
-  transition: all 0.2s ease;
-}
-.btnPrimary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(30, 136, 229, 0.3);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
 }
 
 .btnSecondary {
@@ -60,11 +59,12 @@
   font-size: var(--font-size-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-.btnSecondary:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--color-bg-subtle);
+    color: var(--color-text-primary);
+  }
 }
 
 /* === Layout Grid for CV List & Uploader === */
@@ -72,10 +72,8 @@
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: var(--space-6);
-}
 
-@media (max-width: 900px) {
-  .cvGrid {
+  @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
 }
@@ -109,18 +107,19 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   background: var(--color-bg-subtle);
-}
-.dragDropArea:hover {
-  border-color: var(--color-brand-primary);
-  background: rgba(30, 136, 229, 0.02);
-}
 
-.dragDropArea p {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  &:hover {
+    border-color: var(--color-primary);
+    background: var(--color-bg-hover);
+  }
+
+  p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
 }
 
 /* === CV Builder Page View === */
@@ -131,12 +130,13 @@
   border-bottom: 1px solid var(--color-border-default);
   padding-bottom: var(--space-4);
   margin-bottom: var(--space-4);
-}
 
-.builderHeader h2 {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  margin: 0;
+  h2 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text-primary);
+  }
 }
 
 /* Stepper progress */
@@ -162,7 +162,7 @@
 .stepNumber {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--color-border-default);
   color: var(--color-text-secondary);
   display: inline-flex;
@@ -172,20 +172,21 @@
 }
 
 .stepActive {
-  color: var(--color-brand-primary);
-}
-.stepActive .stepNumber {
-  background: var(--color-brand-primary);
-  color: #fff;
-  box-shadow: 0 0 0 4px rgba(30, 136, 229, 0.15);
+  color: var(--color-primary);
+
+  .stepNumber {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+  }
 }
 
 .stepCompleted {
-  color: #2e7d32;
-}
-.stepCompleted .stepNumber {
-  background: #e8f5e9;
-  color: #2e7d32;
+  color: var(--color-success);
+
+  .stepNumber {
+    background: var(--color-success-subtle);
+    color: var(--color-success);
+  }
 }
 
 /* CV Builder layout split */
@@ -194,10 +195,8 @@
   grid-template-columns: 1.2fr 1fr;
   gap: var(--space-6);
   align-items: start;
-}
 
-@media (max-width: 1024px) {
-  .builderSplitLayout {
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
   }
 }
@@ -239,49 +238,48 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
 
-.previewToolbar h4 {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--color-text-secondary);
+  h4 {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--color-text-secondary);
+  }
 }
 
 /* A4 Sheet Mock for CV preview */
 .a4Sheet {
   width: 100%;
-  background: #fff;
-  color: #333;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
   padding: 40px;
   box-sizing: border-box;
-  font-family: 'Outfit', 'Inter', sans-serif;
+  font-family: inherit;
   min-height: 580px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
 }
 
 /* Template 1: Classic */
 .templateClassic .cvHeader {
-  border-bottom: 2px solid #1a365d;
+  border-bottom: 2px solid var(--color-primary);
   padding-bottom: 16px;
   margin-bottom: 20px;
 }
 .templateClassic .candidateName {
   font-size: 24px;
   font-weight: 800;
-  color: #1a365d;
+  color: var(--color-text-primary);
   margin: 0 0 4px 0;
 }
 .templateClassic .candidateTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #3182ce;
+  color: var(--color-primary);
   margin: 0 0 8px 0;
   text-transform: uppercase;
 }
 .templateClassic .contactInfo {
   font-size: 11px;
-  color: #718096;
+  color: var(--color-text-secondary);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -289,37 +287,37 @@
 .templateClassic .sectionTitle {
   font-size: 12px;
   font-weight: 800;
-  color: #1a365d;
-  border-bottom: 1px solid #e2e8f0;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-default);
   padding-bottom: 4px;
   margin: 18px 0 8px 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-/* Template 2: Creative Green */
+/* Template 2: Creative */
 .templateCreative .cvHeader {
-  background: #2f855a;
-  color: #fff;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   padding: 24px;
   margin: -40px -40px 20px -40px;
 }
 .templateCreative .candidateName {
   font-size: 24px;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text-inverse);
   margin: 0 0 4px 0;
 }
 .templateCreative .candidateTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #c6f6d5;
+  color: var(--color-primary-subtle);
   margin: 0 0 8px 0;
   text-transform: uppercase;
 }
 .templateCreative .contactInfo {
   font-size: 11px;
-  color: #e2e8f0;
+  color: var(--color-text-inverse);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -327,8 +325,8 @@
 .templateCreative .sectionTitle {
   font-size: 12px;
   font-weight: 800;
-  color: #2f855a;
-  border-bottom: 2px solid #c6f6d5;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
   padding-bottom: 4px;
   margin: 18px 0 8px 0;
   text-transform: uppercase;
@@ -349,16 +347,16 @@
   justify-content: space-between;
   font-weight: 700;
   font-size: 12px;
-  color: #2d3748;
+  color: var(--color-text-primary);
 }
 .previewItemSub {
   font-size: 11px;
-  color: #4a5568;
+  color: var(--color-text-secondary);
   margin: 2px 0;
 }
 .previewItemDesc {
   font-size: 11px;
-  color: #718096;
+  color: var(--color-text-secondary);
   white-space: pre-line;
 }
 .previewSkills {
@@ -367,12 +365,12 @@
   gap: 6px;
 }
 .previewSkillTag {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 10px;
-  color: #4a5568;
+  color: var(--color-text-secondary);
 }
 
 /* Form Styles */
@@ -380,66 +378,67 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-}
 
-.formGroup label {
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
+  label {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
 
-.formGroup input,
-.formGroup select,
-.formGroup textarea {
-  padding: 10px 14px;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  background: var(--color-bg-page);
-  color: var(--color-text-primary);
-  transition: all 0.15s ease;
-}
+  input,
+  select,
+  textarea {
+    padding: 10px 14px;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+    transition: all var(--transition-fast);
 
-.formGroup input:focus,
-.formGroup select:focus,
-.formGroup textarea:focus {
-  border-color: var(--color-brand-primary);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.15);
+    &:focus {
+      border-color: var(--color-primary);
+      outline: none;
+    }
+  }
 }
 
 .dataTable {
   width: 100%;
   border-collapse: collapse;
-}
 
-.dataTable th {
-  background: var(--color-bg-subtle);
-  padding: 14px var(--space-4);
-  text-align: left;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-secondary);
-  border-bottom: 2px solid var(--color-border-default);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+  th {
+    background: var(--color-bg-subtle);
+    padding: 14px var(--space-4);
+    text-align: left;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid var(--color-border-default);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-.dataTable td {
-  padding: 16px var(--space-4);
-  border-bottom: 1px solid var(--color-border-light, #f0f0f0);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-}
+  td {
+    padding: 16px var(--space-4);
+    border-bottom: 1px solid var(--color-border-default);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+  }
 
-.dataTable tbody tr:hover {
-  background: var(--color-bg-hover, #f8fafc);
+  tbody tr:hover {
+    background: var(--color-bg-subtle);
+  }
 }
 
 .actionBtns {
@@ -458,49 +457,52 @@
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-bg-subtle);
+  }
 }
-.actionBtn:hover {
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  background: var(--color-bg-hover);
-}
+
 .actionBtnDanger:hover {
-  border-color: var(--color-error);
-  color: var(--color-error);
-  background: rgba(229, 62, 62, 0.04);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-subtle);
 }
 
 .badge {
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   white-space: nowrap;
 }
+
 .badgePublished {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--color-success-subtle);
+  color: var(--color-success);
 }
+
 .badgeDraft {
-  background: #f3f4f6;
-  color: #9e9e9e;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
 }
 
 .mainCvBadge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #86efac;
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.12);
   white-space: nowrap;
 }
 
@@ -511,32 +513,28 @@
   padding: 4px 10px;
   font-size: 11px;
   font-weight: 500;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-border-default);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
 
   &:hover {
-    border-color: #10b981;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.08);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
   }
 }
 
 .spin {
   animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .cvTitleLink {
@@ -550,10 +548,10 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
   
   &:hover {
-    color: var(--color-brand-primary);
+    color: var(--color-primary);
     text-decoration: underline;
   }
 }
@@ -561,12 +559,8 @@
 /* Quick Preview Modal */
 .modalOverlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
+  inset: 0;
+  background-color: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -577,14 +571,14 @@
 
 .previewModalContent {
   background: var(--color-bg-card);
-  border-radius: var(--radius-xl, 12px);
+  border-radius: var(--radius-xl);
   width: 960px;
   max-width: 95vw;
   height: 88vh;
   max-height: 900px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xl);
   border: 1px solid var(--color-border-default);
   overflow: hidden;
   animation: slideUp 0.2s ease-out;
@@ -620,7 +614,7 @@
 .modalBody {
   flex: 1;
   padding: 0;
-  background: #525659;
+  background: var(--color-bg-subtle);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -631,7 +625,7 @@
   width: 100%;
   height: 100%;
   border: none;
-  background: #525659;
+  background: var(--color-bg-subtle);
 }
 
 .closeBtn {
@@ -644,7 +638,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
   
   &:hover {
     background-color: var(--color-bg-hover);
@@ -662,10 +656,364 @@
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* @media print for PDF exports */
+/* Additional utility classes to eliminate all inline styles in CvsPage.tsx */
+.previewModalCvTitle {
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewModalMainBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-success);
+  background: var(--color-success-subtle);
+  border: 1px solid var(--color-success);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.modalActionBtnSmall {
+  padding: 6px 12px;
+  font-size: 12px;
+  gap: 4px;
+}
+
+.emptyPdfPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-primary);
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+}
+
+.cvBuilderTitleHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badgeCandidate {
+  font-size: 11px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.stepTitle {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.templatePickerRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+.builderBtnGroup {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btnFullWidth {
+  width: 100%;
+  justify-content: center;
+}
+
+.btnSaveGreen {
+  width: 100%;
+  justify-content: center;
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+  border-color: var(--color-success);
+
+  &:hover {
+    background: var(--color-success);
+    color: var(--color-text-inverse);
+  }
+}
+
+.a4TextItem {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.colActions {
+  text-align: right;
+}
+
+.loadingCell {
+  text-align: center;
+  padding: 24px;
+  color: var(--color-text-secondary);
+}
+
+.emptyCell {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+}
+
+.tdTitle {
+  font-weight: 600;
+}
+
+.cvTitleBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fileTextIcon {
+  margin-right: 6px;
+  vertical-align: middle;
+  color: var(--color-primary);
+}
+
+.mainBadgePill {
+  font-size: 10px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.tdRight {
+  text-align: right;
+}
+
+.actionBtnsRight {
+  justify-content: flex-end;
+}
+
+.actionBtnPrimary {
+  color: var(--color-primary);
+}
+
+.matchInfoTitle {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.matchInfoSubtitle {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px 0;
+}
+
+.uploadSectionDivider {
+  border-top: 1px solid var(--color-border-default);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+
+.uploadSectionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.uploadHintText {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.searchHeader {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  outline: none;
+
+  &:focus {
+    border-color: var(--color-primary);
+  }
+}
+
+.candidateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.gridColFull {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-secondary);
+}
+
+.gridColFullEmpty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-default);
+}
+
+.candidateCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.candidateName {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.candidateEmail {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.candidateSkillsSection {
+  border-top: 1px solid var(--color-border-default);
+  padding-top: 8px;
+}
+
+.candidateSkillsLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.candidateSkillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.candidateSkillTag {
+  font-size: 10px;
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+
+.candidateExpSection {
+  border-top: 1px solid var(--color-border-default);
+  padding-top: 8px;
+}
+
+.candidateExpLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.candidateExpText {
+  font-size: 12px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.candidateCardFooter {
+  border-top: 1px solid var(--color-border-default);
+  padding-top: 12px;
+  display: flex;
+  justify-self: flex-end;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.candidateFooterTitle {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.candidateFooterActions {
+  display: flex;
+  gap: 8px;
+}
+
+.tableHeaderCard {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border-default);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.subTextSecondary {
+  margin: 4px 0 0 0;
+  color: var(--color-text-secondary);
+}
+
+.templateSelectedBadge {
+  font-size: 10px;
+  background: var(--color-bg-card);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
 @media print {
   :global(body) {
-    background: #ffffff !important;
+    background: var(--color-text-inverse) !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;

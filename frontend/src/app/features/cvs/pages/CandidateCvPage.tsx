@@ -13,6 +13,9 @@ import {
   Info,
   Layers
 } from 'lucide-react';
+import styles from './CandidateCvPage.module.scss';
+import { FormField } from '../../../shared/components/form-field/FormField';
+import { Modal } from '../../../shared/components/modal/Modal';
 
 export const CandidateCvPage: React.FC = () => {
   // Data states
@@ -214,82 +217,50 @@ export const CandidateCvPage: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+    <div className={styles.pageContainer}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>
           Quản lý CV của tôi
         </h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>
+        <p className={styles.subtitle}>
           Hồ sơ của bạn tối đa chứa 5 bản CV. Hãy thiết lập một bản CV chính để tự động ứng tuyển vào các công việc.
         </p>
       </div>
 
       {success && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '16px',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          border: '1px solid #10b981',
-          borderRadius: 'var(--radius-md)',
-          marginBottom: '24px',
-          color: '#10b981'
-        }}>
-          <CheckCircle2 style={{ width: '20px', height: '20px', flexShrink: 0 }} />
-          <span style={{ fontWeight: 500 }}>{success}</span>
+        <div className={styles.successAlert}>
+          <CheckCircle2 />
+          <span>{success}</span>
         </div>
       )}
 
       {error && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '16px',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid var(--color-danger-default)',
-          borderRadius: 'var(--radius-md)',
-          marginBottom: '24px',
-          color: 'var(--color-danger-default)'
-        }}>
-          <AlertCircle style={{ width: '20px', height: '20px', flexShrink: 0 }} />
-          <span style={{ fontWeight: 500 }}>{error}</span>
+        <div className={styles.errorAlert}>
+          <AlertCircle />
+          <span>{error}</span>
         </div>
       )}
 
       {/* BLOCK 1: Tải lên CV */}
-      <div style={{
-        backgroundColor: 'var(--color-bg-card)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--color-border-default)',
-        padding: '24px',
-        boxShadow: 'var(--shadow-sm)',
-        marginBottom: '32px'
-      }}>
-        <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <FileUp style={{ color: '#10b981' }} />
+      <div className={styles.uploadCard}>
+        <h2 className={styles.sectionTitle}>
+          <FileUp />
           Tải lên bản CV mới
         </h2>
 
         <form onSubmit={handleUpload}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '20px' }}>
+          <div className={styles.formGrid}>
             {/* Dropzone Area */}
             <div 
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              style={{
-                border: `2px dashed ${dragOver ? '#10b981' : 'var(--color-border-default)'}`,
-                backgroundColor: dragOver ? 'rgba(16, 185, 129, 0.05)' : 'var(--color-bg-subtle)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '32px 20px',
-                textAlign: 'center',
-                cursor: cvs.length >= 5 ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-                opacity: cvs.length >= 5 ? 0.6 : 1
-              }}
+              className={[
+                styles.dropzone,
+                dragOver && styles.dropzoneActive,
+                cvs.length >= 5 && styles.dropzoneDisabled
+              ].filter(Boolean).join(' ')}
             >
               <input 
                 type="file" 
@@ -297,23 +268,23 @@ export const CandidateCvPage: React.FC = () => {
                 onChange={handleFileChange}
                 accept="application/pdf"
                 disabled={cvs.length >= 5}
-                style={{ display: 'none' }}
+                className={styles.hiddenInput}
               />
-              <FileUp style={{ width: '48px', height: '48px', color: dragOver ? '#10b981' : 'var(--color-text-muted)', marginBottom: '16px' }} />
+              <FileUp className={`${styles.dropzoneIcon} ${dragOver ? styles.dropzoneIconActive : ''}`} />
               
               {selectedFile ? (
                 <div>
-                  <p style={{ fontWeight: 600, color: '#10b981', margin: '0 0 4px 0' }}>{selectedFile.name}</p>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>
+                  <p className={styles.selectedFileName}>{selectedFile.name}</p>
+                  <p className={styles.fileMeta}>
                     Kích thước: {formatBytes(selectedFile.size)}
                   </p>
                 </div>
               ) : (
                 <div>
-                  <p style={{ fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px 0' }}>
+                  <p className={styles.dropzonePrompt}>
                     Kéo thả tệp tin CV vào đây hoặc click để chọn tệp
                   </p>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', margin: 0 }}>
+                  <p className={styles.dropzoneHint}>
                     Chỉ hỗ trợ định dạng PDF. Dung lượng nhỏ hơn 5MB.
                   </p>
                 </div>
@@ -321,56 +292,27 @@ export const CandidateCvPage: React.FC = () => {
             </div>
 
             {/* Title Input */}
-            <div>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-                Tiêu đề bản CV
-              </label>
-              <input 
-                type="text" 
-                value={cvTitle}
-                onChange={(e) => setCvTitle(e.target.value)}
-                placeholder="Nhập tiêu đề CV (ví dụ: CV - Kỹ Sư C# Back-end)"
-                disabled={cvs.length >= 5}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--color-bg-card)',
-                  color: 'var(--color-text-primary)',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
+            <FormField
+              label="Tiêu đề bản CV"
+              placeholder="Nhập tiêu đề CV (ví dụ: CV - Kỹ Sư C# Back-end)"
+              value={cvTitle}
+              onChange={(e) => setCvTitle(e.target.value)}
+              disabled={cvs.length >= 5}
+            />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <Info style={{ width: '16px', height: '16px', color: '#10b981' }} />
+          <div className={styles.formFooter}>
+            <span className={styles.countInfo}>
+              <Info />
               Số lượng CV hiện tại: <strong>{cvs.length} / 5</strong>
             </span>
 
             <button 
               type="submit"
               disabled={uploading || !selectedFile || cvs.length >= 5}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                backgroundColor: !selectedFile || cvs.length >= 5 ? 'var(--color-border-default)' : '#10b981',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: uploading || !selectedFile || cvs.length >= 5 ? 'not-allowed' : 'pointer',
-                transition: 'background-color 0.2s'
-              }}
+              className={styles.uploadBtn}
             >
-              {uploading && <Loader2 style={{ animation: 'spin 1s linear infinite', width: '16px', height: '16px' }} />}
+              {uploading && <Loader2 className={styles.spinner} />}
               Tải lên CV
             </button>
           </div>
@@ -378,130 +320,75 @@ export const CandidateCvPage: React.FC = () => {
       </div>
 
       {/* BLOCK 2: Danh sách CV */}
-      <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Layers style={{ color: '#10b981' }} />
+      <h2 className={styles.sectionTitle}>
+        <Layers />
         Danh sách CV đã tải lên
       </h2>
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-          <Loader2 style={{ animation: 'spin 1s linear infinite', color: '#10b981', width: '32px', height: '32px' }} />
+        <div className={styles.loaderCenter}>
+          <Loader2 />
         </div>
       ) : cvs.length === 0 ? (
         /* Empty State */
-        <div style={{
-          textAlign: 'center',
-          padding: '48px 24px',
-          backgroundColor: 'var(--color-bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px dashed var(--color-border-default)'
-        }}>
-          <FileText style={{ width: '64px', height: '64px', color: 'var(--color-text-muted)', marginBottom: '16px', strokeWidth: 1.5 }} />
-          <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+        <div className={styles.emptyState}>
+          <FileText className={styles.emptyIcon} strokeWidth={1.5} />
+          <h3>
             Chưa có bản CV nào được tải lên
           </h3>
-          <p style={{ color: 'var(--color-text-secondary)', maxWidth: '400px', margin: '0 auto', fontSize: '14px' }}>
+          <p>
             Hồ sơ trống sẽ làm bạn bỏ lỡ các cơ hội việc làm tốt. Hãy kéo thả tệp CV PDF ở trên để tải lên bản CV đầu tiên của bạn!
           </p>
         </div>
       ) : (
         /* Grid Cards List */
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '20px'
-        }}>
+        <div className={styles.cvGrid}>
           {cvs.map((cv) => (
             <div 
               key={cv.id}
-              style={{
-                backgroundColor: 'var(--color-bg-card)',
-                borderRadius: 'var(--radius-lg)',
-                border: `1px solid ${cv.isDefault ? '#10b981' : 'var(--color-border-default)'}`,
-                boxShadow: cv.isDefault ? '0 4px 12px rgba(16, 185, 129, 0.1)' : 'var(--shadow-sm)',
-                padding: '20px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                position: 'relative',
-                transition: 'transform 0.2s',
-              }}
+              className={`${styles.cvCard} ${cv.isDefault ? styles.cvCardDefault : ''}`}
             >
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    borderRadius: 'var(--radius-md)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--color-danger-default)'
-                  }}>
-                    <FileText style={{ width: '24px', height: '24px' }} />
+                <div className={styles.cardTop}>
+                  <div className={styles.pdfIconBox}>
+                    <FileText />
                   </div>
 
                   {cv.isDefault && (
-                    <span style={{
-                      backgroundColor: '#10b981',
-                      color: '#ffffff',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '3px 8px',
-                      borderRadius: '50px'
-                    }}>
+                    <span className={styles.defaultBadge}>
                       CV chính
                     </span>
                   )}
                 </div>
 
-                <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 6px 0', lineBreak: 'anywhere' }}>
+                <h3 className={styles.cvCardTitle}>
                   {cv.cvTitle}
                 </h3>
 
-                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 4px 0' }}>
+                <p className={styles.cvCardMeta}>
                   Dung lượng: {formatBytes(cv.fileSizeBytes)}
                 </p>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 16px 0' }}>
+                <p className={styles.cvCardDate}>
                   Tải lên: {formatDate(cv.createdAt)}
                 </p>
               </div>
 
               {/* Action Buttons inside Card */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderTop: '1px solid var(--color-border-subtle)',
-                paddingTop: '12px',
-                marginTop: '12px'
-              }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
+              <div className={styles.cardActions}>
+                <div className={styles.leftActions}>
                   {/* Set Main CV Button */}
                   {!cv.isDefault && (
                     <button 
                       type="button"
                       disabled={processingId === cv.id}
                       onClick={() => handleSetDefault(cv.id)}
-                      style={{
-                        border: 'none',
-                        background: 'transparent',
-                        color: 'var(--color-text-secondary)',
-                        cursor: 'pointer',
-                        padding: '4px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '4px',
-                        transition: 'background-color 0.2s'
-                      }}
+                      className={styles.iconBtn}
                       title="Đặt làm CV chính"
                     >
                       {processingId === cv.id ? (
-                        <Loader2 style={{ animation: 'spin 1s linear infinite', width: '16px', height: '16px' }} />
+                        <Loader2 className={styles.spinner} />
                       ) : (
-                        <Star style={{ width: '18px', height: '18px' }} />
+                        <Star />
                       )}
                     </button>
                   )}
@@ -512,17 +399,10 @@ export const CandidateCvPage: React.FC = () => {
                       href={`${cv.fileUrl}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      style={{
-                        color: 'var(--color-text-secondary)',
-                        padding: '4px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '4px'
-                      }}
+                      className={styles.iconBtn}
                       title="Xem CV"
                     >
-                      <ExternalLink style={{ width: '18px', height: '18px' }} />
+                      <ExternalLink />
                     </a>
                   )}
                 </div>
@@ -532,20 +412,10 @@ export const CandidateCvPage: React.FC = () => {
                   type="button"
                   disabled={processingId === cv.id}
                   onClick={() => setCvToDelete(cv)}
-                  style={{
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--color-danger-default)',
-                    cursor: 'pointer',
-                    padding: '4px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '4px'
-                  }}
+                  className={styles.deleteBtn}
                   title="Xóa CV"
                 >
-                  <Trash2 style={{ width: '18px', height: '18px' }} />
+                  <Trash2 />
                 </button>
               </div>
             </div>
@@ -554,70 +424,34 @@ export const CandidateCvPage: React.FC = () => {
       )}
 
       {/* CONFIRM DELETE MODAL */}
-      {cvToDelete && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            backgroundColor: 'var(--color-bg-card)',
-            padding: '24px',
-            borderRadius: 'var(--radius-lg)',
-            width: '100%',
-            maxWidth: '400px',
-            border: '1px solid var(--color-border-default)',
-            boxShadow: 'var(--shadow-lg)'
-          }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-              Xác nhận xóa CV
-            </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', margin: '0 0 20px 0', lineHeight: 1.5 }}>
-              Bạn có chắc chắn muốn xóa bản CV <strong>"{cvToDelete.cvTitle}"</strong>? Hành động này không thể hoàn tác.
-            </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button 
-                type="button" 
-                onClick={() => setCvToDelete(null)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: 'var(--color-bg-subtle)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--color-text-primary)',
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                Hủy
-              </button>
-              <button 
-                type="button" 
-                onClick={handleDeleteConfirm}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: 'var(--color-danger-default)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-md)',
-                  color: '#ffffff',
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                Xác nhận xóa
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={Boolean(cvToDelete)}
+        onClose={() => setCvToDelete(null)}
+        title="Xác nhận xóa CV"
+        size="sm"
+        footer={
+          <>
+            <button 
+              type="button" 
+              onClick={() => setCvToDelete(null)}
+              className={styles.modalCancelBtn}
+            >
+              Hủy
+            </button>
+            <button 
+              type="button" 
+              onClick={handleDeleteConfirm}
+              className={styles.modalConfirmBtn}
+            >
+              Xác nhận xóa
+            </button>
+          </>
+        }
+      >
+        <p className={styles.modalDesc}>
+          Bạn có chắc chắn muốn xóa bản CV <strong>"{cvToDelete?.cvTitle}"</strong>? Hành động này không thể hoàn tác.
+        </p>
+      </Modal>
     </div>
   );
 };

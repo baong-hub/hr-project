@@ -123,7 +123,7 @@ const RoleUserAssignmentPage: React.FC = () => {
         <table className={styles.userTable}>
           <thead>
             <tr>
-              <th style={{ width: 50 }}>Chọn</th>
+              <th className={styles.colSelect}>Chọn</th>
               <th>Nhân viên</th>
               <th>Chi nhánh</th>
               <th>Vai trò hiện tại</th>
@@ -131,7 +131,7 @@ const RoleUserAssignmentPage: React.FC = () => {
           </thead>
           <tbody>
             {filteredUsers.map(user => (
-              <tr 
+               <tr 
                 key={user.id} 
                 className={`${styles.userRow} ${selectedUserIds.includes(user.id) ? styles.selected : ''}`}
                 onClick={() => handleToggleUser(user.id)}
@@ -152,7 +152,7 @@ const RoleUserAssignmentPage: React.FC = () => {
                 </td>
                 <td>{user.siteName}</td>
                 <td>
-                  {user.roles?.join(', ') || <span style={{ color: 'var(--color-text-muted)' }}>Chưa gán</span>}
+                  {user.roles?.join(', ') || <span className={styles.unassigned}>Chưa gán</span>}
                 </td>
               </tr>
             ))}

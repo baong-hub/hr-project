@@ -9,8 +9,8 @@
 }
 
 .heroCard {
-  background: var(--footer-bg, #1E2130);
-  color: #ffffff;
+  background: var(--footer-bg);
+  color: var(--color-white);
   border-radius: var(--radius-xl, 16px);
   padding: var(--space-8, 36px) var(--space-6, 24px);
   display: flex;
@@ -25,30 +25,30 @@
     gap: 6px;
     font-size: var(--font-size-xs, 12px);
     font-weight: 600;
-    color: #93c5fd;
+    color: var(--color-primary-soft);
     background: rgba(147, 197, 253, 0.12);
     border: 1px solid rgba(147, 197, 253, 0.25);
     padding: 4px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
   }
 
   h1 {
     font-size: var(--font-size-2xl, 28px);
     font-weight: 800;
     margin: 0;
-    color: #ffffff;
+    color: var(--color-white);
     line-height: 1.25;
   }
 
   p {
     font-size: var(--font-size-sm, 14px);
-    color: #94a3b8;
+    color: var(--color-text-muted);
     max-width: 680px;
     margin: 0;
     line-height: 1.6;
 
     strong {
-      color: #f1f5f9;
+      color: var(--color-bg-subtle);
       font-variant-numeric: tabular-nums;
     }
   }
@@ -72,8 +72,8 @@
       padding: 8px 12px;
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: var(--radius-md, 6px);
-      background: var(--color-bg-card, #ffffff);
-      color: var(--color-text-primary, #0f172a);
+      background: var(--color-bg-card);
+      color: var(--color-text-primary);
       font-size: var(--font-size-xs, 13px);
       font-weight: 500;
       outline: none;
@@ -98,8 +98,8 @@
 }
 
 .metricCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 12px);
   padding: var(--space-4, 18px);
   display: flex;
@@ -110,33 +110,33 @@
     font-size: var(--font-size-xs, 12px);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-text-muted, #64748b);
+    color: var(--color-text-muted);
     font-weight: 600;
   }
 
   .metricValue {
     font-size: var(--font-size-2xl, 26px);
     font-weight: 800;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     font-variant-numeric: tabular-nums;
     line-height: 1.2;
 
     &.salaryGold {
-      color: var(--color-salary, #8C6B28);
+      color: var(--color-salary);
     }
   }
 
   .metricSub {
     font-size: 11px;
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     margin: 0;
   }
 }
 
 /* Sections */
 .sectionCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 24px);
   display: flex;
@@ -150,12 +150,12 @@
     flex-wrap: wrap;
     gap: 8px;
     padding-bottom: 12px;
-    border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+    border-bottom: 1px solid var(--color-border-subtle);
 
     h2 {
       font-size: var(--font-size-md, 16px);
       font-weight: 700;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
       margin: 0;
       display: flex;
       align-items: center;
@@ -164,7 +164,7 @@
 
     .sectionNote {
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted);
     }
   }
 }
@@ -181,10 +181,10 @@
     th {
       text-align: left;
       padding: 10px 14px;
-      background: var(--color-bg-subtle, #f8fafc);
-      color: var(--color-text-secondary, #475569);
+      background: var(--color-bg-subtle);
+      color: var(--color-text-secondary);
       font-weight: 700;
-      border-bottom: 1px solid var(--color-border-default, #cbd5e1);
+      border-bottom: 1px solid var(--color-border-default);
       white-space: nowrap;
 
       &.numeric {
@@ -194,8 +194,8 @@
 
     td {
       padding: 12px 14px;
-      border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
-      color: var(--color-text-primary, #1e293b);
+      border-bottom: 1px solid var(--color-border-subtle);
+      color: var(--color-text-primary);
 
       &.numeric {
         text-align: right;
@@ -204,13 +204,13 @@
       }
 
       &.salaryHighlight {
-        color: var(--color-salary, #8C6B28);
+        color: var(--color-salary);
         font-weight: 700;
       }
     }
 
     tr:hover td {
-      background: var(--color-bg-subtle, #f8fafc);
+      background: var(--color-bg-subtle);
     }
   }
 
@@ -220,15 +220,15 @@
     gap: 4px;
     font-size: 11px;
     padding: 2px 7px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-weight: 600;
-    background: var(--color-bg-subtle, #f1f5f9);
-    color: var(--color-text-muted, #64748b);
+    background: var(--color-bg-subtle);
+    color: var(--color-text-muted);
 
     &.smallSample {
-      background: var(--color-warning-subtle, #fef3c7);
-      color: var(--color-warning-text, #92400e);
-      border: 1px solid var(--color-warning-border, #fde68a);
+      background: var(--color-warning-subtle);
+      color: var(--color-warning-text);
+      border: 1px solid var(--color-warning-border);
     }
   }
 }
@@ -253,27 +253,27 @@
 
     .catName {
       font-weight: 600;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
     }
 
     .catSalary {
       font-weight: 700;
-      color: var(--color-salary, #8C6B28);
+      color: var(--color-salary);
       font-variant-numeric: tabular-nums;
     }
   }
 
   .barTrack {
     height: 10px;
-    background: var(--color-bg-subtle, #f1f5f9);
-    border-radius: 999px;
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-pill);
     overflow: hidden;
 
     .barFill {
       height: 100%;
       width: var(--bar-pct, 0%);
-      background: var(--color-brand-primary, #2563eb);
-      border-radius: 999px;
+      background: var(--color-brand-primary);
+      border-radius: var(--radius-pill);
       transition: width 0.4s ease;
     }
   }
@@ -291,20 +291,20 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: var(--color-bg-subtle, #f8fafc);
-  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md, 8px);
 
   .skillName {
     font-size: var(--font-size-xs, 13px);
     font-weight: 600;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
   }
 
   .skillPay {
     font-size: var(--font-size-xs, 12px);
     font-weight: 700;
-    color: var(--color-salary, #8C6B28);
+    color: var(--color-salary);
     font-variant-numeric: tabular-nums;
   }
 }
@@ -312,5 +312,5 @@
 .loadingBox {
   padding: 60px 20px;
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 }

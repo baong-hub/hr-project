@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   Download, RotateCcw, Trash2, 
   FileText, Upload, Star, Loader2, CheckCircle2,
-  Eye, X, ExternalLink, Edit3
+  Eye, ExternalLink, Edit3
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -11,18 +12,28 @@ import { cvsService } from '../../../core/services/cvs.service';
 import { authService } from '../../../core/services/auth.service';
 import { toast } from '../../../core/services/toast.service';
 import styles from './CvsPage.module.scss';
+import { FormField } from '../../../shared/components/form-field/FormField';
+import { Modal } from '../../../shared/components/modal/Modal';
 
 export const CvsPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const isAuthenticated = authService.isAuthenticated();
   const user = authService.getUser();
   const roles = (user?.roles as string[]) || [];
   const userRole = user?.role || user?.accountType || '';
-  const isCandidate = roles.includes('Ứng viên') || userRole === 'CANDIDATE' || userRole === 'User';
+  const isEmployer = isAuthenticated && (
+    roles.includes('Nhà tuyển dụng') ||
+    roles.includes('Employer') ||
+    userRole === 'EMPLOYER' ||
+    userRole === 'Company'
+  );
+  const isCandidate = isAuthenticated && !isEmployer;
 
   // Candidate states
   const [cvs, setCvs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isBuilderMode, setIsBuilderMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isBuilderMode, setIsBuilderMode] = useState(!isAuthenticated);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTemplate, setSelectedTemplate] = useState<'classic' | 'creative'>('classic');
   const [isExporting, setIsExporting] = useState(false);
@@ -63,6 +74,11 @@ export const CvsPage: React.FC = () => {
 
   // Fetch CV List
   const fetchCvs = async () => {
+    if (!isAuthenticated) {
+      setIsBuilderMode(true);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       if (isCandidate) {
@@ -70,7 +86,7 @@ export const CvsPage: React.FC = () => {
         if (res.success) {
           setCvs(res.data || []);
         }
-      } else {
+      } else if (isEmployer) {
         const res = await cvsService.searchCandidates({ search: searchKeyword });
         if (res.success) {
           setCvs((res.data as any) || []);
@@ -111,73 +127,65 @@ export const CvsPage: React.FC = () => {
     if (!previewCv) return null;
 
     return (
-      <div className={styles.modalOverlay} onClick={() => setPreviewCv(null)}>
-        <div className={styles.previewModalContent} onClick={e => e.stopPropagation()}>
-          <div className={styles.modalHeader}>
-            <div className={styles.modalHeaderTitle}>
-              <FileText size={20} color="var(--color-brand-primary)" />
-              <span style={{ maxWidth: '350px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={previewCv.cvTitle}>
-                {previewCv.cvTitle}
+      <Modal
+        isOpen={Boolean(previewCv)}
+        onClose={() => setPreviewCv(null)}
+        size="lg"
+        title={
+          <div className={styles.modalHeaderTitle}>
+            <FileText size={20} color="var(--color-primary)" />
+            <span className={styles.previewModalCvTitle} title={previewCv.cvTitle}>
+              {previewCv.cvTitle}
+            </span>
+            {(previewCv.isDefault || previewCv.isMain) && (
+              <span className={styles.previewModalMainBadge}>
+                <Star size={11} fill="currentColor" color="currentColor" /> CV chính
               </span>
-              {(previewCv.isDefault || previewCv.isMain) && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#15803d', background: '#dcfce7', border: '1px solid #86efac', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>
-                  <Star size={11} fill="#16a34a" color="#16a34a" /> CV chính
-                </span>
-              )}
-            </div>
-            <div className={styles.modalHeaderActions}>
-              {previewCv.fileUrl && (
-                <>
-                  <a 
-                    href={previewCv.fileUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className={styles.btnSecondary} 
-                    style={{ padding: '6px 12px', fontSize: '12px', gap: '4px' }}
-                    title="Mở toàn màn hình trong tab mới"
-                  >
-                    <ExternalLink size={14} />
-                    <span>Mở tab mới</span>
-                  </a>
-                  <a 
-                    href={previewCv.fileUrl} 
-                    download 
-                    className={styles.btnPrimary} 
-                    style={{ padding: '6px 12px', fontSize: '12px', gap: '4px' }}
-                    title="Tải file về máy tính"
-                  >
-                    <Download size={14} />
-                    <span>Tải về</span>
-                  </a>
-                </>
-              )}
-              <button 
-                type="button" 
-                className={styles.closeBtn} 
-                onClick={() => setPreviewCv(null)}
-                title="Đóng (Esc)"
-              >
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-          <div className={styles.modalBody}>
-            {previewCv.fileUrl ? (
-              <iframe 
-                src={`${previewCv.fileUrl}#toolbar=1&navpanes=0`} 
-                title={previewCv.cvTitle || 'CV Preview'} 
-                className={styles.pdfFrame} 
-              />
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#fff', gap: '12px', padding: '24px' }}>
-                <FileText size={48} opacity={0.6} />
-                <p style={{ margin: 0, fontSize: '15px' }}>Không tìm thấy đường dẫn file PDF trực tuyến.</p>
-                <span style={{ fontSize: '13px', opacity: 0.8 }}>File này có thể được lưu trữ offline hoặc chưa được đồng bộ đường dẫn.</span>
-              </div>
             )}
           </div>
+        }
+        footer={
+          previewCv.fileUrl ? (
+            <div className={styles.modalHeaderActions}>
+              <a 
+                href={previewCv.fileUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className={`${styles.btnSecondary} ${styles.modalActionBtnSmall}`}
+                title="Mở toàn màn hình trong tab mới"
+              >
+                <ExternalLink size={14} />
+                <span>Mở tab mới</span>
+              </a>
+              <a 
+                href={previewCv.fileUrl} 
+                download 
+                className={`${styles.btnPrimary} ${styles.modalActionBtnSmall}`}
+                title="Tải file về máy tính"
+              >
+                <Download size={14} />
+                <span>Tải về</span>
+              </a>
+            </div>
+          ) : undefined
+        }
+      >
+        <div className={styles.modalBody}>
+          {previewCv.fileUrl ? (
+            <iframe 
+              src={`${previewCv.fileUrl}#toolbar=1&navpanes=0`} 
+              title={previewCv.cvTitle || 'CV Preview'} 
+              className={styles.pdfFrame} 
+            />
+          ) : (
+            <div className={styles.emptyPdfPreview}>
+              <FileText size={48} opacity={0.6} />
+              <p>Không tìm thấy đường dẫn file PDF trực tuyến.</p>
+              <span>File này có thể được lưu trữ offline hoặc chưa được đồng bộ đường dẫn.</span>
+            </div>
+          )}
         </div>
-      </div>
+      </Modal>
     );
   };
 
@@ -240,6 +248,11 @@ export const CvsPage: React.FC = () => {
 
   // Mock Upload CV
   const handleMockUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập tài khoản ứng viên để tải lên hồ sơ CV.');
+      navigate('/auth/login?redirect=%2Fcvs');
+      return;
+    }
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -268,7 +281,7 @@ export const CvsPage: React.FC = () => {
       scale: 2.5, // High DPI for crisp vector-like text
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#ffffff',
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-bg-card').trim(),
       logging: false,
       windowWidth: element.scrollWidth,
       windowHeight: element.scrollHeight,
@@ -346,6 +359,11 @@ export const CvsPage: React.FC = () => {
 
   // Save CV Builder details to profile
   const handleSaveBuilderCv = async () => {
+    if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập tài khoản ứng viên để lưu trữ CV vào hệ thống.');
+      navigate('/auth/login?redirect=%2Fcvs');
+      return;
+    }
     try {
       setIsSaving(true);
       let pdfFile: File;
@@ -431,15 +449,15 @@ export const CvsPage: React.FC = () => {
           {/* Header */}
           <div className={styles.builderHeader}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className={styles.cvBuilderTitleHeader}>
                 <h2>{editingCvId ? t('cvs.builder_edit_title', { title: editingCvTitle, defaultValue: `Chỉnh sửa: ${editingCvTitle}` }) : t('cvs.builder_title', 'Trình tạo CV thông minh (CV Builder)')}</h2>
                 {editingCvId && (
-                  <span style={{ fontSize: '11px', background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                  <span className={styles.badgeCandidate}>
                     {t('cvs.builder_editing_badge', 'Đang chỉnh sửa')}
                   </span>
                 )}
               </div>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+              <p className={styles.subTextSecondary}>
                 {editingCvId ? t('cvs.builder_edit_subtitle', 'Cập nhật, bổ sung thông tin và lưu lại bản thiết kế CV chuẩn A4') : t('cvs.builder_subtitle', 'Nhập thông tin cá nhân và xem trực tiếp CV mẫu chuẩn A4')}
               </p>
             </div>
@@ -474,112 +492,137 @@ export const CvsPage: React.FC = () => {
             <div className={styles.builderFormCard}>
               {currentStep === 1 && (
                 <>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>{t('cvs.step1', 'Bước 1: Thông tin cá nhân')}</h3>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.full_name', 'Họ và tên')}</label>
-                    <input type="text" value={cvForm.fullName} onChange={e => setCvForm({...cvForm, fullName: e.target.value})} />
-                  </div>
+                  <h3 className={styles.stepTitle}>{t('cvs.step1', 'Bước 1: Thông tin cá nhân')}</h3>
+                  <FormField
+                    label={t('cvs.full_name', 'Họ và tên')}
+                    value={cvForm.fullName}
+                    onChange={e => setCvForm({...cvForm, fullName: e.target.value})}
+                  />
                   <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>{t('cvs.email', 'Email')}</label>
-                      <input type="email" value={cvForm.email} onChange={e => setCvForm({...cvForm, email: e.target.value})} />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>{t('cvs.phone', 'Số điện thoại')}</label>
-                      <input type="text" value={cvForm.phone} onChange={e => setCvForm({...cvForm, phone: e.target.value})} />
-                    </div>
+                    <FormField
+                      label={t('cvs.email', 'Email')}
+                      type="email"
+                      value={cvForm.email}
+                      onChange={e => setCvForm({...cvForm, email: e.target.value})}
+                      className={styles.flex1}
+                    />
+                    <FormField
+                      label={t('cvs.phone', 'Số điện thoại')}
+                      value={cvForm.phone}
+                      onChange={e => setCvForm({...cvForm, phone: e.target.value})}
+                      className={styles.flex1}
+                    />
                   </div>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.job_title', 'Vị trí ứng tuyển mong muốn')}</label>
-                    <input type="text" value={cvForm.jobTitle} onChange={e => setCvForm({...cvForm, jobTitle: e.target.value})} placeholder="Ví dụ: Backend Developer" />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.summary', 'Tóm tắt năng lực (Giới thiệu bản thân)')}</label>
-                    <textarea rows={4} value={cvForm.summary} onChange={e => setCvForm({...cvForm, summary: e.target.value})}></textarea>
-                  </div>
+                  <FormField
+                    label={t('cvs.job_title', 'Vị trí ứng tuyển mong muốn')}
+                    value={cvForm.jobTitle}
+                    onChange={e => setCvForm({...cvForm, jobTitle: e.target.value})}
+                    placeholder="Ví dụ: Backend Developer"
+                  />
+                  <FormField
+                    control="textarea"
+                    label={t('cvs.summary', 'Tóm tắt năng lực (Giới thiệu bản thân)')}
+                    rows={4}
+                    value={cvForm.summary}
+                    onChange={e => setCvForm({...cvForm, summary: e.target.value})}
+                  />
                 </>
               )}
 
               {currentStep === 2 && (
                 <>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>{t('cvs.step2', 'Bước 2: Kinh nghiệm làm việc')}</h3>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.company', 'Tên công ty')}</label>
-                    <input type="text" value={cvForm.company} onChange={e => setCvForm({...cvForm, company: e.target.value})} />
-                  </div>
+                  <h3 className={styles.stepTitle}>{t('cvs.step2', 'Bước 2: Kinh nghiệm làm việc')}</h3>
+                  <FormField
+                    label={t('cvs.company', 'Tên công ty')}
+                    value={cvForm.company}
+                    onChange={e => setCvForm({...cvForm, company: e.target.value})}
+                  />
                   <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>{t('cvs.position', 'Vị trí / Chức danh')}</label>
-                      <input type="text" value={cvForm.position} onChange={e => setCvForm({...cvForm, position: e.target.value})} />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>{t('cvs.duration', 'Thời gian (Bắt đầu - Kết thúc)')}</label>
-                      <input type="text" value={cvForm.duration} onChange={e => setCvForm({...cvForm, duration: e.target.value})} placeholder="Ví dụ: 2022 - Nay" />
-                    </div>
+                    <FormField
+                      label={t('cvs.position', 'Vị trí / Chức danh')}
+                      value={cvForm.position}
+                      onChange={e => setCvForm({...cvForm, position: e.target.value})}
+                      className={styles.flex1}
+                    />
+                    <FormField
+                      label={t('cvs.duration', 'Thời gian (Bắt đầu - Kết thúc)')}
+                      value={cvForm.duration}
+                      onChange={e => setCvForm({...cvForm, duration: e.target.value})}
+                      placeholder="Ví dụ: 2022 - Nay"
+                      className={styles.flex1}
+                    />
                   </div>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.exp_desc', 'Mô tả chi tiết công việc')}</label>
-                    <textarea rows={6} value={cvForm.expDesc} onChange={e => setCvForm({...cvForm, expDesc: e.target.value})}></textarea>
-                  </div>
+                  <FormField
+                    control="textarea"
+                    label={t('cvs.exp_desc', 'Mô tả chi tiết công việc')}
+                    rows={6}
+                    value={cvForm.expDesc}
+                    onChange={e => setCvForm({...cvForm, expDesc: e.target.value})}
+                  />
                 </>
               )}
 
               {currentStep === 3 && (
                 <>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>{t('cvs.step3', 'Bước 3: Học vấn & Kỹ năng')}</h3>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.school', 'Trường học')}</label>
-                    <input type="text" value={cvForm.school} onChange={e => setCvForm({...cvForm, school: e.target.value})} />
-                  </div>
+                  <h3 className={styles.stepTitle}>{t('cvs.step3', 'Bước 3: Học vấn & Kỹ năng')}</h3>
+                  <FormField
+                    label={t('cvs.school', 'Trường học')}
+                    value={cvForm.school}
+                    onChange={e => setCvForm({...cvForm, school: e.target.value})}
+                  />
                   <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                      <label>{t('cvs.major', 'Chuyên ngành')}</label>
-                      <input type="text" value={cvForm.major} onChange={e => setCvForm({...cvForm, major: e.target.value})} />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label>{t('cvs.edu_duration', 'Thời gian học')}</label>
-                      <input type="text" value={cvForm.eduDuration} onChange={e => setCvForm({...cvForm, eduDuration: e.target.value})} />
-                    </div>
+                    <FormField
+                      label={t('cvs.major', 'Chuyên ngành')}
+                      value={cvForm.major}
+                      onChange={e => setCvForm({...cvForm, major: e.target.value})}
+                      className={styles.flex1}
+                    />
+                    <FormField
+                      label={t('cvs.edu_duration', 'Thời gian học')}
+                      value={cvForm.eduDuration}
+                      onChange={e => setCvForm({...cvForm, eduDuration: e.target.value})}
+                      className={styles.flex1}
+                    />
                   </div>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.skills', 'Kỹ năng chính (Phân tách bằng dấu phẩy)')}</label>
-                    <input type="text" value={cvForm.skills} onChange={e => setCvForm({...cvForm, skills: e.target.value})} placeholder="React, TypeScript, SQL, Node..." />
-                  </div>
-                  <div className={styles.formGroup}>
-                    <label>{t('cvs.cert', 'Chứng chỉ & Ngôn ngữ')}</label>
-                    <input type="text" value={cvForm.cert} onChange={e => setCvForm({...cvForm, cert: e.target.value})} />
-                  </div>
+                  <FormField
+                    label={t('cvs.skills', 'Kỹ năng chính (Phân tách bằng dấu phẩy)')}
+                    value={cvForm.skills}
+                    onChange={e => setCvForm({...cvForm, skills: e.target.value})}
+                    placeholder="React, TypeScript, SQL, Node..."
+                  />
+                  <FormField
+                    label={t('cvs.cert', 'Chứng chỉ & Ngôn ngữ')}
+                    value={cvForm.cert}
+                    onChange={e => setCvForm({...cvForm, cert: e.target.value})}
+                  />
                 </>
               )}
 
               {currentStep === 4 && (
                 <>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: '15px' }}>{t('cvs.step4', 'Bước 4: Chọn mẫu CV & Hoàn tất')}</h3>
+                  <h3 className={styles.stepTitle}>{t('cvs.step4', 'Bước 4: Chọn mẫu CV & Hoàn tất')}</h3>
                   <div className={styles.formGroup}>
                     <label>Template</label>
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                    <div className={styles.templatePickerRow}>
                       <button 
                         type="button" 
-                        className={selectedTemplate === 'classic' ? styles.btnPrimary : styles.btnSecondary}
+                        className={`${selectedTemplate === 'classic' ? styles.btnPrimary : styles.btnSecondary} ${styles.flex1}`}
                         onClick={() => setSelectedTemplate('classic')}
-                        style={{ flex: 1 }}
                       >
                         Classic Navy Blue
                       </button>
                       <button 
                         type="button" 
-                        className={selectedTemplate === 'creative' ? styles.btnPrimary : styles.btnSecondary}
+                        className={`${selectedTemplate === 'creative' ? styles.btnPrimary : styles.btnSecondary} ${styles.flex1}`}
                         onClick={() => setSelectedTemplate('creative')}
-                        style={{ flex: 1 }}
                       >
                         Creative Forest Green
                       </button>
                     </div>
                   </div>
-                  <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className={styles.builderBtnGroup}>
                     <button 
-                      className={styles.btnPrimary} 
-                      style={{ width: '100%', justifyContent: 'center' }} 
+                      className={`${styles.btnPrimary} ${styles.btnFullWidth}`} 
                       onClick={handleDownloadPdf}
                       disabled={isExporting}
                     >
@@ -596,8 +639,7 @@ export const CvsPage: React.FC = () => {
                       )}
                     </button>
                     <button 
-                      className={styles.btnSecondary} 
-                      style={{ width: '100%', justifyContent: 'center', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)' }} 
+                      className={`${styles.btnSecondary} ${styles.btnSaveGreen}`} 
                       onClick={handleSaveBuilderCv}
                       disabled={isSaving}
                     >
@@ -634,7 +676,7 @@ export const CvsPage: React.FC = () => {
                     {t('cvs.btn_next', 'Tiếp tục')}
                   </button>
                 ) : (
-                  <span style={{ color: 'var(--color-text-muted)' }}>—</span>
+                  <span>—</span>
                 )}
               </div>
             </div>
@@ -643,7 +685,7 @@ export const CvsPage: React.FC = () => {
             <div className={styles.cvPreviewCard}>
               <div className={styles.previewToolbar}>
                 <h4>{t('cvs.live_preview', 'BẢN XEM TRƯỚC HỒ SƠ (LIVE PREVIEW)')}</h4>
-                <span style={{ fontSize: '10px', background: 'var(--color-bg-card)', padding: '2px 8px', borderRadius: '12px' }}>
+                <span className={styles.templateSelectedBadge}>
                   A4 Size Layout
                 </span>
               </div>
@@ -662,7 +704,7 @@ export const CvsPage: React.FC = () => {
                   {cvForm.summary && (
                     <div>
                       <div className={styles.sectionTitle}>Giới thiệu</div>
-                      <p style={{ fontSize: '11px', color: '#4a5568', margin: 0 }}>{cvForm.summary}</p>
+                      <p className={styles.a4TextItem}>{cvForm.summary}</p>
                     </div>
                   )}
 
@@ -706,7 +748,7 @@ export const CvsPage: React.FC = () => {
                   {cvForm.cert && (
                     <div>
                       <div className={styles.sectionTitle}>Chứng chỉ & giải thưởng</div>
-                      <p style={{ fontSize: '11px', color: '#4a5568', margin: 0 }}>{cvForm.cert}</p>
+                      <p className={styles.a4TextItem}>{cvForm.cert}</p>
                     </div>
                   )}
                 </div>
@@ -724,7 +766,7 @@ export const CvsPage: React.FC = () => {
         <div className={styles.titleArea}>
           <div>
             <h1>{t('cvs.title', 'Quản lý Hồ sơ & CV cá nhân')}</h1>
-            <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>{t('cvs.subtitle', 'Tải lên các file CV hoặc khởi chạy trình tạo CV Builder chuẩn chuyên nghiệp')}</p>
+            <p className={styles.subTextSecondary}>{t('cvs.subtitle', 'Tải lên các file CV hoặc khởi chạy trình tạo CV Builder chuẩn chuyên nghiệp')}</p>
           </div>
           <button className={styles.btnPrimary} onClick={handleStartNewBuilder}>
             {t('cvs.btn_builder', 'Tạo CV bằng Builder')}
@@ -735,7 +777,7 @@ export const CvsPage: React.FC = () => {
         <div className={styles.cvGrid}>
           {/* Left Column: CV List */}
           <div className={styles.tableCard}>
-            <div style={{ padding: '16px', borderBottom: '1px solid var(--color-border-default)', fontWeight: 700 }}>
+            <div className={styles.tableHeaderCard}>
               {t('cvs.uploaded_table_title', 'HỒ SƠ CV ĐÃ TẢI LÊN / LƯU')}
             </div>
             <div className={styles.tableWrapper}>
@@ -746,15 +788,15 @@ export const CvsPage: React.FC = () => {
                     <th>{t('cvs.col_size', 'Dung lượng')}</th>
                     <th>{t('cvs.col_updated', 'Cập nhật')}</th>
                     <th>{t('cvs.col_main', 'CV chính')}</th>
-                    <th style={{ textAlign: 'right' }}>{t('cvs.col_actions', 'Thao tác')}</th>
+                    <th className={styles.colActions}>{t('cvs.col_actions', 'Thao tác')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: '24px' }}>{t('common.loading', 'Đang tải...')}</td></tr>
+                    <tr><td colSpan={5} className={styles.loadingCell}>{t('common.loading', 'Đang tải...')}</td></tr>
                   ) : cvs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>
+                      <td colSpan={5} className={styles.emptyCell}>
                         {t('cvs.empty_cvs', 'Bạn chưa có CV nào. Hãy tạo mới hoặc tải file lên.')}
                       </td>
                     </tr>
@@ -764,19 +806,19 @@ export const CvsPage: React.FC = () => {
                       const isBuiltWithBuilder = isBuilderCv(cv);
                       return (
                         <tr key={cv.id}>
-                          <td style={{ fontWeight: 600 }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <td className={styles.tdTitle}>
+                            <div className={styles.cvTitleBox}>
                               <button
                                 type="button"
                                 className={styles.cvTitleLink}
                                 onClick={() => setPreviewCv(cv)}
                                 title={t('cvs.preview_online', 'Bấm để xem nhanh CV')}
                               >
-                                <FileText size={16} style={{ marginRight: 6, verticalAlign: 'middle', color: 'var(--color-brand-primary)' }} />
+                                <FileText size={16} className={styles.fileTextIcon} />
                                 <span>{cv.cvTitle}</span>
                               </button>
                               {isBuiltWithBuilder && (
-                                <span style={{ fontSize: '10px', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                                <span className={styles.mainBadgePill}>
                                   Builder
                                 </span>
                               )}
@@ -787,7 +829,7 @@ export const CvsPage: React.FC = () => {
                           <td>
                             {isMain ? (
                               <span className={styles.mainCvBadge}>
-                                <Star size={12} fill="#16a34a" color="#16a34a" /> {t('cvs.is_main_badge', 'CV chính thức')}
+                                <Star size={12} fill="currentColor" color="currentColor" /> {t('cvs.is_main_badge', 'CV chính thức')}
                               </span>
                             ) : (
                               <button className={styles.btnSetMain} onClick={() => handleSetMain(cv.id)} title={t('cvs.set_main_btn', 'Đặt CV này làm hồ sơ nộp mặc định')}>
@@ -796,15 +838,14 @@ export const CvsPage: React.FC = () => {
                               </button>
                             )}
                           </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div className={styles.actionBtns} style={{ justifyContent: 'flex-end' }}>
+                          <td className={styles.tdRight}>
+                            <div className={`${styles.actionBtns} ${styles.actionBtnsRight}`}>
                               {isBuiltWithBuilder && (
                                 <button
                                   type="button"
-                                  className={styles.actionBtn}
+                                  className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
                                   onClick={() => handleEditBuilderCv(cv)}
                                   title={t('cvs.edit_cv_title', 'Chỉnh sửa / bổ sung nội dung CV (Builder)')}
-                                  style={{ color: '#2563eb' }}
                                 >
                                   <Edit3 size={14} />
                                 </button>
@@ -832,8 +873,8 @@ export const CvsPage: React.FC = () => {
 
           {/* Right Column: Profile details settings (for AI Search ATS) */}
           <div className={styles.uploadCard}>
-            <div style={{ fontWeight: 700, fontSize: '15px' }}>{t('cvs.match_info_title', 'THÔNG TIN SO KHỚP HỒ SƠ')}</div>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '0 0 8px 0' }}>
+            <div className={styles.matchInfoTitle}>{t('cvs.match_info_title', 'THÔNG TIN SO KHỚP HỒ SƠ')}</div>
+            <p className={styles.matchInfoSubtitle}>
               {t('cvs.match_info_desc', 'Thông tin này giúp thuật toán so khớp tự động đo lường độ tương thích (%) của bạn với các tin tuyển dụng IT.')}
             </p>
             
@@ -865,23 +906,23 @@ export const CvsPage: React.FC = () => {
               </select>
             </div>
 
-            <button className={styles.btnPrimary} style={{ justifyContent: 'center' }} onClick={handleUpdateProfileSettings}>
+            <button className={`${styles.btnPrimary} ${styles.btnFullWidth}`} onClick={handleUpdateProfileSettings}>
               {t('cvs.btn_save_profile', 'Lưu thông tin hồ sơ')}
             </button>
 
-            <div style={{ borderTop: '1px solid var(--color-border-default)', paddingTop: '16px', marginTop: '8px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '8px' }}>
+            <div className={styles.uploadSectionDivider}>
+              <label className={styles.uploadSectionLabel}>
                 {t('cvs.upload_card_title', 'Tải lên CV PDF sẵn có')}
               </label>
               <div className={styles.dragDropArea} onClick={() => document.getElementById('cv-file-upload')?.click()}>
                 <Upload size={24} color="var(--color-text-secondary)" />
                 <p>{t('cvs.upload_drag_text', 'Kéo thả CV hoặc bấm để chọn file')}</p>
-                <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{t('cvs.upload_hint', 'Hỗ trợ PDF, DOCX tối đa 5MB')}</span>
+                <span className={styles.uploadHintText}>{t('cvs.upload_hint', 'Hỗ trợ PDF, DOCX tối đa 5MB')}</span>
                 <input 
                   id="cv-file-upload" 
                   type="file" 
                   accept=".pdf,.docx" 
-                  style={{ display: 'none' }} 
+                  className={styles.hiddenInput} 
                   onChange={handleMockUpload} 
                 />
               </div>
@@ -900,18 +941,18 @@ export const CvsPage: React.FC = () => {
       <div className={styles.titleArea}>
         <div>
           <h1>Tra cứu Hồ sơ & CV ứng viên</h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>Tìm kiếm trực tiếp từ kho hồ sơ ứng viên IT công khai trên toàn hệ thống</p>
+          <p className={styles.subTextSecondary}>Tìm kiếm trực tiếp từ kho hồ sơ ứng viên IT công khai trên toàn hệ thống</p>
         </div>
       </div>
 
       {/* Search Filter Box */}
-      <div className={styles.uploadCard} style={{ flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
+      <div className={`${styles.uploadCard} ${styles.searchHeader}`}>
         <input 
           type="text" 
           placeholder="Tìm theo kỹ năng (React, C#, SQL...), tên hoặc vị trí..." 
           value={searchKeyword}
           onChange={e => setSearchKeyword(e.target.value)}
-          style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--color-border-default)', borderRadius: '8px' }}
+          className={styles.searchInput}
           onKeyDown={e => e.key === 'Enter' && fetchCvs()}
         />
         <button className={styles.btnPrimary} onClick={() => fetchCvs()}>Tìm kiếm</button>
@@ -919,28 +960,28 @@ export const CvsPage: React.FC = () => {
       </div>
 
       {/* Candidates List cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+      <div className={styles.candidateGrid}>
         {loading ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)' }}>Đang tải danh sách ứng viên...</div>
+          <div className={styles.gridColFull}>Đang tải danh sách ứng viên...</div>
         ) : cvs.length === 0 ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)', background: 'var(--color-bg-card)', borderRadius: '8px', border: '1px solid var(--color-border-default)' }}>
+          <div className={styles.gridColFullEmpty}>
             Không tìm thấy hồ sơ ứng viên công khai nào phù hợp.
           </div>
         ) : (
           cvs.map(cv => (
-            <div key={cv.id} className={styles.uploadCard} style={{ gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div key={cv.id} className={styles.uploadCard}>
+              <div className={styles.candidateCardHeader}>
                 <div>
-                  <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 700 }}>{cv.candidateName}</h3>
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>Email: {cv.candidateEmail}</span>
+                  <h3 className={styles.candidateName}>{cv.candidateName}</h3>
+                  <span className={styles.candidateEmail}>Email: {cv.candidateEmail}</span>
                 </div>
                 <span className={`${styles.badge} ${styles.badgePublished}`}>Public Profile</span>
               </div>
               
               {cv.skills && (
-                <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '8px' }}>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '4px' }}>Kỹ năng chính:</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                <div className={styles.candidateSkillsSection}>
+                  <label className={styles.candidateSkillsLabel}>Kỹ năng chính:</label>
+                  <div className={styles.candidateSkillsList}>
                     {(Array.isArray(cv.skills)
                       ? cv.skills
                       : typeof cv.skills === 'string'
@@ -950,7 +991,7 @@ export const CvsPage: React.FC = () => {
                       const skillStr = typeof skill === 'string' ? skill.trim() : (skill?.name || String(skill || ''));
                       if (!skillStr) return null;
                       return (
-                        <span key={index} style={{ fontSize: '10px', background: 'var(--color-bg-subtle)', border: '1px solid var(--color-border-default)', padding: '2px 8px', borderRadius: '4px' }}>
+                        <span key={index} className={styles.candidateSkillTag}>
                           {skillStr}
                         </span>
                       );
@@ -960,27 +1001,26 @@ export const CvsPage: React.FC = () => {
               )}
 
               {cv.experienceSummary && (
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '2px' }}>Tóm tắt kinh nghiệm:</label>
-                  <p style={{ fontSize: '12px', margin: 0, color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{cv.experienceSummary}</p>
+                <div className={styles.candidateExpSection}>
+                  <label className={styles.candidateExpLabel}>Tóm tắt kinh nghiệm:</label>
+                  <p className={styles.candidateExpText}>{cv.experienceSummary}</p>
                 </div>
               )}
 
-              <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: '12px', display: 'flex', justifySelf: 'flex-end', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={cv.cvTitle}>
+              <div className={styles.candidateCardFooter}>
+                <span className={styles.candidateFooterTitle} title={cv.cvTitle}>
                   {cv.cvTitle}
                 </span>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className={styles.candidateFooterActions}>
                   <button 
                     type="button" 
-                    className={styles.btnSecondary} 
-                    style={{ padding: '6px 12px', fontSize: '12px', gap: '4px' }}
+                    className={`${styles.btnSecondary} ${styles.modalActionBtnSmall}`}
                     onClick={() => setPreviewCv(cv)}
                   >
                     <Eye size={14} />
                     <span>Xem nhanh</span>
                   </button>
-                  <a href={cv.fileUrl} download className={styles.btnPrimary} style={{ padding: '6px 12px', fontSize: '12px', gap: '4px' }}>
+                  <a href={cv.fileUrl} download className={`${styles.btnPrimary} ${styles.modalActionBtnSmall}`}>
                     <Download size={14} />
                     <span>Tải CV</span>
                   </a>

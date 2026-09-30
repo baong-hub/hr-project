@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { SIDEBAR_MENU, type SidebarItem } from '../../config/sidebarMenu.config';
+import { SIDEBAR_MENU, GUEST_SIDEBAR_MENU, type SidebarItem } from '../../config/sidebarMenu.config';
 import { Icon } from '../../../shared/ui/Icon/Icon';
 import styles from './Sidebar.module.scss';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { authService } from '../../services/auth.service';
+import { toast } from '../../services/toast.service';
 import defaultLogoImg from '@/assets/logo.png';
 
 interface SidebarProps {
@@ -16,19 +17,33 @@ interface SidebarProps {
 export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [menus, setMenus] = useState<SidebarItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSubmenus, setExpandedSubmenus] = useState<Set<string>>(new Set());
+  const [currentUser, setCurrentUser] = useState<any>(() => authService.getUser());
+  const [isAuth, setIsAuth] = useState<boolean>(() => authService.isAuthenticated());
 
-  const user = authService.getUser();
-  const companyLogo = user?.companyLogo || defaultLogoImg;
-  const companyCode = user?.companyCode || 'HR Portal';
-  const permissions = (user?.permissions as string[]) || [];
-  const roles = (user?.roles as string[]) || [];
-  const userRole = user?.role || user?.accountType || '';
-  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || user?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
-  const isCandidate = userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên');
-  const isEmployer = userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng') || roles.includes('Employer');
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setCurrentUser(authService.getUser());
+      setIsAuth(authService.isAuthenticated());
+    };
+    window.addEventListener('app-auth-changed', handleAuthChange);
+    return () => {
+      window.removeEventListener('app-auth-changed', handleAuthChange);
+    };
+  }, []);
+
+  const companyLogo = currentUser?.companyLogo || defaultLogoImg;
+  const companyCode = currentUser?.companyCode || 'HR Portal';
+  const permissions = (currentUser?.permissions as string[]) || [];
+  const roles = (currentUser?.roles as string[]) || [];
+  const userRole = currentUser?.role || currentUser?.accountType || '';
+  const isSuperAdmin = roles.includes('Super Admin') || roles.includes('super_admin') || currentUser?.username === 'admin' || userRole === 'Admin' || userRole === 'ADMIN';
+  const isCandidate = isAuth && (userRole === 'CANDIDATE' || userRole === 'User' || roles.includes('Ứng viên'));
+  const isEmployer = isAuth && (userRole === 'EMPLOYER' || userRole === 'Company' || roles.includes('Nhà tuyển dụng') || roles.includes('Employer'));
+
 
   // Auto-expand accordion when active route is a child item
   useEffect(() => {
@@ -244,6 +259,12 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
 
   useEffect(() => {
     const fetchMenus = async () => {
+      if (!isAuth) {
+        setMenus(GUEST_SIDEBAR_MENU);
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await authService.getAuthorizedMenus();
         if (response.success && response.data && response.data.length > 0) {
@@ -297,9 +318,13 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
     };
 
     fetchMenus();
-  }, []);
+  }, [isAuth]);
 
   const filterMenuItems = (items: SidebarItem[]): SidebarItem[] => {
+    if (!isAuth) {
+      return GUEST_SIDEBAR_MENU;
+    }
+
     return items
       .map((item) => {
         // Ẩn menu Khu vực ứng viên & Hồ sơ CV đối với Admin và Nhà tuyển dụng (chỉ dành riêng cho ứng viên)
@@ -318,10 +343,9 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
             item.code === 'menu:candidate-offers' ||
             item.route?.startsWith('/candidate/') ||
             item.route === '/saved-jobs' ||
-            item.label?.toLowerCase().includes('ứng viên') ||
-            item.shortName?.toLowerCase().includes('ứng viên') ||
-            item.label?.toLowerCase().includes('đã lưu') ||
-            item.shortName?.toLowerCase().includes('đã lưu')
+            item.label === 'Khu vực ứng viên' ||
+            item.label === 'Việc làm đã lưu' ||
+            item.shortName === 'Đã lưu'
           ) {
             return null;
           }
@@ -411,14 +435,20 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
       }
     }
     
-    if (label === 'Quản lý việc làm' || label === 'Việc làm') return t('sidebar.menu_jobs', 'Việc làm');
-    if (label === 'Hồ sơ & CV' || label === 'CV') return t('sidebar.menu_cvs', 'Hồ sơ & CV');
+    if (label === 'Trang chủ' || code === 'public:home') return t('sidebar.home', 'Trang chủ');
+    if (label === 'Quản lý việc làm' || label === 'Việc làm' || label === 'Tìm việc làm' || code === 'public:jobs') return t('sidebar.menu_jobs', 'Việc làm');
+    if (label === 'Hồ sơ & CV' || label === 'CV' || label === 'Tạo & Quản lý CV' || code === 'public:cvs') return t('sidebar.menu_cvs', 'Hồ sơ & CV');
+    if (label === 'Trang doanh nghiệp' || label === 'Doanh nghiệp' || code === 'public:companies') return t('sidebar.menu_companies', 'Doanh nghiệp');
+    if (label === 'Báo cáo thị trường lương' || label === 'Báo cáo lương' || code === 'public:salary') return t('sidebar.salary_insights', 'Báo cáo lương');
+    if (label === 'Cẩm nang nghề nghiệp' || label === 'Cẩm nang' || code === 'public:blog') return t('sidebar.blog', 'Cẩm nang');
+    if (label === 'Bảng giá dịch vụ' || label === 'Bảng giá' || code === 'public:pricing') return t('sidebar.pricing', 'Bảng giá dịch vụ');
+    if (label === 'Về chúng tôi' || label === 'Giới thiệu' || code === 'public:about') return t('sidebar.about', 'Về chúng tôi');
+    if (label === 'Liên hệ & Hỗ trợ' || label === 'Liên hệ' || code === 'public:contact') return t('sidebar.contact', 'Liên hệ & Hỗ trợ');
     if (label === 'Quản lý ứng tuyển' || label === 'Ứng tuyển' || label === 'Hồ sơ ứng tuyển' || code === 'menu:applications') return t('sidebar.menu_applications', 'Hồ sơ ứng tuyển');
     if (label === 'Khu vực ứng viên' || label === 'Ứng viên' || code === 'menu:candidate') return t('sidebar.menu_candidate', 'Khu vực ứng viên');
     if (label === 'Lịch sử ứng tuyển' || code === 'menu:candidate-applications' || code === 'module:candidate-applications') return t('sidebar.menu_candidate_applications', 'Lịch sử ứng tuyển');
     if (label === 'Thư mời nhận việc' || label === 'Job Offers' || code === 'menu:candidate-offers' || code === 'module:candidate-offers') return t('sidebar.menu_candidate_offers', 'Thư mời nhận việc');
     if (label === 'Lịch phỏng vấn') return t('sidebar.menu_interviews', 'Lịch phỏng vấn');
-    if (label === 'Trang doanh nghiệp' || label === 'Doanh nghiệp') return t('sidebar.menu_companies', 'Doanh nghiệp');
     if (label === 'Việc làm đã lưu' || label === 'Đã lưu' || code === 'menu:saved-jobs' || code === 'module:saved-jobs') return t('sidebar.menu_saved_jobs', 'Việc làm đã lưu');
     if (label === 'Tin nhắn & Trò chuyện' || label === 'Tin nhắn') return t('sidebar.menu_messages', 'Tin nhắn');
     if (label === 'Trung tâm thông báo' || label === 'Thông báo') return t('sidebar.menu_notifications', 'Thông báo');
@@ -431,6 +461,14 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
     if (label === 'Cơ cấu tổ chức' || label === 'Tổ chức') return t('sidebar.module_crm_organization', 'Cơ cấu tổ chức');
     
     return label;
+  };
+
+  const handleItemClick = (e: React.MouseEvent, route?: string) => {
+    if (!isAuth && (route?.startsWith('/candidate/') || route?.startsWith('/employer/') || route?.startsWith('/admin/'))) {
+      e.preventDefault();
+      toast.info('Vui lòng đăng nhập để sử dụng tính năng này.');
+      navigate(`/auth/login?redirect=${encodeURIComponent(route || '/')}`);
+    }
   };
 
   const visibleMenuItems = filterMenuItems(menus);
@@ -493,6 +531,7 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
                           <NavLink 
                             key={child.label}
                             to={child.route || '#'}
+                            onClick={(e) => handleItemClick(e, child.route)}
                             className={({ isActive }) => `${styles.submenuItem} ${isActive ? styles.submenuActive : ''}`}
                           >
                             <span className={styles.submenuDot}></span>
@@ -505,6 +544,7 @@ export const Sidebar = ({ expanded, onToggle }: SidebarProps) => {
                 ) : (
                   <NavLink 
                     to={directRoute}
+                    onClick={(e) => handleItemClick(e, directRoute)}
                     className={({ isActive }) => {
                       const isRouteActive = isActive || (
                         (directRoute === '/employer/applications' || directRoute === '/applications') &&

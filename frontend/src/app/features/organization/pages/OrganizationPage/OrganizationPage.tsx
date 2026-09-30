@@ -118,7 +118,7 @@ export const OrganizationPage = () => {
               {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
           ) : (
-            <span style={{ width: 24, display: 'inline-block' }} />
+            <span className={styles.indentSpacer} />
           )}
 
           <div className={`${styles.nodeIcon} ${isRoot ? styles.nodeIconRoot : styles.nodeIconChild}`}>
@@ -212,8 +212,8 @@ export const OrganizationPage = () => {
             </div>
             {editingId && (
               <div className={styles.formGroup}>
-                <label>
-                  <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} style={{ marginRight: 8, width: 'auto' }} />
+                <label className={styles.checkboxRow}>
+                  <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} className={styles.checkboxInput} />
                   Hoạt động
                 </label>
               </div>

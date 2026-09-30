@@ -3,12 +3,18 @@ import api from './api.service';
 export interface PlanDto {
   plan: string;
   name: string;
+  displayName?: string;
   priceVnd: number;
+  monthlyPriceVnd?: number;
   maxActiveJobs: number;
+  maxJobs?: number;
   cvSearchAccess: boolean;
+  maxCvViews?: number;
   aiScoringEnabled: boolean;
+  aiScreening?: boolean;
   prioritySupport: boolean;
   features: string[];
+  highlights?: string[];
 }
 
 export interface SubscriptionDto {

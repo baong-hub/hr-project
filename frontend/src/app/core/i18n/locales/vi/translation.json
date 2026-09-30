@@ -66,7 +66,13 @@
     "module_user": "Tài khoản",
     "module_user_role": "Phân quyền",
     "module_master_data": "Danh mục dùng chung",
-    "module_organization": "Cơ cấu tổ chức"
+    "module_organization": "Cơ cấu tổ chức",
+    "home": "Trang chủ",
+    "salary_insights": "Báo cáo lương",
+    "blog": "Cẩm nang",
+    "pricing": "Bảng giá dịch vụ",
+    "about": "Về chúng tôi",
+    "contact": "Liên hệ & Hỗ trợ"
   },
   "auth": {
     "login_title": "Đăng nhập Hệ thống Tuyển dụng HR",

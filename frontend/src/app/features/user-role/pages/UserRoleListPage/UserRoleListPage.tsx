@@ -57,7 +57,7 @@ const UserRoleListPage: React.FC = () => {
                   <th>Nhân viên</th>
                   <th>Chi nhánh</th>
                   <th>Vai trò hiện tại</th>
-                  <th style={{ width: 120 }}>Thao tác</th>
+                  <th className={styles.colActions}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -81,7 +81,7 @@ const UserRoleListPage: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className={styles.actionGroup}>
                         <Button variant="secondary" size="sm" onClick={() => navigate(`/user-roles/users/${user.id}/roles`)}>
                           <Icon name="Shield" size={14} />
                           Gán vai trò

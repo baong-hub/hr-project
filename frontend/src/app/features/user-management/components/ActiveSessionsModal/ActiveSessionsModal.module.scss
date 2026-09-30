@@ -1,7 +1,9 @@
+@use '../../../../../styles/tokens' as *;
+
 .modalContainer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-md);
   width: 100%;
 }
 
@@ -9,71 +11,76 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  background: #f8fafc;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  gap: var(--spacing-sm);
+  background-color: var(--color-bg-subtle);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
 
   .searchInput {
     flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
     outline: none;
-    transition: border-color 0.2s;
+    background-color: var(--color-bg-input);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-base);
 
     &:focus {
-      border-color: #2563eb;
+      border-color: var(--color-primary);
     }
   }
 
   .sessionCount {
-    font-size: 13px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
-    color: #475569;
-    background: #e2e8f0;
-    padding: 4px 10px;
-    border-radius: 12px;
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-hover);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-default);
   }
 }
 
 .tableContainer {
   overflow-x: auto;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
   max-height: 480px;
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
 
     th {
-      background-color: #f1f5f9;
-      color: #334155;
+      background-color: var(--color-bg-subtle);
+      color: var(--color-text-secondary);
       font-weight: 600;
       text-align: left;
-      padding: 12px 16px;
-      border-bottom: 1px solid #e2e8f0;
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-bottom: 1px solid var(--color-border-default);
       position: sticky;
       top: 0;
       z-index: 1;
+      font-size: var(--font-size-xs);
     }
 
     td {
-      padding: 12px 16px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-bottom: 1px solid var(--color-border-default);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-xs);
     }
 
     tr:hover {
-      background-color: #f8fafc;
+      background-color: var(--color-bg-hover);
     }
 
     tr.currentSessionRow {
-      background-color: #eff6ff;
+      background-color: var(--color-info-bg);
     }
   }
 }
@@ -81,19 +88,19 @@
 .userInfoCell {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--spacing-xs);
 
   .avatarBadge {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    background-color: #3b82f6;
-    color: #ffffff;
+    border-radius: var(--radius-circle);
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 14px;
+    font-size: var(--font-size-xs);
   }
 
   .userDetails {
@@ -102,12 +109,12 @@
 
     .fullName {
       font-weight: 600;
-      color: #0f172a;
+      color: var(--color-text-primary);
     }
 
     .username {
-      font-size: 12px;
-      color: #64748b;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
     }
   }
 }
@@ -115,10 +122,11 @@
 .deviceInfo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
 
   .deviceIcon {
     font-size: 18px;
+    color: var(--color-text-secondary);
   }
 
   .deviceText {
@@ -126,54 +134,72 @@
     flex-direction: column;
 
     .deviceName {
-      font-weight: 500;
+      font-weight: 600;
+      color: var(--color-text-primary);
     }
 
     .browser {
-      font-size: 12px;
-      color: #64748b;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-muted);
     }
   }
 }
 
 .ipBadge {
-  font-family: monospace;
-  font-size: 13px;
-  background-color: #f1f5f9;
-  padding: 2px 8px;
-  border-radius: 4px;
-  color: #334155;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  background-color: var(--color-bg-subtle);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
 }
 
 .currentBadge {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  color: #16a34a;
-  background-color: #dcfce7;
+  color: var(--color-success);
+  background-color: var(--color-success-bg);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
   margin-left: 6px;
+}
+
+.loginTimeText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+}
+
+.lastActiveText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.connectedText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
 }
 
 .actionCell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-xs);
 }
 
 .revokeBtn {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-danger);
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: opacity var(--transition-base);
 
   &:hover {
-    background-color: #dc2626;
+    opacity: 0.9;
   }
 
   &:disabled {
@@ -183,15 +209,15 @@
 }
 
 .emptyState {
-  padding: 32px;
+  padding: var(--spacing-xl);
   text-align: center;
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .modalFooter {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border-default);
 }

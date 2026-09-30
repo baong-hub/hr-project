@@ -1,41 +1,33 @@
 import React from 'react';
-import styles from './Modal.module.scss';
-import { X } from 'lucide-react';
+import { Modal as BaseModal } from '../../components/modal/Modal';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: string | React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   width?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
-export const Modal = ({ isOpen, onClose, title, children, footer, width = '600px' }: ModalProps) => {
-  if (!isOpen) return null;
+export const Modal: React.FC<ModalProps> = ({
+  width,
+  size,
+  ...props
+}) => {
+  let resolvedSize: 'sm' | 'md' | 'lg' | 'xl' | 'full' = size || 'md';
+  if (width) {
+    const num = parseInt(width, 10);
+    if (!isNaN(num)) {
+      if (num <= 500) resolvedSize = 'sm';
+      else if (num <= 650) resolvedSize = 'md';
+      else if (num <= 850) resolvedSize = 'lg';
+      else resolvedSize = 'xl';
+    }
+  }
 
-  return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div 
-        className={styles.modal} 
-        style={{ width }} 
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.header}>
-          <h3>{title}</h3>
-          <button className={styles.closeBtn} onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
-        <div className={styles.body}>
-          {children}
-        </div>
-        {footer && (
-          <div className={styles.footer}>
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <BaseModal {...props} size={resolvedSize} />;
 };
+
+export default Modal;

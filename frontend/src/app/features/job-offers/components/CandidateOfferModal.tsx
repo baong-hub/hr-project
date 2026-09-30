@@ -208,7 +208,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
               {daysLeft > 0 ? (
                 <span>Còn lại: <strong>{daysLeft} ngày</strong></span>
               ) : (
-                <span style={{ color: '#dc2626' }}>Đã đến hạn chót hôm nay!</span>
+                <span className={styles.expiredText}>Đã đến hạn chót hôm nay!</span>
               )}
             </div>
           </div>
@@ -219,7 +219,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
           {/* Status Resolution Banners */}
           {offer.status === 'ACCEPTED' && (
             <div className={`${styles.resolutionBanner} ${styles.accepted}`}>
-              <CheckCircle size={32} color="#059669" />
+              <CheckCircle size={32} />
               <div>
                 <h3>BẠN ĐÃ CHẤP NHẬN THƯ MỜI NHẬN VIỆC</h3>
                 <p>
@@ -231,7 +231,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
 
           {offer.status === 'NEGOTIATING' && (
             <div className={`${styles.resolutionBanner} ${styles.negotiating}`}>
-              <MessageSquare size={32} color="#d97706" />
+              <MessageSquare size={32} />
               <div>
                 <h3>ĐANG CHỜ PHẢN HỒI THƯƠNG LƯỢNG TỪ NHÀ TUYỂN DỤNG</h3>
                 <p>
@@ -243,7 +243,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
 
           {offer.status === 'DECLINED' && (
             <div className={`${styles.resolutionBanner} ${styles.declined}`}>
-              <XCircle size={32} color="#dc2626" />
+              <XCircle size={32} />
               <div>
                 <h3>BẠN ĐÃ TỪ CHỐI THƯ MỜI NHẬN VIỆC</h3>
                 <p>Lý do: {offer.declineReason || 'Lý do cá nhân'}.</p>
@@ -356,7 +356,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
                 <FileText size={24} />
                 <div>
                   <div>{offer.offerLetterFileName || 'Thu_Moi_Nhan_Viec_Chinh_Thuc.pdf'}</div>
-                  <span style={{ fontSize: '0.8rem', color: '#3b82f6', fontWeight: 400 }}>
+                  <span className={styles.pdfSub}>
                     Văn bản có chữ ký & dấu mộc điện tử của công ty
                   </span>
                 </div>
@@ -375,17 +375,17 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
 
           {/* Verified E-Signature Certificate Stamp */}
           {offer.status === 'ACCEPTED' && (
-            <div className="mt-4 p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border-2 border-emerald-300 dark:border-emerald-700/60 shadow-lg">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-emerald-200 dark:border-emerald-800/50 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
-                    <ShieldCheck className="w-5 h-5" />
+            <div className={styles.verifiedSignatureBlock}>
+              <div className={styles.verifiedHeader}>
+                <div className={styles.verifiedBadgeRow}>
+                  <div className={styles.verifiedIconBadge}>
+                    <ShieldCheck size={20} />
                   </div>
                   <div>
-                    <span className="inline-block text-[11px] font-bold tracking-wider text-emerald-700 dark:text-emerald-300 uppercase">
+                    <span className={styles.verifiedTag}>
                       Chứng thực chữ ký điện tử hợp lệ (Verified E-Signature)
                     </span>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    <h4 className={styles.verifiedTitle}>
                       Thư Mời Nhận Việc Đã Được Ký Duyệt Chính Thức
                     </h4>
                   </div>
@@ -393,32 +393,32 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 rounded-lg text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-700 shadow-sm transition-colors"
+                  className={styles.verifiedPrintBtn}
                 >
-                  <Printer className="w-3.5 h-3.5" /> In Thư Mời Đã Ký
+                  <Printer size={14} /> In Thư Mời Đã Ký
                 </button>
               </div>
 
-              <div className="mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <p className="text-slate-500 dark:text-slate-400">Người ký xác nhận:</p>
-                  <p className="font-bold text-slate-800 dark:text-slate-100 text-sm mt-0.5">
+              <div className={styles.verifiedGrid}>
+                <div className={styles.verifiedSignerInfo}>
+                  <p>Người ký xác nhận:</p>
+                  <p className={styles.signerName}>
                     {offer.signerFullName || offer.candidateName}
                   </p>
-                  <p className="text-slate-500 dark:text-slate-400 mt-2">Thời điểm ký kết:</p>
-                  <p className="font-medium text-slate-700 dark:text-slate-300 mt-0.5">
+                  <p>Thời điểm ký kết:</p>
+                  <p className={styles.signedDate}>
                     {offer.signedAt ? new Date(offer.signedAt).toLocaleString('vi-VN') : formatDate(offer.issuedAt)}
                   </p>
                 </div>
 
-                <div className="flex flex-col items-center sm:items-end justify-center">
-                  <span className="text-[10px] text-slate-400 mb-1">Chữ ký điện tử của ứng viên:</span>
+                <div className={styles.verifiedSignatureBox}>
+                  <span className={styles.signatureLabel}>Chữ ký điện tử của ứng viên:</span>
                   {offer.candidateSignature ? (
-                    <div className="p-2 bg-white rounded-lg border border-emerald-200 dark:border-emerald-800 shadow-inner max-w-[200px]">
-                      <img src={offer.candidateSignature} alt="Chữ ký ứng viên" className="h-14 object-contain" />
+                    <div className={styles.signatureImgWrapper}>
+                      <img src={offer.candidateSignature} alt="Chữ ký ứng viên" />
                     </div>
                   ) : (
-                    <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 rounded-lg font-serif italic text-base">
+                    <div className={styles.signatureFallback}>
                       {offer.signerFullName || offer.candidateName}
                     </div>
                   )}
@@ -431,7 +431,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
           {activeAction === 'NEGOTIATE' && (
             <form onSubmit={handleSubmitNegotiate} className={styles.negotiateDrawer}>
               <h3>
-                <MessageSquare size={18} color="#d97706" /> Đề Xuất Thương Lượng Điều Khoản Offer
+                <MessageSquare size={18} /> Đề Xuất Thương Lượng Điều Khoản Offer
               </h3>
               <div className={styles.formGroup}>
                 <label>Mức lương mong muốn đề xuất ({offer.currency} / tháng)</label>
@@ -476,7 +476,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
           {activeAction === 'DECLINE' && (
             <form onSubmit={handleSubmitDecline} className={styles.declineDrawer}>
               <h3>
-                <XCircle size={18} color="#dc2626" /> Từ Chối Đề Xuất Nhận Việc
+                <XCircle size={18} /> Từ Chối Đề Xuất Nhận Việc
               </h3>
 
               <div className={styles.formGroup}>
@@ -549,7 +549,7 @@ export const CandidateOfferModal: React.FC<CandidateOfferModalProps> = ({
                 onClick={handleOpenSignatureModal}
                 disabled={submitting}
               >
-                <PenTool size={16} style={{ display: 'inline', marginRight: 6 }} />
+                <PenTool size={16} />
                 Ký Duyệt & Chấp Nhận Offer (E-Sign)
               </button>
             </div>

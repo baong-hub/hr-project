@@ -117,7 +117,7 @@ export const NotificationsPage: React.FC = () => {
     <div className={styles.page}>
       <div className={styles.titleArea}>
         <h1>
-          <Bell size={24} style={{ verticalAlign: 'middle', marginRight: 8, color: 'var(--color-brand-primary)' }} />
+          <Bell size={24} className={styles.titleBell} />
           {t('notifications.title', 'Trung tâm thông báo')}
         </h1>
         {hasUnread && (

@@ -223,11 +223,11 @@ export const MessagesPage: React.FC = () => {
       <div className={styles.sidebarList}>
         <div className={styles.sidebarHeader}>
           <h2>
-            <MessageSquare size={20} color="var(--color-primary, #2563eb)" />
+            <MessageSquare size={20} color="var(--color-primary)" />
             {t('messages.title', 'Tin nhắn')}
           </h2>
           <div className={styles.searchBox}>
-            <Search size={16} color="var(--color-text-muted, #94a3b8)" />
+            <Search size={16} color="var(--color-text-muted)" />
             <input
               type="text"
               placeholder={t('messages.search_placeholder', 'Tìm kiếm người liên hệ, công việc...')}
@@ -239,11 +239,11 @@ export const MessagesPage: React.FC = () => {
 
         <div className={styles.conversationList}>
           {loading ? (
-            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+            <div className={styles.loadingState}>
               {t('messages.loading', 'Đang tải danh sách hội thoại...')}
             </div>
           ) : filteredConversations.length === 0 ? (
-            <div style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+            <div className={styles.emptyConvos}>
               {search ? t('messages.empty_search', 'Không tìm thấy cuộc trò chuyện phù hợp.') : t('messages.empty_convos', 'Bạn chưa có cuộc trò chuyện nào.')}
             </div>
           ) : (
@@ -273,7 +273,7 @@ export const MessagesPage: React.FC = () => {
                     {hasMultipleJobs ? (
                       <div className={styles.jobBadge} title={c.appliedJobs?.map(j => j.jobTitle).join(', ')}>
                         <Briefcase size={11} />
-                        <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span className={styles.jobBadgeTextNarrow}>
                           {c.appliedJobs![0].jobTitle}
                         </span>
                         <span className={styles.multiJobBadge}>+{c.appliedJobs!.length - 1}</span>
@@ -281,7 +281,7 @@ export const MessagesPage: React.FC = () => {
                     ) : c.jobTitle ? (
                       <div className={styles.jobBadge}>
                         <Briefcase size={11} />
-                        <span style={{ maxWidth: '190px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span className={styles.jobBadgeTextWide}>
                           {c.jobTitle}
                         </span>
                       </div>
@@ -361,7 +361,7 @@ export const MessagesPage: React.FC = () => {
             {/* Messages Feed */}
             <div className={styles.messagesList}>
               {messages.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', margin: 'auto' }}>
+                <div className={styles.emptyMessages}>
                   {t('messages.empty_messages', 'Chưa có tin nhắn nào trong cuộc trò chuyện này. Hãy gửi tin nhắn đầu tiên!')}
                 </div>
               ) : (
@@ -375,7 +375,7 @@ export const MessagesPage: React.FC = () => {
                       {!isMine && (
                         <div className={styles.msgAvatar}>
                           {msg.senderAvatar ? (
-                            <img src={msg.senderAvatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={msg.senderAvatar} alt="" className={styles.senderAvatarImg} />
                           ) : (
                             msg.senderName && msg.senderName !== 'Thành viên' && msg.senderName !== 'Người dùng'
                               ? msg.senderName.trim().split(/\s+/).slice(0, 2).map((p: string) => p[0]?.toUpperCase()).join('')
@@ -416,7 +416,7 @@ export const MessagesPage: React.FC = () => {
           <div className={styles.emptyChat}>
             <MessageSquare size={64} />
             <h4>{t('messages.title', 'Tin nhắn')}</h4>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>
+            <p className={styles.emptyChatSub}>
               {t('messages.empty_convos', 'Trao đổi trực tiếp và nhanh chóng giữa Ứng viên và Doanh nghiệp tuyển dụng')}
             </p>
           </div>

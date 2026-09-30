@@ -66,7 +66,13 @@
     "module_user": "Accounts",
     "module_user_role": "Roles & Permissions",
     "module_master_data": "Master Data",
-    "module_organization": "Organization Tree"
+    "module_organization": "Organization Tree",
+    "home": "Home",
+    "salary_insights": "Salary Insights",
+    "blog": "Blog & Advice",
+    "pricing": "Pricing",
+    "about": "About Us",
+    "contact": "Contact & Support"
   },
   "auth": {
     "login_title": "Sign In to HR Recruitment Platform",

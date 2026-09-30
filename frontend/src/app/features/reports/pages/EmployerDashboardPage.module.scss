@@ -1,8 +1,10 @@
+@use '../../../../styles/tokens' as *;
+
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-4) 0;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-sm) 0;
 }
 
 .header {
@@ -10,37 +12,37 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--spacing-md);
 }
 
 .titleWrapper {
   h1 {
     font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
+    font-weight: 700;
     color: var(--color-text-primary);
     margin: 0;
   }
 
   .subtitle {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin: var(--space-1) 0 0 0;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin: var(--spacing-xxs) 0 0 0;
   }
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
 .dateFilter {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--color-bg-card);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
@@ -66,16 +68,16 @@
 .btnExport {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--color-brand-primary);
-  color: #ffffff;
-  border: none;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-base);
 
   &:hover:not(:disabled) {
     opacity: 0.9;
@@ -90,28 +92,48 @@
 .kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-4);
+  gap: var(--spacing-md);
 }
 
 .kpiCard {
-  background: var(--color-bg-card);
+  background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-xl);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--spacing-md) var(--spacing-lg);
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--spacing-md);
   box-shadow: var(--shadow-sm);
 }
 
 .kpiIconWrapper {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  &.iconInfo {
+    background-color: var(--color-info-bg);
+    color: var(--color-info);
+  }
+
+  &.iconSuccess {
+    background-color: var(--color-success-bg);
+    color: var(--color-success);
+  }
+
+  &.iconWarning {
+    background-color: var(--color-warning-bg);
+    color: var(--color-warning);
+  }
+
+  &.iconPrimary {
+    background-color: var(--color-brand-primary-soft);
+    color: var(--color-brand-primary-dark);
+  }
 }
 
 .kpiInfo {
@@ -122,22 +144,28 @@
   .kpiLabel {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    font-weight: var(--font-weight-medium);
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   .kpiVal {
     font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
+    font-weight: 700;
     color: var(--color-text-primary);
+
+    small {
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      color: var(--color-text-muted);
+    }
   }
 }
 
 .chartsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: var(--space-6);
+  gap: var(--spacing-lg);
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -145,17 +173,17 @@
 }
 
 .chartCard {
-  background: var(--color-bg-card);
+  background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-xl);
-  padding: var(--space-5) var(--space-6);
+  padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
 
   h3 {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
+    font-weight: 700;
     color: var(--color-text-primary);
     margin: 0;
   }
@@ -163,63 +191,85 @@
   .chartSubtitle {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    margin: 4px 0 var(--space-6) 0;
+    margin: var(--spacing-xxs) 0 var(--spacing-md) 0;
   }
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.acceptanceRate {
+  font-size: var(--font-size-xs);
+  color: var(--color-success);
+  font-weight: 600;
 }
 
 .funnelContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--spacing-md);
   flex: 1;
   justify-content: center;
+  margin-top: var(--spacing-md);
 }
 
 .funnelRow {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--spacing-md);
 }
 
 .funnelLabel {
   width: 140px;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
+  font-weight: 600;
 }
 
 .funnelBarWrapper {
   flex: 1;
-  background: var(--color-bg-subtle);
+  background-color: var(--color-bg-subtle);
   height: 24px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   position: relative;
+  border: 1px solid var(--color-border-default);
 }
 
 .funnelBar {
+  width: var(--bar-width, 0%);
   height: 100%;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding-right: var(--space-2);
-  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+  padding-right: var(--spacing-xs);
+  transition: width 0.4s ease-out;
+  background-color: var(--color-primary);
+
+  &.barStage1 { background-color: var(--color-primary); }
+  &.barStage2 { background-color: var(--color-info); }
+  &.barStage3 { background-color: var(--color-brand-primary); }
+  &.barStage4 { background-color: var(--color-warning); }
+  &.barStage5 { background-color: var(--color-warning); }
+  &.barStage6 { background-color: var(--color-success); }
 }
 
 .funnelBarVal {
-  color: #ffffff;
+  color: var(--color-text-inverse);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
+  font-weight: 700;
 }
 
 .funnelPercent {
-  width: 48px;
+  min-width: 55px;
   text-align: right;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--color-text-primary);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 700;
 }
 
 .svgContainer {
@@ -227,19 +277,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2) 0;
+  padding: var(--spacing-xs) 0;
 }
 
 .tableCard {
-  background: var(--color-bg-card);
+  background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-xl);
-  padding: var(--space-5) var(--space-6);
+  padding: var(--spacing-lg);
   box-shadow: var(--shadow-sm);
 
   h3 {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
+    font-weight: 700;
     color: var(--color-text-primary);
     margin: 0;
   }
@@ -247,7 +297,7 @@
   .tableSubtitle {
     font-size: var(--font-size-xs);
     color: var(--color-text-muted);
-    margin: 4px 0 var(--space-4) 0;
+    margin: var(--spacing-xxs) 0 var(--spacing-md) 0;
   }
 }
 
@@ -262,17 +312,19 @@
   font-size: var(--font-size-sm);
 
   th {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--spacing-xs) var(--spacing-md);
     background-color: var(--color-bg-subtle);
     color: var(--color-text-secondary);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
     border-bottom: 1px solid var(--color-border-default);
+    font-size: var(--font-size-xs);
   }
 
   td {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--spacing-xs) var(--spacing-md);
     color: var(--color-text-primary);
     border-bottom: 1px solid var(--color-border-default);
+    font-size: var(--font-size-xs);
   }
 
   tr:last-child td {
@@ -280,12 +332,55 @@
   }
 }
 
+.jobTitleCell {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
 .rateBadge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: var(--radius-md);
-  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
   font-size: var(--font-size-xs);
+  border: 1px solid var(--color-border-default);
+
+  &.rateHigh {
+    background-color: var(--color-success-bg);
+    color: var(--color-success);
+    border-color: var(--color-success);
+  }
+
+  &.rateNormal {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-secondary);
+  }
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border: 1px solid var(--color-border-default);
+
+  &.statusPublished {
+    background-color: var(--color-info-bg);
+    color: var(--color-info);
+    border-color: var(--color-info);
+  }
+
+  &.statusOther {
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-secondary);
+  }
+}
+
+.emptyTableMessage {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-muted);
 }
 
 .stateContainer {
@@ -293,9 +388,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-16) var(--space-4);
+  padding: var(--spacing-3xl) var(--spacing-md);
   text-align: center;
-  background: var(--color-bg-card);
+  background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-xl);
 }
@@ -304,10 +399,10 @@
   width: 32px;
   height: 32px;
   border: 3px solid var(--color-border-default);
-  border-top-color: var(--color-brand-primary);
+  border-top-color: var(--color-primary);
   border-radius: var(--radius-circle);
   animation: spin 0.8s linear infinite;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--spacing-md);
 }
 
 @keyframes spin {
@@ -316,32 +411,32 @@
 
 .stateText {
   color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-sm);
 }
 
 .errorIcon {
   color: var(--color-danger);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--spacing-xs);
 }
 
 .stateText_error {
   color: var(--color-danger);
-  font-size: var(--font-size-md);
-  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
 }
 
 .btnRetry {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: var(--color-danger);
-  color: #ffffff;
-  border: none;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-danger);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-base);
 
   &:hover {
     opacity: 0.9;

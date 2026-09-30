@@ -96,10 +96,14 @@ export interface SubmitTestResult {
 
 export interface AssessmentQuestionReview {
   id: number;
+  questionId?: number;
   question: string;
+  questionText?: string;
   options: string[];
   correctOptionIndex: number;
+  correctOption?: number;
   candidateSelectedOptionIndex?: number;
+  selectedOption?: number;
   isCorrect: boolean;
   explanation?: string;
 }

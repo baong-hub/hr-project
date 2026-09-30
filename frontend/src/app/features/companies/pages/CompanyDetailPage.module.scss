@@ -14,7 +14,7 @@
   gap: 6px;
   font-size: var(--font-size-sm, 13px);
   font-weight: 600;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   background: none;
   border: none;
   cursor: pointer;
@@ -22,14 +22,14 @@
   width: fit-content;
 
   &:hover {
-    color: var(--color-brand-primary, #2563eb);
+    color: var(--color-brand-primary);
   }
 }
 
 /* Header Profile Card */
 .headerProfileCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 24px);
   display: flex;
@@ -48,8 +48,8 @@
       width: 64px;
       height: 64px;
       border-radius: var(--radius-lg, 10px);
-      background: var(--color-bg-subtle, #f1f5f9);
-      border: 1px solid var(--color-border-subtle, #e2e8f0);
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -65,7 +65,7 @@
       .logoInitial {
         font-size: 26px;
         font-weight: 700;
-        color: var(--color-brand-primary, #2563eb);
+        color: var(--color-brand-primary);
       }
     }
 
@@ -83,13 +83,13 @@
         h1 {
           font-size: var(--font-size-xl, 22px);
           font-weight: 800;
-          color: var(--color-text-primary, #0f172a);
+          color: var(--color-text-primary);
           margin: 0;
           line-height: 1.2;
         }
 
         .verifiedBadge {
-          color: var(--color-brand-primary, #2563eb);
+          color: var(--color-brand-primary);
           flex-shrink: 0;
         }
       }
@@ -100,7 +100,7 @@
         gap: 12px;
         flex-wrap: wrap;
         font-size: var(--font-size-xs, 12px);
-        color: var(--color-text-secondary, #64748b);
+        color: var(--color-text-secondary);
 
         .metaItem {
           display: inline-flex;
@@ -108,7 +108,7 @@
           gap: 4px;
 
           a {
-            color: var(--color-brand-primary, #2563eb);
+            color: var(--color-brand-primary);
             text-decoration: none;
 
             &:hover {
@@ -128,33 +128,33 @@
 
     .followBtn {
       padding: 8px 16px;
-      background: var(--color-bg-card, #ffffff);
-      border: 1px solid var(--color-border-default, #cbd5e1);
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-default);
       border-radius: var(--radius-md, 6px);
       font-size: var(--font-size-sm, 13px);
       font-weight: 600;
-      color: var(--color-text-secondary, #475569);
+      color: var(--color-text-secondary);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
 
       &:hover {
-        background: var(--color-bg-hover, #f1f5f9);
-        color: var(--color-text-primary, #0f172a);
+        background: var(--color-bg-hover);
+        color: var(--color-text-primary);
       }
 
       &.following {
-        color: var(--color-error, #dc2626);
-        border-color: var(--color-error-border, #fca5a5);
-        background: var(--color-error-subtle, #fef2f2);
+        color: var(--color-error);
+        border-color: var(--color-error-border);
+        background: var(--color-error-subtle);
       }
     }
 
     .careersBtn {
       padding: 8px 18px;
-      background: var(--color-brand-primary, #2563eb);
-      color: #ffffff;
+      background: var(--color-brand-primary);
+      color: var(--color-white);
       border: none;
       border-radius: var(--radius-md, 6px);
       font-size: var(--font-size-sm, 13px);
@@ -166,7 +166,7 @@
       gap: 6px;
 
       &:hover {
-        background: var(--color-brand-hover, #1d4ed8);
+        background: var(--color-brand-hover);
       }
     }
   }
@@ -176,7 +176,7 @@
 .tabsContainer {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid var(--color-border-subtle, #e5e7eb);
+  border-bottom: 1px solid var(--color-border-subtle);
   padding-bottom: 2px;
 
   .tabBtn {
@@ -185,17 +185,17 @@
     border: none;
     font-size: var(--font-size-sm, 14px);
     font-weight: 600;
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     cursor: pointer;
     position: relative;
     border-radius: var(--radius-md, 6px) var(--radius-md, 6px) 0 0;
 
     &:hover {
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
     }
 
     &.active {
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
 
       &::after {
         content: '';
@@ -204,16 +204,16 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: var(--color-brand-primary, #2563eb);
-        border-radius: 2px;
+        background: var(--color-brand-primary);
+        border-radius: var(--radius-xs);
       }
     }
 
     .tabCount {
       font-size: 11px;
       padding: 1px 6px;
-      background: var(--color-bg-subtle, #f1f5f9);
-      border-radius: 999px;
+      background: var(--color-bg-subtle);
+      border-radius: var(--radius-pill);
       margin-left: 6px;
     }
   }
@@ -238,8 +238,8 @@
 }
 
 .mainProseCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 24px);
   display: flex;
@@ -249,23 +249,23 @@
   h2 {
     font-size: var(--font-size-md, 16px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   .proseBody {
     font-size: var(--font-size-sm, 14px);
     line-height: 1.7;
-    color: var(--color-text-secondary, #334155);
+    color: var(--color-text-secondary);
     white-space: pre-line;
   }
 }
 
 .sideDetailCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 20px);
   display: flex;
@@ -275,7 +275,7 @@
   h3 {
     font-size: var(--font-size-sm, 14px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
@@ -291,7 +291,7 @@
     gap: 10px;
 
     .infoIcon {
-      color: var(--color-text-muted, #94a3b8);
+      color: var(--color-text-muted);
       flex-shrink: 0;
       margin-top: 2px;
     }
@@ -303,7 +303,7 @@
 
       .infoLabel {
         font-size: 11px;
-        color: var(--color-text-muted, #64748b);
+        color: var(--color-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.04em;
       }
@@ -311,7 +311,7 @@
       .infoValue {
         font-size: var(--font-size-xs, 13px);
         font-weight: 600;
-        color: var(--color-text-primary, #0f172a);
+        color: var(--color-text-primary);
       }
     }
   }
@@ -329,17 +329,17 @@
 }
 
 .emptyJobs {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 12px);
   padding: 48px 20px;
   text-align: center;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 
   h3 {
     font-size: var(--font-size-base, 16px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0 0 6px 0;
   }
 
@@ -348,3 +348,20 @@
     margin: 0;
   }
 }
+
+.loadingState {
+  padding: 60px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.errorState {
+  padding: 60px;
+  text-align: center;
+}
+
+.errorMessage {
+  color: var(--color-danger);
+  margin-bottom: 16px;
+}
+

@@ -118,15 +118,15 @@ export const CompaniesPage: React.FC = () => {
           <div className={styles.titleArea}>
             <div>
               <h1>{t('companies.edit_title', 'Cập nhật Trang Doanh Nghiệp')}</h1>
-              <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+              <p>
                 {t('companies.edit_subtitle', 'Chỉnh sửa thông tin giới thiệu công ty hiển thị tới ứng viên đi tìm việc')}
               </p>
             </div>
             <button className={styles.btnSecondary} onClick={() => setIsEditingMode(false)}><X size={16} /> {t('common.cancel', 'Hủy')}</button>
           </div>
 
-          <div className={styles.mainPanel} style={{ padding: '24px' }}>
-            <form onSubmit={handleUpdateCompany} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className={`${styles.mainPanel} ${styles.editPanelPadding}`}>
+            <form onSubmit={handleUpdateCompany} className={styles.editForm}>
               <div className={styles.formGroup}>
                 <label>{t('companies.label_company_name', 'Tên doanh nghiệp')}</label>
                 <input type="text" required value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} />
@@ -171,7 +171,7 @@ export const CompaniesPage: React.FC = () => {
                 <textarea rows={6} value={editForm.description} onChange={e => setEditForm({...editForm, description: e.target.value})} placeholder="Viết mô tả ngắn gọn về sứ mệnh, môi trường làm việc, công nghệ sử dụng..."></textarea>
               </div>
               
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', borderTop: '1px solid var(--color-border-default)', paddingTop: '20px' }}>
+              <div className={styles.formFooterRow}>
                 <button type="button" className={styles.btnSecondary} onClick={() => setIsEditingMode(false)}>{t('common.cancel', 'Hủy')}</button>
                 <button type="submit" className={styles.btnPrimary}><Check size={16} /> {t('companies.btn_save_company', 'Lưu cấu hình')}</button>
               </div>
@@ -189,7 +189,7 @@ export const CompaniesPage: React.FC = () => {
             <div className={styles.titleArea}>
               <div>
                 <h1>{t('companies.title', 'Trang cá nhân Doanh Nghiệp')}</h1>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+                <p>
                   {t('companies.subtitle', 'Trang giới thiệu công ty của bạn hiển thị trên sàn tuyển dụng')}
                 </p>
               </div>
@@ -212,10 +212,10 @@ export const CompaniesPage: React.FC = () => {
                     <h2>
                       {selectedCompany.name}
                       {selectedCompany.isVerified && (
-                        <span className={styles.verifiedBadge}><ShieldCheck size={12} style={{ marginRight: 2 }} /> {t('companies.verified_badge', 'Verified')}</span>
+                        <span className={styles.verifiedBadge}><ShieldCheck size={12} className={styles.iconMiniMargin} /> {t('companies.verified_badge', 'Verified')}</span>
                       )}
                     </h2>
-                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                    <span className={styles.industryMeta}>
                       🏢 {selectedCompany.industry}
                     </span>
                   </div>
@@ -232,33 +232,33 @@ export const CompaniesPage: React.FC = () => {
                 <h3 className={styles.sideCardTitle}>{t('companies.contact_info', 'Thông tin liên hệ')}</h3>
                 <div className={styles.infoRow}>
                   <span className={styles.infoRowLabel}>{t('companies.label_size_range', 'Quy mô')}</span>
-                  <span className={styles.infoRowValue}><Users size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />{selectedCompany.sizeRange}</span>
+                  <span className={styles.infoRowValue}><Users size={14} className={styles.iconMiniMargin} />{selectedCompany.sizeRange}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <span className={styles.infoRowLabel}>{t('companies.label_office_addresses', 'Văn phòng')}</span>
-                  <span className={styles.infoRowValue}><MapPin size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />{selectedCompany.addressList}</span>
+                  <span className={styles.infoRowValue}><MapPin size={14} className={styles.iconMiniMargin} />{selectedCompany.addressList}</span>
                 </div>
                 {selectedCompany.website && (
                   <div className={styles.infoRow}>
                     <span className={styles.infoRowLabel}>{t('companies.label_website', 'Website')}</span>
-                    <a href={selectedCompany.website} target="_blank" rel="noreferrer" className={styles.infoRowValue} style={{ color: 'var(--color-brand-primary)' }}>
-                      <Globe size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} /> {selectedCompany.website}
+                    <a href={selectedCompany.website} target="_blank" rel="noreferrer" className={`${styles.infoRowValue} ${styles.websiteLink}`}>
+                      <Globe size={14} className={styles.iconMiniMargin} /> {selectedCompany.website}
                     </a>
                   </div>
                 )}
-                <div className={styles.infoRow} style={{ borderTop: '1px solid var(--color-border-default)', paddingTop: '12px', marginTop: '4px' }}>
+                <div className={`${styles.infoRow} ${styles.infoRowBorderTop}`}>
                   <span className={styles.infoRowLabel}>{t('common.status', 'Xác minh')}</span>
                   {selectedCompany.isVerified ? (
-                    <span style={{ color: '#2e7d32', fontWeight: 600, fontSize: '13px' }}>✓ {t('companies.verified_badge', 'Đã xác minh tài khoản')}</span>
+                    <span className={styles.verifiedText}>✓ {t('companies.verified_badge', 'Đã xác minh tài khoản')}</span>
                   ) : (
-                    <span style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>⚠ {t('common.status', 'Đang chờ xác minh')}</span>
+                    <span className={styles.unverifiedText}>⚠ {t('common.status', 'Đang chờ xác minh')}</span>
                   )}
                 </div>
               </div>
             </div>
           </>
         ) : (
-          <div style={{ textAlign: 'center', padding: '40px' }}>{t('companies.loading', 'Đang tải thông tin doanh nghiệp...')}</div>
+          <div className={styles.centerStateBox}>{t('companies.loading', 'Đang tải thông tin doanh nghiệp...')}</div>
         )}
       </div>
     );
@@ -273,13 +273,13 @@ export const CompaniesPage: React.FC = () => {
             <ArrowLeft size={16} /> {t('companies.back_to_list', 'Quay lại danh sách')}
           </button>
           {isSuperAdmin && (
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className={styles.adminBtnRow}>
               {selectedCompany.isVerified ? (
-                <button className={styles.btnSecondary} style={{ color: '#c62828', borderColor: '#fed7d7' }} onClick={() => handleVerifyCompany(selectedCompany.id, false)}>
+                <button className={`${styles.btnSecondary} ${styles.btnDangerSecondary}`} onClick={() => handleVerifyCompany(selectedCompany.id, false)}>
                   {t('common.cancel', 'Hủy xác minh')}
                 </button>
               ) : (
-                <button className={styles.btnPrimary} style={{ background: '#2e7d32' }} onClick={() => handleVerifyCompany(selectedCompany.id, true)}>
+                <button className={`${styles.btnPrimary} ${styles.btnSuccessPrimary}`} onClick={() => handleVerifyCompany(selectedCompany.id, true)}>
                   {t('common.yes', 'Phê duyệt xác minh')}
                 </button>
               )}
@@ -300,10 +300,10 @@ export const CompaniesPage: React.FC = () => {
                 <h2>
                   {selectedCompany.name}
                   {selectedCompany.isVerified && (
-                    <span className={styles.verifiedBadge}><ShieldCheck size={12} style={{ marginRight: 2 }} /> {t('companies.verified_badge', 'Verified')}</span>
+                    <span className={styles.verifiedBadge}><ShieldCheck size={12} className={styles.iconMiniMargin} /> {t('companies.verified_badge', 'Verified')}</span>
                   )}
                 </h2>
-                <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+                <span className={styles.industryMeta}>
                   🏢 {selectedCompany.industry}
                 </span>
               </div>
@@ -318,16 +318,16 @@ export const CompaniesPage: React.FC = () => {
             <h3 className={styles.sideCardTitle}>{t('companies.card_general_info', 'Thông tin chung')}</h3>
             <div className={styles.infoRow}>
               <span className={styles.infoRowLabel}>{t('companies.label_size_range', 'Quy mô công ty')}</span>
-              <span className={styles.infoRowValue} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Users size={16} />{selectedCompany.sizeRange}</span>
+              <span className={styles.infoRowValue}><Users size={16} />{selectedCompany.sizeRange}</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoRowLabel}>{t('companies.label_office_addresses', 'Địa điểm văn phòng')}</span>
-              <span className={styles.infoRowValue} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={16} />{selectedCompany.addressList}</span>
+              <span className={styles.infoRowValue}><MapPin size={16} />{selectedCompany.addressList}</span>
             </div>
             {selectedCompany.website && (
               <div className={styles.infoRow}>
                 <span className={styles.infoRowLabel}>{t('companies.label_website', 'Địa chỉ Website')}</span>
-                <a href={selectedCompany.website} target="_blank" rel="noreferrer" className={styles.infoRowValue} style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--color-brand-primary)' }}>
+                <a href={selectedCompany.website} target="_blank" rel="noreferrer" className={`${styles.infoRowValue} ${styles.websiteLink}`}>
                   <Globe size={16} /> {selectedCompany.website}
                 </a>
               </div>
@@ -344,20 +344,20 @@ export const CompaniesPage: React.FC = () => {
       <div className={styles.titleArea}>
         <div>
           <h1>{t('companies.title', 'Tra cứu Doanh nghiệp')}</h1>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-secondary)' }}>
+          <p>
             {t('companies.subtitle', 'Tìm hiểu văn hóa công nghệ và các vị trí tuyển dụng mở tại các tập đoàn hàng đầu')}
           </p>
         </div>
       </div>
 
       {/* Search company input */}
-      <div className={styles.sideCard} style={{ flexDirection: 'row', alignItems: 'center', gap: '12px', padding: '16px' }}>
+      <div className={`${styles.sideCard} ${styles.searchBarRow}`}>
         <input 
           type="text" 
           placeholder={t('companies.search_placeholder', 'Tìm công ty theo tên, lĩnh vực...')} 
           value={searchKeyword}
           onChange={e => setSearchKeyword(e.target.value)}
-          style={{ flex: 1, padding: '10px 14px', border: '1px solid var(--color-border-default)', borderRadius: '8px' }}
+          className={styles.searchInput}
           onKeyDown={e => e.key === 'Enter' && fetchCompanies(searchKeyword)}
         />
         <button className={styles.btnPrimary} onClick={() => fetchCompanies(searchKeyword)}><Search size={16} /> {t('companies.btn_search', 'Tìm kiếm')}</button>
@@ -366,9 +366,9 @@ export const CompaniesPage: React.FC = () => {
 
       <div className={styles.companyGrid}>
         {loading ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px' }}>{t('companies.loading', 'Đang tải danh sách...')}</div>
+          <div className={styles.centerStateBox}>{t('companies.loading', 'Đang tải danh sách...')}</div>
         ) : companies.length === 0 ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)' }}>{t('companies.empty_title', 'Không tìm thấy doanh nghiệp nào.')}</div>
+          <div className={styles.centerStateBox}>{t('companies.empty_title', 'Không tìm thấy doanh nghiệp nào.')}</div>
         ) : (
           companies.map(comp => (
             <div key={comp.id} className={styles.companyCard} onClick={() => handleSelectCompanyDetail(comp)}>

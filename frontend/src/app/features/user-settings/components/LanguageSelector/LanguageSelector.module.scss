@@ -5,15 +5,15 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--text-color, #4a4a4a);
+  color: var(--color-text-primary);
   padding: 6px 10px;
-  border-radius: 20px;
-  transition: background-color 0.2s;
-  font-size: 13px;
+  border-radius: var(--radius-xl);
+  transition: background-color var(--transition-base);
+  font-size: var(--font-size-xs);
   font-weight: 600;
 
   &:hover {
-    background-color: rgba(128, 128, 128, 0.1);
+    background-color: var(--color-bg-hover);
   }
 }
 

@@ -187,15 +187,15 @@ export const ActiveSessionsModal: React.FC<ActiveSessionsModalProps> = ({
                       <span className={styles.ipBadge}>{s.ipAddress}</span>
                     </td>
                     <td>
-                      <div style={{ fontSize: '13px' }}>
+                      <div className={styles.loginTimeText}>
                         <div>{formatDate(s.loginTime)}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Hoạt động: {formatDate(s.lastActiveAt)}</div>
+                        <div className={styles.lastActiveText}>Hoạt động: {formatDate(s.lastActiveAt)}</div>
                       </div>
                     </td>
                     <td>
                       <div className={styles.actionCell}>
                         {s.isCurrentSession ? (
-                          <span style={{ fontSize: '12px', color: '#64748b' }}>Đang kết nối</span>
+                          <span className={styles.connectedText}>Đang kết nối</span>
                         ) : (
                           <button
                             className={styles.revokeBtn}

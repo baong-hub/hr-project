@@ -115,7 +115,7 @@ export const CompanyDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.companyDetailPage}>
-        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary, #64748b)' }}>
+        <div className={styles.loadingState}>
           Đang tải thông tin doanh nghiệp...
         </div>
       </div>
@@ -125,8 +125,8 @@ export const CompanyDetailPage: React.FC = () => {
   if (error || !company) {
     return (
       <div className={styles.companyDetailPage}>
-        <div style={{ padding: '60px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-error, #dc2626)', marginBottom: '16px' }}>
+        <div className={styles.errorState}>
+          <p className={styles.errorMessage}>
             {error || 'Doanh nghiệp không tồn tại.'}
           </p>
           <button

@@ -7,6 +7,154 @@ import { authService } from '../../core/services/auth.service';
 import { SeoHead } from '../../shared/components/SeoHead';
 import styles from './PricingPage.module.scss';
 
+const FALLBACK_PLANS: PlanDto[] = [
+  {
+    plan: 'FREE',
+    name: 'Khởi Nghiệp (Miễn Phí)',
+    displayName: 'Khởi Nghiệp (Miễn Phí)',
+    priceVnd: 0,
+    monthlyPriceVnd: 0,
+    maxActiveJobs: 3,
+    maxJobs: 3,
+    cvSearchAccess: false,
+    maxCvViews: 10,
+    aiScoringEnabled: false,
+    aiScreening: false,
+    prioritySupport: false,
+    features: [
+      'Đăng tối đa 3 tin tuyển dụng',
+      'Hiển thị cơ bản trên trang việc làm',
+      'Quản lý hồ sơ ứng viên tiêu chuẩn',
+      'Hỗ trợ qua email'
+    ]
+  },
+  {
+    plan: 'PRO',
+    name: 'Chuyên Nghiệp (Pro)',
+    displayName: 'Chuyên Nghiệp (Pro)',
+    priceVnd: 1990000,
+    monthlyPriceVnd: 1990000,
+    maxActiveJobs: 15,
+    maxJobs: 15,
+    cvSearchAccess: true,
+    maxCvViews: 100,
+    aiScoringEnabled: true,
+    aiScreening: true,
+    prioritySupport: true,
+    features: [
+      'Đăng tối đa 15 tin tuyển dụng hoạt động',
+      'Huy hiệu tin tuyển dụng Nổi Bật',
+      'Tìm kiếm và xem hồ sơ ứng viên không giới hạn',
+      'Xuất báo cáo tuyển dụng Excel',
+      'Hỗ trợ ưu tiên qua email/chat'
+    ]
+  },
+  {
+    plan: 'BUSINESS',
+    name: 'Doanh Nghiệp (Business)',
+    displayName: 'Doanh Nghiệp (Business)',
+    priceVnd: 4990000,
+    monthlyPriceVnd: 4990000,
+    maxActiveJobs: 50,
+    maxJobs: 50,
+    cvSearchAccess: true,
+    maxCvViews: 500,
+    aiScoringEnabled: true,
+    aiScreening: true,
+    prioritySupport: true,
+    features: [
+      'Đăng tối đa 50 tin tuyển dụng hoạt động',
+      'AI Scoring tự động sàng lọc & xếp hạng CV',
+      'Gợi ý ứng viên tài năng tự động',
+      'Quản lý đa chi nhánh và phòng ban',
+      'Chuyên viên tuyển dụng hỗ trợ 1:1'
+    ]
+  },
+  {
+    plan: 'ENTERPRISE',
+    name: 'Tập Đoàn (Enterprise)',
+    displayName: 'Tập Đoàn (Enterprise)',
+    priceVnd: 0,
+    monthlyPriceVnd: 9990000,
+    maxActiveJobs: 9999,
+    maxJobs: 9999,
+    cvSearchAccess: true,
+    maxCvViews: 2500,
+    aiScoringEnabled: true,
+    aiScreening: true,
+    prioritySupport: true,
+    features: [
+      'Không giới hạn số lượng tin đăng tuyển',
+      'Tích hợp hệ thống doanh nghiệp',
+      'Cam kết hỗ trợ vận hành riêng',
+      'Thiết kế giải pháp theo yêu cầu'
+    ]
+  }
+];
+
+const normalizePlan = (raw: any): PlanDto => {
+  let planCode = 'FREE';
+  if (typeof raw?.plan === 'string' && raw.plan.trim()) {
+    planCode = raw.plan.toUpperCase();
+  } else if (typeof raw?.plan === 'number') {
+    const enumMap = ['FREE', 'PRO', 'BUSINESS', 'ENTERPRISE'];
+    planCode = enumMap[raw.plan] || 'FREE';
+  } else if (typeof raw?.name === 'string' && raw.name.trim()) {
+    const upper = raw.name.toUpperCase();
+    if (['FREE', 'PRO', 'BUSINESS', 'ENTERPRISE'].includes(upper)) {
+      planCode = upper;
+    }
+  }
+
+  const rawPrice = typeof raw?.priceVnd === 'number'
+    ? raw.priceVnd
+    : (typeof raw?.monthlyPriceVnd === 'number' ? raw.monthlyPriceVnd : 0);
+
+  const maxJobs = raw?.maxActiveJobs ?? raw?.maxJobs ?? (
+    planCode === 'ENTERPRISE' ? 9999 : planCode === 'BUSINESS' ? 50 : planCode === 'PRO' ? 15 : 3
+  );
+
+  const cvAccess = typeof raw?.cvSearchAccess === 'boolean'
+    ? raw.cvSearchAccess
+    : (typeof raw?.maxCvViews === 'number' ? raw.maxCvViews > 0 : planCode !== 'FREE');
+
+  const aiEnabled = typeof raw?.aiScoringEnabled === 'boolean'
+    ? raw.aiScoringEnabled
+    : (typeof raw?.aiScreening === 'boolean' ? raw.aiScreening : planCode !== 'FREE');
+
+  const priority = typeof raw?.prioritySupport === 'boolean'
+    ? raw.prioritySupport
+    : (planCode === 'BUSINESS' || planCode === 'ENTERPRISE');
+
+  const feats = Array.isArray(raw?.features) && raw.features.length > 0
+    ? raw.features
+    : (Array.isArray(raw?.highlights) && raw.highlights.length > 0 ? raw.highlights : []);
+
+  const planName = raw?.displayName || raw?.name || (
+    planCode === 'FREE' ? 'Khởi Nghiệp (Miễn Phí)' :
+    planCode === 'PRO' ? 'Chuyên Nghiệp (Pro)' :
+    planCode === 'BUSINESS' ? 'Doanh Nghiệp (Business)' :
+    'Tập Đoàn (Enterprise)'
+  );
+
+  return {
+    plan: planCode,
+    name: planName,
+    displayName: planName,
+    priceVnd: rawPrice,
+    monthlyPriceVnd: rawPrice,
+    maxActiveJobs: maxJobs,
+    maxJobs: maxJobs,
+    cvSearchAccess: Boolean(cvAccess),
+    maxCvViews: raw?.maxCvViews ?? (cvAccess ? 100 : 0),
+    aiScoringEnabled: Boolean(aiEnabled),
+    aiScreening: Boolean(aiEnabled),
+    prioritySupport: Boolean(priority),
+    features: feats,
+    highlights: feats,
+  };
+};
+
 export const PricingPage: React.FC = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<PlanDto[]>([]);
@@ -23,76 +171,12 @@ export const PricingPage: React.FC = () => {
       try {
         const res = await subscriptionService.getPlans();
         if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setPlans(res.data);
+          setPlans(res.data.map(normalizePlan));
         } else {
-          // Fallback static plans
-          setPlans([
-            {
-              plan: 'FREE',
-              name: 'Gói Miễn Phí (Starter)',
-              priceVnd: 0,
-              maxActiveJobs: 3,
-              cvSearchAccess: false,
-              aiScoringEnabled: false,
-              prioritySupport: false,
-              features: [
-                'Đăng tối đa 3 tin tuyển dụng',
-                'Hiển thị cơ bản trên trang việc làm',
-                'Quản lý hồ sơ ứng viên tiêu chuẩn',
-                'Hỗ trợ qua email'
-              ]
-            },
-            {
-              plan: 'PRO',
-              name: 'Gói Chuyên Nghiệp (Pro)',
-              priceVnd: 990000,
-              maxActiveJobs: 15,
-              cvSearchAccess: true,
-              aiScoringEnabled: false,
-              prioritySupport: false,
-              features: [
-                'Đăng tối đa 15 tin tuyển dụng hoạt động',
-                'Huy hiệu tin tuyển dụng Nổi Bật',
-                'Tìm kiếm và xem hồ sơ ứng viên không giới hạn',
-                'Xuất báo cáo tuyển dụng Excel',
-                'Hỗ trợ ưu tiên qua email/chat'
-              ]
-            },
-            {
-              plan: 'BUSINESS',
-              name: 'Gói Doanh Nghiệp (Business)',
-              priceVnd: 2490000,
-              maxActiveJobs: 50,
-              cvSearchAccess: true,
-              aiScoringEnabled: true,
-              prioritySupport: true,
-              features: [
-                'Đăng tối đa 50 tin tuyển dụng hoạt động',
-                'AI Scoring tự động sàng lọc & xếp hạng CV',
-                'Gợi ý ứng viên tài năng tự động',
-                'Quản lý đa chi nhánh và phòng ban',
-                'Chuyên viên tuyển dụng hỗ trợ 1:1'
-              ]
-            },
-            {
-              plan: 'ENTERPRISE',
-              name: 'Gói Tập Đoàn (Enterprise)',
-              priceVnd: 0,
-              maxActiveJobs: 999,
-              cvSearchAccess: true,
-              aiScoringEnabled: true,
-              prioritySupport: true,
-              features: [
-                'Không giới hạn số lượng tin đăng tuyển',
-                'Tích hợp hệ thống doanh nghiệp',
-                'Cam kết hỗ trợ vận hành riêng',
-                'Thiết kế giải pháp theo yêu cầu'
-              ]
-            }
-          ]);
+          setPlans(FALLBACK_PLANS.map(normalizePlan));
         }
       } catch {
-        // Handled fallback
+        setPlans(FALLBACK_PLANS.map(normalizePlan));
       } finally {
         setLoading(false);
       }
@@ -109,6 +193,12 @@ export const PricingPage: React.FC = () => {
 
     if (plan.plan === 'ENTERPRISE') {
       navigate('/contact?topic=SALES');
+      return;
+    }
+
+    const price = typeof plan.priceVnd === 'number' ? plan.priceVnd : (plan.monthlyPriceVnd ?? 0);
+    if (price === 0 || plan.plan === 'FREE') {
+      navigate('/jobs/create');
       return;
     }
 
@@ -139,9 +229,10 @@ export const PricingPage: React.FC = () => {
 
   const formatPrice = (plan: PlanDto) => {
     if (plan.plan === 'ENTERPRISE') return 'Thỏa thuận';
-    if (plan.priceVnd === 0) return '0 đ';
-    const finalPrice = billingCycle === 'yearly' ? plan.priceVnd * 0.8 : plan.priceVnd;
-    return `${finalPrice.toLocaleString('vi-VN')} đ`;
+    const price = typeof plan?.priceVnd === 'number' ? plan.priceVnd : (plan?.monthlyPriceVnd ?? 0);
+    if (!price || price === 0) return '0 đ';
+    const finalPrice = billingCycle === 'yearly' ? price * 0.8 : price;
+    return `${Math.round(finalPrice).toLocaleString('vi-VN')} đ`;
   };
 
   // Helper to identify recommended plan
@@ -215,7 +306,7 @@ export const PricingPage: React.FC = () => {
                           <div className={styles.planName}>{p.name}</div>
                           <div className={styles.planPrice}>
                             <span className="tabular-nums">{formatPrice(p)}</span>
-                            {p.priceVnd > 0 && (
+                            {((p.priceVnd || p.monthlyPriceVnd || 0) > 0) && (
                               <span className={styles.unit}>/ {billingCycle === 'yearly' ? 'năm' : 'tháng'}</span>
                             )}
                           </div>
@@ -226,7 +317,7 @@ export const PricingPage: React.FC = () => {
                           >
                             {p.plan === 'ENTERPRISE'
                               ? 'Liên hệ tư vấn'
-                              : p.priceVnd === 0
+                              : (p.priceVnd || p.monthlyPriceVnd || 0) === 0
                               ? 'Bắt đầu miễn phí'
                               : 'Chọn gói này'}
                           </button>

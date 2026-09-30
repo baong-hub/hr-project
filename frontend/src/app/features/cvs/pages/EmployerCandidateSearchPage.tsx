@@ -7,21 +7,23 @@ import type { JobDto } from '../../../core/models/job.model';
 import { toast } from '../../../core/services/toast.service';
 import { CITY_OPTIONS } from '../../../core/utils/city.utils';
 import styles from './EmployerCandidateSearchPage.module.scss';
+import { CandidateCardBase } from '../../../shared/components/cards/CandidateCardBase';
+import { FormField } from '../../../shared/components/form-field/FormField';
+import { Modal } from '../../../shared/components/modal/Modal';
 import { 
   Search, 
-  Tag, 
   MapPin, 
   Briefcase, 
-  UserCheck, 
   Loader2, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronDown, 
+  SlidersHorizontal,
   FilterX, 
   FileText, 
   Send, 
   MessageSquare, 
   ExternalLink, 
-  X, 
   Sparkles, 
   CheckCircle2,
   Eye
@@ -44,6 +46,14 @@ export const EmployerCandidateSearchPage: React.FC = () => {
   const [location, setLocation] = useState('');
   const [page, setPage] = useState(1);
   const pageSize = 8;
+
+  // Collapsible filter sections state (pattern from /jobs FilterPanel)
+  const [expandedSections, setExpandedSections] = useState({
+    keyword: true,
+    level: true,
+    location: true,
+    skills: true,
+  });
 
   // Search trigger helper
   const [triggerQuery, setTriggerQuery] = useState(0);
@@ -241,99 +251,163 @@ export const EmployerCandidateSearchPage: React.FC = () => {
 
       {/* FILTER PANEL */}
       <div className={styles.filterPanel}>
+        <div className={styles.panelHeader}>
+          <div className={styles.panelTitle}>
+            <SlidersHorizontal size={18} />
+            <span>Bộ lọc tìm ứng viên</span>
+          </div>
+          {(search || skill || selectedSkills.length > 0 || level || location) && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className={styles.btnClearFilters}
+            >
+              <FilterX size={14} /> Xóa tất cả bộ lọc
+            </button>
+          )}
+        </div>
+
         <form onSubmit={handleSearchSubmit}>
-          <div className={styles.filterGrid}>
-            {/* Keyword Search */}
-            <div className={styles.formGroup}>
-              <label>Từ khóa tìm kiếm</label>
-              <div className={styles.inputWrapper}>
-                <Search className={styles.icon} />
-                <input 
-                  type="text" 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tên ứng viên, vị trí, tóm tắt kinh nghiệm..."
-                />
-              </div>
-            </div>
-
-            {/* Experience Level */}
-            <div className={styles.formGroup}>
-              <label>Cấp bậc & Kinh nghiệm</label>
-              <div className={styles.inputWrapper}>
-                <Briefcase className={styles.icon} />
-                <select value={level} onChange={(e) => { setLevel(e.target.value); setPage(1); }}>
-                  <option value="">Tất cả cấp bậc</option>
-                  <option value="Junior">Junior / Fresher (0 - 2 năm)</option>
-                  <option value="Mid">Middle (2 - 4 năm)</option>
-                  <option value="Senior">Senior (5 - 8 năm)</option>
-                  <option value="Lead">Lead / Manager (&gt; 8 năm)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className={styles.formGroup}>
-              <label>Địa điểm làm việc</label>
-              <div className={styles.inputWrapper}>
-                <MapPin className={styles.icon} />
-                <select value={location} onChange={(e) => { setLocation(e.target.value); setPage(1); }}>
-                  {CITY_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Filter Action Buttons */}
-            <div className={styles.filterActions}>
-              <button type="submit" className={styles.btnPrimary}>
-                <Search size={16} /> Lọc ứng viên
+          <div className={styles.filterSections}>
+            {/* Section 1: Keyword */}
+            <div className={styles.filterSection}>
+              <button
+                type="button"
+                className={styles.sectionHeader}
+                onClick={() => setExpandedSections(prev => ({ ...prev, keyword: !prev.keyword }))}
+              >
+                <span className={styles.sectionTitle}>Từ khóa tìm kiếm</span>
+                <ChevronDown size={16} className={`${styles.chevron} ${expandedSections.keyword ? styles.chevronOpen : ''}`} />
               </button>
-              {(search || skill || selectedSkills.length > 0 || level || location) && (
-                <button type="button" onClick={handleClearFilters} className={styles.btnSecondary} title="Xóa toàn bộ bộ lọc">
-                  <FilterX size={16} />
-                </button>
+              {expandedSections.keyword && (
+                <div className={styles.sectionBody}>
+                  <FormField
+                    prefixIcon={<Search size={16} />}
+                    placeholder="Tên ứng viên, vị trí, tóm tắt..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Section 2: Level */}
+            <div className={styles.filterSection}>
+              <button
+                type="button"
+                className={styles.sectionHeader}
+                onClick={() => setExpandedSections(prev => ({ ...prev, level: !prev.level }))}
+              >
+                <div className={styles.sectionTitleGroup}>
+                  <span className={styles.sectionTitle}>Cấp bậc & Kinh nghiệm</span>
+                  {level && <span className={styles.activeCountBadge}>1</span>}
+                </div>
+                <ChevronDown size={16} className={`${styles.chevron} ${expandedSections.level ? styles.chevronOpen : ''}`} />
+              </button>
+              {expandedSections.level && (
+                <div className={styles.sectionBody}>
+                  <FormField
+                    control="select"
+                    prefixIcon={<Briefcase size={16} />}
+                    value={level}
+                    onChange={(e) => { setLevel(e.target.value); setPage(1); }}
+                    options={[
+                      { value: '', label: 'Tất cả cấp bậc' },
+                      { value: 'Junior', label: 'Junior / Fresher (0 - 2 năm)' },
+                      { value: 'Mid', label: 'Middle (2 - 4 năm)' },
+                      { value: 'Senior', label: 'Senior (5 - 8 năm)' },
+                      { value: 'Lead', label: 'Lead / Manager (> 8 năm)' },
+                    ]}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Section 3: Location */}
+            <div className={styles.filterSection}>
+              <button
+                type="button"
+                className={styles.sectionHeader}
+                onClick={() => setExpandedSections(prev => ({ ...prev, location: !prev.location }))}
+              >
+                <div className={styles.sectionTitleGroup}>
+                  <span className={styles.sectionTitle}>Địa điểm</span>
+                  {location && <span className={styles.activeCountBadge}>1</span>}
+                </div>
+                <ChevronDown size={16} className={`${styles.chevron} ${expandedSections.location ? styles.chevronOpen : ''}`} />
+              </button>
+              {expandedSections.location && (
+                <div className={styles.sectionBody}>
+                  <FormField
+                    control="select"
+                    prefixIcon={<MapPin size={16} />}
+                    value={location}
+                    onChange={(e) => { setLocation(e.target.value); setPage(1); }}
+                    options={CITY_OPTIONS}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Section 4: Skills */}
+            <div className={styles.filterSection}>
+              <button
+                type="button"
+                className={styles.sectionHeader}
+                onClick={() => setExpandedSections(prev => ({ ...prev, skills: !prev.skills }))}
+              >
+                <div className={styles.sectionTitleGroup}>
+                  <span className={styles.sectionTitle}>Kỹ năng ({selectedSkills.length})</span>
+                  {selectedSkills.length > 0 && (
+                    <span className={styles.activeCountBadge}>{selectedSkills.length}</span>
+                  )}
+                </div>
+                <ChevronDown size={16} className={`${styles.chevron} ${expandedSections.skills ? styles.chevronOpen : ''}`} />
+              </button>
+              {expandedSections.skills && (
+                <div className={styles.sectionBody}>
+                  <div className={styles.tagsList}>
+                    {POPULAR_SKILLS.map(s => {
+                      const isSelected = selectedSkills.includes(s);
+                      return (
+                        <button
+                          type="button"
+                          key={s}
+                          className={`${styles.tagChip} ${isSelected ? styles.tagChipActive : ''}`}
+                          onClick={() => handleToggleSkill(s)}
+                        >
+                          {isSelected && <CheckCircle2 size={12} className={styles.checkCircleMini} />}
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Quick Skill Tags Selection */}
-          <div className={styles.quickTagsContainer}>
-            <div className={styles.tagsLabel}>
-              <Tag size={14} /> Kỹ năng công nghệ gợi ý:
-            </div>
-            <div className={styles.tagsList}>
-              {POPULAR_SKILLS.map(s => {
-                const isSelected = selectedSkills.includes(s);
-                return (
-                  <button
-                    type="button"
-                    key={s}
-                    className={`${styles.tagChip} ${isSelected ? styles.tagChipActive : ''}`}
-                    onClick={() => handleToggleSkill(s)}
-                  >
-                    {isSelected && <CheckCircle2 size={12} style={{ display: 'inline', marginRight: 4 }} />}
-                    {s}
-                  </button>
-                );
-              })}
-            </div>
+          <div className={styles.filterActions}>
+            <button type="submit" className={styles.btnPrimary}>
+              <Search size={16} /> Lọc ứng viên
+            </button>
+            {(search || skill || selectedSkills.length > 0 || level || location) && (
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className={styles.btnSecondary}
+                title="Xóa toàn bộ bộ lọc"
+              >
+                <FilterX size={16} /> Đặt lại
+              </button>
+            )}
           </div>
         </form>
       </div>
 
       {/* ERROR ALERT */}
       {error && (
-        <div style={{
-          padding: '14px 18px',
-          backgroundColor: '#fef2f2',
-          border: '1px solid #fecaca',
-          borderRadius: '12px',
-          color: '#b91c1c',
-          fontSize: '14px',
-          fontWeight: 500
-        }}>
+        <div className={styles.errorBox}>
           {error}
         </div>
       )}
@@ -347,9 +421,9 @@ export const EmployerCandidateSearchPage: React.FC = () => {
 
       {/* RESULTS LIST */}
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', gap: '14px' }}>
-          <Loader2 style={{ animation: 'spin 1s linear infinite', color: '#4f46e5', width: '36px', height: '36px' }} />
-          <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>Đang quét hồ sơ ứng viên từ Talent Pool...</span>
+        <div className={styles.loaderWrap}>
+          <Loader2 className={styles.loaderIcon} />
+          <span className={styles.loaderText}>Đang quét hồ sơ ứng viên từ Talent Pool...</span>
         </div>
       ) : candidates.length === 0 ? (
         <div className={styles.emptyState}>
@@ -360,107 +434,43 @@ export const EmployerCandidateSearchPage: React.FC = () => {
       ) : (
         <div className={styles.candidatesList}>
           {candidates.map((candidate) => (
-            <div key={candidate.id} className={styles.candidateCard}>
-              <div className={styles.candidateMain}>
-                {/* Avatar & Visibility Badge */}
-                <div className={styles.avatarCol}>
-                  <div className={styles.avatar}>
-                    {candidate.avatarUrl ? (
-                      <img src={candidate.avatarUrl} alt={candidate.fullName} />
+            <CandidateCardBase
+              key={candidate.id}
+              candidate={candidate}
+              renderActions={(cand) => (
+                <>
+                  <button 
+                    type="button" 
+                    className={styles.btnInvite}
+                    onClick={() => handleOpenInviteModal(cand)}
+                  >
+                    <Send size={14} /> Mời ứng tuyển vào Job
+                  </button>
+
+                  <button 
+                    type="button" 
+                    className={styles.btnChat}
+                    disabled={chatLoadingId === cand.id}
+                    onClick={() => handleDirectChat(cand)}
+                  >
+                    {chatLoadingId === cand.id ? (
+                      <Loader2 size={14} className={styles.loaderSpin} />
                     ) : (
-                      candidate.fullName.charAt(0).toUpperCase()
+                      <MessageSquare size={14} />
                     )}
-                  </div>
-                  <span className={styles.visibilityBadge}>
-                    <UserCheck size={10} /> PUBLIC
-                  </span>
-                </div>
+                    Trò chuyện ngay
+                  </button>
 
-                {/* Candidate Content Info */}
-                <div className={styles.candidateInfo}>
-                  <div className={styles.nameRow}>
-                    <h3 className={styles.name}>{candidate.fullName}</h3>
-                    {candidate.currentPosition && (
-                      <span className={styles.currentRole}>{candidate.currentPosition}</span>
-                    )}
-                  </div>
-
-                  <div className={styles.metaRow}>
-                    {candidate.currentCompany && (
-                      <div className={styles.metaItem}>
-                        <Briefcase /> {candidate.currentCompany}
-                      </div>
-                    )}
-                    <div className={styles.metaItem}>
-                      <Briefcase /> {candidate.totalYearsExperience ? `${candidate.totalYearsExperience} năm kinh nghiệm` : 'Dưới 1 năm kinh nghiệm'}
-                    </div>
-                    {candidate.location && (
-                      <div className={styles.metaItem}>
-                        <MapPin /> {candidate.location}
-                      </div>
-                    )}
-                  </div>
-
-                  {candidate.objective && (
-                    <p className={styles.objective}>{candidate.objective}</p>
-                  )}
-
-                  {/* Skills badges */}
-                  <div className={styles.skillsRow}>
-                    {candidate.skills && candidate.skills.length > 0 ? (
-                      candidate.skills.slice(0, 8).map((s, idx) => (
-                        <span key={idx} className={styles.skillBadge}>
-                          {s}
-                        </span>
-                      ))
-                    ) : (
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Chưa cập nhật kỹ năng nổi bật</span>
-                    )}
-                    {candidate.skills && candidate.skills.length > 8 && (
-                      <span className={styles.skillBadge} style={{ background: '#e0e7ff', color: '#4338ca' }}>
-                        +{candidate.skills.length - 8}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className={styles.candidateActions}>
-                {/* 1. Invite to Job Button */}
-                <button 
-                  type="button" 
-                  className={styles.btnInvite}
-                  onClick={() => handleOpenInviteModal(candidate)}
-                >
-                  <Send size={14} /> Mời ứng tuyển vào Job
-                </button>
-
-                {/* 2. Direct Chat Button */}
-                <button 
-                  type="button" 
-                  className={styles.btnChat}
-                  disabled={chatLoadingId === candidate.id}
-                  onClick={() => handleDirectChat(candidate)}
-                >
-                  {chatLoadingId === candidate.id ? (
-                    <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-                  ) : (
-                    <MessageSquare size={14} />
-                  )}
-                  Trò chuyện ngay
-                </button>
-
-                {/* 3. View CV Button */}
-                <button 
-                  type="button" 
-                  className={styles.btnViewCv}
-                  onClick={() => handleOpenDetailModal(candidate)}
-                >
-                  <Eye size={14} /> Xem hồ sơ & CV
-                </button>
-              </div>
-            </div>
+                  <button 
+                    type="button" 
+                    className={styles.btnViewCv}
+                    onClick={() => handleOpenDetailModal(cand)}
+                  >
+                    <Eye size={14} /> Xem hồ sơ & CV
+                  </button>
+                </>
+              )}
+            />
           ))}
         </div>
       )}
@@ -490,76 +500,18 @@ export const EmployerCandidateSearchPage: React.FC = () => {
 
       {/* MODAL 1: INVITE CANDIDATE TO JOB */}
       {inviteModalOpen && targetCandidate && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <div className={styles.modalTitle}>
-                <Send size={18} color="#10b981" />
-                <h3>Mời ứng viên ứng tuyển vào vị trí</h3>
-              </div>
-              <button className={styles.closeBtn} onClick={() => setInviteModalOpen(false)}>
-                <X size={18} />
-              </button>
+        <Modal
+          isOpen={true}
+          onClose={() => setInviteModalOpen(false)}
+          size="md"
+          title={
+            <div className={styles.modalTitle}>
+              <Send size={18} className={styles.iconSuccess} />
+              <span>Mời ứng viên ứng tuyển vào vị trí</span>
             </div>
-
-            <div className={styles.modalBody}>
-              {/* Candidate Info Mini Box */}
-              <div className={styles.candidateSummaryBox}>
-                <div className={styles.avatarMini}>
-                  {targetCandidate.fullName.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 700 }}>{targetCandidate.fullName}</h4>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    {targetCandidate.currentPosition || 'Chuyên viên IT'} • {targetCandidate.location || 'Việt Nam'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Job Selector */}
-              <div className={styles.formGroup}>
-                <label>Chọn vị trí tuyển dụng của công ty bạn (*)</label>
-                {loadingJobs ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', color: '#64748b' }}>
-                    <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Đang tải danh sách công việc...
-                  </div>
-                ) : companyJobs.length === 0 ? (
-                  <div style={{ padding: 12, background: '#fef3c7', borderRadius: 8, color: '#b45309', fontSize: '13px' }}>
-                    Công ty bạn hiện chưa có tin tuyển dụng nào đang đăng. Vui lòng đăng tin tuyển dụng trước khi mời ứng viên.
-                  </div>
-                ) : (
-                  <select 
-                    value={selectedJobId} 
-                    onChange={(e) => setSelectedJobId(Number(e.target.value))}
-                    style={{ width: '100%', height: 42, padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: 8 }}
-                  >
-                    {companyJobs.map(j => (
-                      <option key={j.id} value={j.id}>
-                        {j.title} ({j.salaryFrom && j.salaryTo ? `${j.salaryFrom.toLocaleString()} - ${j.salaryTo.toLocaleString()} VND` : 'Thỏa thuận'}) - {j.city || 'Toàn quốc'}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              {/* Custom Invitation Message */}
-              <div className={styles.formGroup}>
-                <label>Lời nhắn trân trọng gửi đến ứng viên (Tự động gửi kèm Email & Thông báo)</label>
-                <textarea 
-                  rows={4}
-                  value={customInviteMsg}
-                  onChange={(e) => setCustomInviteMsg(e.target.value)}
-                  placeholder="Nhập lời mời trân trọng của nhà tuyển dụng..."
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '13.5px', outline: 'none' }}
-                />
-              </div>
-
-              <div style={{ fontSize: '12px', color: '#64748b', background: '#f0fdf4', padding: '10px 14px', borderRadius: 8, border: '1px solid #bbf7d0' }}>
-                💡 <strong>Hệ thống tự động:</strong> Khi gửi lời mời, ứng viên sẽ nhận được thông báo đẩy thời gian thực (SignalR), email thư mời trang trọng kèm link trực tiếp vào tin tuyển dụng và một phòng hội thoại chat được kích hoạt sẵn để kết nối trao đổi.
-              </div>
-            </div>
-
-            <div className={styles.modalFooter}>
+          }
+          footer={
+            <>
               <button 
                 type="button" 
                 className={styles.btnSecondary}
@@ -572,11 +524,10 @@ export const EmployerCandidateSearchPage: React.FC = () => {
                 className={styles.btnPrimary}
                 disabled={sendingInvite || !selectedJobId}
                 onClick={handleSubmitInvite}
-                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
               >
                 {sendingInvite ? (
                   <>
-                    <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Đang gửi lời mời...
+                    <Loader2 size={16} className={styles.loaderSpin} /> Đang gửi lời mời...
                   </>
                 ) : (
                   <>
@@ -584,114 +535,74 @@ export const EmployerCandidateSearchPage: React.FC = () => {
                   </>
                 )}
               </button>
+            </>
+          }
+        >
+          {/* Candidate Info Mini Box */}
+          <div className={styles.candidateSummaryBox}>
+            <div className={styles.avatarMini}>
+              {targetCandidate.fullName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h4 className={styles.candidateNameSm}>{targetCandidate.fullName}</h4>
+              <span className={styles.candidateEmailSm}>
+                {targetCandidate.currentPosition || 'Chuyên viên IT'} • {targetCandidate.location || 'Việt Nam'}
+              </span>
             </div>
           </div>
-        </div>
+
+          {/* Job Selector */}
+          {loadingJobs ? (
+            <div className={styles.loadingJobsBox}>
+              <Loader2 size={14} className={styles.loaderSpin} /> Đang tải danh sách công việc...
+            </div>
+          ) : companyJobs.length === 0 ? (
+            <div className={styles.noJobsWarning}>
+              Công ty bạn hiện chưa có tin tuyển dụng nào đang đăng. Vui lòng đăng tin tuyển dụng trước khi mời ứng viên.
+            </div>
+          ) : (
+            <FormField
+              control="select"
+              label="Chọn vị trí tuyển dụng của công ty bạn (*)"
+              value={selectedJobId}
+              onChange={(e) => setSelectedJobId(Number(e.target.value))}
+              options={companyJobs.map(j => ({
+                value: j.id,
+                label: `${j.title} (${j.salaryFrom && j.salaryTo ? `${j.salaryFrom.toLocaleString()} - ${j.salaryTo.toLocaleString()} VND` : 'Thỏa thuận'}) - ${j.city || 'Toàn quốc'}`
+              }))}
+            />
+          )}
+
+          {/* Custom Invitation Message */}
+          <FormField
+            control="textarea"
+            label="Lời nhắn trân trọng gửi đến ứng viên (Tự động gửi kèm Email & Thông báo)"
+            rows={4}
+            value={customInviteMsg}
+            onChange={(e) => setCustomInviteMsg(e.target.value)}
+            placeholder="Nhập lời mời trân trọng của nhà tuyển dụng..."
+          />
+
+          <div className={styles.inviteTipBox}>
+            💡 <strong>Hệ thống tự động:</strong> Khi gửi lời mời, ứng viên sẽ nhận được thông báo đẩy thời gian thực (SignalR), email thư mời trang trọng kèm link trực tiếp vào tin tuyển dụng và một phòng hội thoại chat được kích hoạt sẵn để kết nối trao đổi.
+          </div>
+        </Modal>
       )}
 
       {/* MODAL 2: VIEW CANDIDATE DETAIL & CV */}
       {detailModalOpen && selectedCandidateDetail && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent} style={{ maxWidth: '720px' }}>
-            <div className={styles.modalHeader}>
-              <div className={styles.modalTitle}>
-                <FileText size={18} color="#4f46e5" />
-                <h3>Hồ sơ năng lực ứng viên: {selectedCandidateDetail.fullName}</h3>
-              </div>
-              <button className={styles.closeBtn} onClick={() => setDetailModalOpen(false)}>
-                <X size={18} />
-              </button>
+        <Modal
+          isOpen={true}
+          onClose={() => setDetailModalOpen(false)}
+          size="lg"
+          title={
+            <div className={styles.modalTitle}>
+              <FileText size={18} className={styles.iconPrimary} />
+              <span>Hồ sơ năng lực ứng viên: {selectedCandidateDetail.fullName}</span>
             </div>
-
-            <div className={styles.modalBody}>
-              {/* Header profile info */}
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                <div className={styles.avatarMini} style={{ width: 64, height: 64, fontSize: 24 }}>
-                  {selectedCandidateDetail.fullName.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h3 style={{ margin: '0 0 4px 0', fontSize: '18px' }}>{selectedCandidateDetail.fullName}</h3>
-                  <div style={{ display: 'flex', gap: 12, fontSize: '13px', color: '#64748b' }}>
-                    {selectedCandidateDetail.location && <span>📍 {selectedCandidateDetail.location}</span>}
-                    {selectedCandidateDetail.email && <span>📧 {selectedCandidateDetail.email}</span>}
-                    {selectedCandidateDetail.phoneNumber && <span>📞 {selectedCandidateDetail.phoneNumber}</span>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Objective */}
-              {selectedCandidateDetail.objective && (
-                <div>
-                  <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: 4 }}>
-                    Mục tiêu nghề nghiệp & Giới thiệu
-                  </label>
-                  <p style={{ margin: 0, fontSize: '13.5px', color: '#475569', lineHeight: 1.6, background: '#f8fafc', padding: 12, borderRadius: 8 }}>
-                    {selectedCandidateDetail.objective}
-                  </p>
-                </div>
-              )}
-
-              {/* Experience Summary */}
-              {selectedCandidateDetail.experienceSummary && (
-                <div>
-                  <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: 4 }}>
-                    Tóm tắt kinh nghiệm làm việc
-                  </label>
-                  <p style={{ margin: 0, fontSize: '13.5px', color: '#475569', lineHeight: 1.6, background: '#f8fafc', padding: 12, borderRadius: 8 }}>
-                    {selectedCandidateDetail.experienceSummary}
-                  </p>
-                </div>
-              )}
-
-              {/* Skills */}
-              <div>
-                <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: 6 }}>
-                  Kỹ năng chuyên môn
-                </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {selectedCandidateDetail.skills && selectedCandidateDetail.skills.map((s, idx) => (
-                    <span key={idx} style={{ fontSize: '12px', padding: '4px 10px', background: '#eef2ff', color: '#4338ca', borderRadius: 6, fontWeight: 600 }}>
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* CV File Preview / Download */}
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 16, marginTop: 8 }}>
-                <label style={{ fontSize: '13px', fontWeight: 700, color: '#334155', display: 'block', marginBottom: 8 }}>
-                  Tệp đính kèm CV chính thức
-                </label>
-                {selectedCandidateDetail.defaultCvUrl ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 14, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <FileText size={20} color="#4f46e5" />
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>
-                          {selectedCandidateDetail.defaultCvTitle || 'CV_Chinh_Thuc.pdf'}
-                        </div>
-                        <span style={{ fontSize: '11px', color: '#64748b' }}>Định dạng PDF / Đã xác thực</span>
-                      </div>
-                    </div>
-                    <a 
-                      href={selectedCandidateDetail.defaultCvUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className={styles.btnPrimary}
-                      style={{ padding: '6px 14px', fontSize: '12.5px', height: 36 }}
-                    >
-                      <ExternalLink size={14} /> Mở xem CV
-                    </a>
-                  </div>
-                ) : (
-                  <div style={{ padding: 12, background: '#f8fafc', borderRadius: 8, color: '#64748b', fontSize: '13px', fontStyle: 'italic' }}>
-                    Ứng viên chưa đính kèm file CV PDF tải lên, thông tin hồ sơ được trích xuất từ CV Builder trực tuyến.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.modalFooter}>
+          }
+          footer={
+            <>
               <button 
                 type="button" 
                 className={styles.btnSecondary}
@@ -706,13 +617,97 @@ export const EmployerCandidateSearchPage: React.FC = () => {
                   setDetailModalOpen(false);
                   handleOpenInviteModal(selectedCandidateDetail);
                 }}
-                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
               >
                 <Send size={14} /> Mời ứng tuyển ngay
               </button>
+            </>
+          }
+        >
+          {/* Header profile info */}
+          <div className={styles.candidateDetailHeader}>
+            <div className={`${styles.avatarMini} ${styles.avatarLarge}`}>
+              {selectedCandidateDetail.fullName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h3 className={styles.detailName}>{selectedCandidateDetail.fullName}</h3>
+              <div className={styles.detailMetaRow}>
+                {selectedCandidateDetail.location && <span>📍 {selectedCandidateDetail.location}</span>}
+                {selectedCandidateDetail.email && <span>📧 {selectedCandidateDetail.email}</span>}
+                {selectedCandidateDetail.phoneNumber && <span>📞 {selectedCandidateDetail.phoneNumber}</span>}
+              </div>
             </div>
           </div>
-        </div>
+
+          {/* Objective */}
+          {selectedCandidateDetail.objective && (
+            <div>
+              <label className={styles.detailSectionLabel}>
+                Mục tiêu nghề nghiệp & Giới thiệu
+              </label>
+              <p className={styles.detailBox}>
+                {selectedCandidateDetail.objective}
+              </p>
+            </div>
+          )}
+
+          {/* Experience Summary */}
+          {selectedCandidateDetail.experienceSummary && (
+            <div>
+              <label className={styles.detailSectionLabel}>
+                Tóm tắt kinh nghiệm làm việc
+              </label>
+              <p className={styles.detailBox}>
+                {selectedCandidateDetail.experienceSummary}
+              </p>
+            </div>
+          )}
+
+          {/* Skills */}
+          <div>
+            <label className={styles.detailSectionLabel}>
+              Kỹ năng chuyên môn
+            </label>
+            <div className={styles.skillsWrap}>
+              {selectedCandidateDetail.skills && selectedCandidateDetail.skills.map((s, idx) => (
+                <span key={idx} className={styles.detailSkillTag}>
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* CV File Preview / Download */}
+          <div className={styles.cvDivider}>
+            <label className={styles.detailSectionLabel}>
+              Tệp đính kèm CV chính thức
+            </label>
+            {selectedCandidateDetail.defaultCvUrl ? (
+              <div className={styles.cvAttachedCard}>
+                <div className={styles.cvAttachedLeft}>
+                  <FileText size={20} className={styles.iconPrimary} />
+                  <div>
+                    <div className={styles.cvAttachedTitle}>
+                      {selectedCandidateDetail.defaultCvTitle || 'CV_Chinh_Thuc.pdf'}
+                    </div>
+                    <span className={styles.cvAttachedFormat}>Định dạng PDF / Đã xác thực</span>
+                  </div>
+                </div>
+                <a 
+                  href={selectedCandidateDetail.defaultCvUrl} 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className={`${styles.btnPrimary} ${styles.btnDownloadSmall}`}
+                >
+                  <ExternalLink size={14} /> Mở xem CV
+                </a>
+              </div>
+            ) : (
+              <div className={styles.noCvFallback}>
+                Ứng viên chưa đính kèm file CV PDF tải lên, thông tin hồ sơ được trích xuất từ CV Builder trực tuyến.
+              </div>
+            )}
+          </div>
+        </Modal>
       )}
     </div>
   );

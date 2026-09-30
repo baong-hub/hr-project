@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Wand2, X } from 'lucide-react';
+import { Wand2, ArrowLeft } from 'lucide-react';
 import { jobsService } from '../../../core/services/jobs.service';
 import { aiService } from '../../../core/services/ai.service';
 import { toast } from '../../../core/services/toast.service';
-import { metaService, type ProvinceItem, type IndustryItem, STATIC_PROVINCES, STATIC_INDUSTRIES } from '../../../core/services/meta.service';
+import { metaService } from '../../../core/services/meta.service';
 import type { JobStatus } from '../../../core/models/job.model';
-import styles from './JobsPage.module.scss';
+import styles from './JobFormPage.module.scss';
+import { FormField } from '../../../shared/components/form-field/FormField';
+import { Modal } from '../../../shared/components/modal/Modal';
+import { IndustrySelect } from '../../../shared/components/search/IndustrySelect';
+import { ProvinceSelect } from '../../../shared/components/search/ProvinceSelect';
 
 export const JobFormPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,10 +21,6 @@ export const JobFormPage: React.FC = () => {
   const [showAiJdModal, setShowAiJdModal] = useState(false);
   const [aiKeywords, setAiKeywords] = useState('');
   const [generatingJd, setGeneratingJd] = useState(false);
-
-  // Meta Options
-  const [provincesList, setProvincesList] = useState<ProvinceItem[]>(STATIC_PROVINCES);
-  const [industriesList, setIndustriesList] = useState<IndustryItem[]>(STATIC_INDUSTRIES);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -48,15 +48,6 @@ export const JobFormPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    metaService.getProvinces().then((data) => {
-      if (data && data.length > 0) setProvincesList(data);
-    });
-    metaService.getIndustries().then((data) => {
-      if (data && data.length > 0) setIndustriesList(data);
-    });
-  }, []);
-
-  useEffect(() => {
     if (isEditMode && id) {
       const fetchJobDetails = async () => {
         setLoading(true);
@@ -64,7 +55,7 @@ export const JobFormPage: React.FC = () => {
           const res = await jobsService.getJobById(Number(id));
           if (res.data?.success && res.data.data) {
             const job = res.data.data as any;
-            setTitle(job.title);
+            setTitle(job.title || '');
             setCategory(job.category || '');
             if (job.categoryCode) {
               setCategoryCode(job.categoryCode);
@@ -83,7 +74,7 @@ export const JobFormPage: React.FC = () => {
             setDistrict(job.district || '');
             setOffice(job.office || '');
             setOpenings(job.openings || 1);
-            setDescription(job.description);
+            setDescription(job.description || '');
             setRequirements(job.requirements || '');
             setBenefits(job.benefits || '');
             
@@ -98,12 +89,10 @@ export const JobFormPage: React.FC = () => {
             setExpiredAt(job.expiredAt ? job.expiredAt.split('T')[0] : '');
           } else {
             toast.error(res.data?.error?.message || 'Không thể tải tin tuyển dụng.');
-            navigate('/employer/jobs');
           }
         } catch (err) {
           console.error(err);
-          toast.error('Lỗi khi tải chi tiết tin tuyển dụng.');
-          navigate('/employer/jobs');
+          toast.error('Có lỗi xảy ra khi tải dữ liệu tin.');
         } finally {
           setLoading(false);
         }
@@ -113,40 +102,48 @@ export const JobFormPage: React.FC = () => {
     }
   }, [id, isEditMode]);
 
-  // Client Validation
-  const validateForm = (): boolean => {
-    if (!title.trim() || title.length < 10 || title.length > 150) {
-      toast.error('Tiêu đề tin đăng phải từ 10 đến 150 ký tự.');
+  const validateForm = () => {
+    if (!title.trim()) {
+      toast.error('Vui lòng nhập Tiêu đề tuyển dụng.');
       return false;
     }
     if (!category.trim() && !categoryCode) {
-      toast.error('Vui lòng chọn danh mục ngành nghề.');
+      toast.error('Vui lòng chọn Ngành nghề tuyển dụng.');
       return false;
     }
     if (!city.trim() && !provinceCode) {
-      toast.error('Vui lòng chọn tỉnh/thành phố tuyển dụng.');
+      toast.error('Vui lòng chọn Tỉnh / Thành phố làm việc.');
       return false;
     }
-    if (!description.trim() || description.length < 50) {
-      toast.error('Mô tả công việc phải từ 50 ký tự trở lên.');
+    if (!description.trim() || description.trim().length < 50) {
+      toast.error('Mô tả công việc phải chứa ít nhất 50 ký tự.');
       return false;
     }
-    if (!requirements.trim() || requirements.length < 50) {
-      toast.error('Yêu cầu ứng viên phải từ 50 ký tự trở lên.');
+    if (!requirements.trim() || requirements.trim().length < 50) {
+      toast.error('Yêu cầu ứng viên phải chứa ít nhất 50 ký tự.');
       return false;
     }
 
     if (!isNegotiable) {
-      const from = parseFloat(salaryFrom);
-      const to = parseFloat(salaryTo);
-      if (isNaN(from) || from < 0) {
-        toast.error('Vui lòng nhập lương tối thiểu hợp lệ (>= 0).');
+      if (!salaryFrom) {
+        toast.error('Vui lòng nhập Mức lương tối thiểu hoặc chọn Thỏa thuận.');
         return false;
       }
-      if (salaryTo && (isNaN(to) || to < from)) {
-        toast.error('Lương tối đa không được nhỏ hơn lương tối thiểu.');
+      const sFrom = parseFloat(salaryFrom);
+      const sTo = salaryTo ? parseFloat(salaryTo) : null;
+      if (sFrom < 0 || (sTo !== null && sTo < 0)) {
+        toast.error('Mức lương không được là số âm.');
         return false;
       }
+      if (sTo !== null && sTo < sFrom) {
+        toast.error('Mức lương tối đa phải lớn hơn hoặc bằng mức lương tối thiểu.');
+        return false;
+      }
+    }
+
+    if (!expiredAt) {
+      toast.error('Vui lòng chọn Hạn nộp hồ sơ.');
+      return false;
     }
 
     const expiryDate = new Date(expiredAt);
@@ -178,11 +175,11 @@ export const JobFormPage: React.FC = () => {
         provinceCode: provinceCode || null,
         district: district.trim() || null,
         office: office.trim() || null,
-        workMode: 'ONSITE', // Can expand to dynamic workModes
+        workMode: 'ONSITE',
         salaryType: isNegotiable ? 'NEGOTIABLE' : 'RANGE',
         salaryFrom: isNegotiable || !salaryFrom ? null : parseFloat(salaryFrom),
         salaryTo: isNegotiable || !salaryTo ? null : parseFloat(salaryTo),
-        experienceLevel: 'Middle', // Default career level or dynamic
+        experienceLevel: 'Middle',
         experienceYearsMin: null,
         education: null,
         description: description.trim(),
@@ -240,7 +237,7 @@ export const JobFormPage: React.FC = () => {
           setIsNegotiable(false);
           setSalaryFrom(gen.suggestedSalaryFrom.toString());
           setSalaryTo(gen.suggestedSalaryTo.toString());
-          toast.success(`AI đã tạo JD & tự động gợi ý khung lương: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(gen.suggestedSalaryFrom)} - ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(gen.suggestedSalaryTo)}!`);
+          toast.success(`AI đã tạo JD & gợi ý khung lương: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(gen.suggestedSalaryFrom)} - ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(gen.suggestedSalaryTo)}!`);
         } else {
           toast.success('AI đã tạo xong mô tả công việc thành công!');
         }
@@ -258,257 +255,198 @@ export const JobFormPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+      <div className={styles.loadingPlaceholder}>
         Đang tải thông tin tin tuyển dụng...
       </div>
     );
   }
 
   return (
-    <div className={styles.jobsPage} style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={() => navigate('/employer/jobs')} className={styles.btnSecondary}>
-          Quay lại quản lý
+    <div className={styles.jobFormPage}>
+      <div className={styles.headerRow}>
+        <button onClick={() => navigate('/employer/jobs')} className={`${styles.btnSecondary} ${styles.btnBack}`}>
+          <ArrowLeft size={16} /> Quay lại quản lý
         </button>
-        <h1 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 800, margin: 0 }}>
+        <h1 className={styles.pageTitle}>
           {isEditMode ? 'Sửa tin tuyển dụng' : 'Đăng tuyển dụng mới'}
         </h1>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '12px' }}>
+      <div className={styles.cardList}>
         {/* Card 1: Thông tin chung */}
-        <div className={styles.tableCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ borderBottom: '1px solid var(--color-border-default)', paddingBottom: '8px', fontWeight: 700 }}>Card 1: Thông tin chung</h3>
+        <div className={styles.formCard}>
+          <h3 className={styles.cardTitle}>Thông tin chung</h3>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Tiêu đề tuyển dụng <span style={{ color: 'var(--color-error)' }}>*</span></label>
-            <input
-              type="text"
-              placeholder="Ví dụ: Senior .NET Backend Developer"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
+          <FormField
+            label="Tiêu đề tuyển dụng"
+            required
+            placeholder="Ví dụ: Senior .NET Backend Developer"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>
+                Ngành nghề / Danh mục <span className={styles.requiredMark}>*</span>
+              </label>
+              <IndustrySelect
+                inlineDisplay
+                value={categoryCode}
+                placeholder="-- Chọn ngành nghề --"
+                onChange={(code, item) => {
+                  setCategoryCode(code);
+                  if (item) setCategory(item.name);
+                }}
+              />
+            </div>
+
+            <FormField
+              label="Loại hình làm việc"
+              control="select"
+              value={employmentType}
+              onChange={(e) => setEmploymentType(e.target.value)}
+              options={[
+                { value: 'Full-time', label: 'Full-time' },
+                { value: 'Part-time', label: 'Part-time' },
+                { value: 'Contract', label: 'Contract' },
+                { value: 'Freelance', label: 'Freelance' },
+                { value: 'Internship', label: 'Internship' }
+              ]}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Ngành nghề / Danh mục <span style={{ color: 'var(--color-error)' }}>*</span></label>
-              <select
-                value={categoryCode}
-                onChange={(e) => {
-                  const code = e.target.value;
-                  setCategoryCode(code);
-                  const selected = industriesList.find((i) => i.code === code);
-                  if (selected) setCategory(selected.name);
-                }}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface, #fff)' }}
-              >
-                <option value="">-- Chọn ngành nghề ({industriesList.length} nhóm) --</option>
-                {industriesList.map((ind) => (
-                  <option key={ind.code} value={ind.code}>
-                    {ind.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Loại hình làm việc</label>
-              <select
-                value={employmentType}
-                onChange={(e) => setEmploymentType(e.target.value)}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
-              >
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="Freelance">Freelance</option>
-                <option value="Internship">Internship</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Tỉnh / Thành phố tuyển dụng <span style={{ color: 'var(--color-error)' }}>*</span></label>
-              <select
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>
+                Tỉnh / Thành phố tuyển dụng <span className={styles.requiredMark}>*</span>
+              </label>
+              <ProvinceSelect
+                inlineDisplay
                 value={provinceCode}
-                onChange={(e) => {
-                  const code = e.target.value;
+                placeholder="-- Chọn tỉnh/thành phố --"
+                onChange={(code, item) => {
                   setProvinceCode(code);
-                  const selected = provincesList.find((p) => p.code === code);
-                  if (selected) setCity(selected.name);
+                  if (item) setCity(item.name);
                 }}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface, #fff)' }}
-              >
-                <optgroup label="Thành phố trực thuộc trung ương (6)">
-                  {provincesList
-                    .filter((p) => p.type === 'city')
-                    .map((p) => (
-                      <option key={p.code} value={p.code}>
-                        {p.name}
-                      </option>
-                    ))}
-                </optgroup>
-                <optgroup label="Tỉnh (28)">
-                  {provincesList
-                    .filter((p) => p.type === 'province')
-                    .map((p) => (
-                      <option key={p.code} value={p.code}>
-                        {p.name}
-                      </option>
-                    ))}
-                </optgroup>
-              </select>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Số lượng tuyển (chỉ tiêu)</label>
-              <input
-                type="number"
-                min={1}
-                value={openings}
-                onChange={(e) => setOpenings(Number(e.target.value))}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
               />
             </div>
+
+            <FormField
+              label="Số lượng tuyển (chỉ tiêu)"
+              type="number"
+              min={1}
+              value={openings}
+              onChange={(e) => setOpenings(Number(e.target.value))}
+            />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Quận / Huyện</label>
-              <input
-                type="text"
-                placeholder="Ví dụ: Cầu Giấy"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
-              />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Văn phòng (Địa chỉ cụ thể)</label>
-              <input
-                type="text"
-                placeholder="Ví dụ: Tòa Keangnam, Mễ Trì"
-                value={office}
-                onChange={(e) => setOffice(e.target.value)}
-                style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
-              />
-            </div>
+          <div className={styles.grid2}>
+            <FormField
+              label="Quận / Huyện"
+              placeholder="Ví dụ: Cầu Giấy"
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
+            />
+            <FormField
+              label="Văn phòng (Địa chỉ cụ thể)"
+              placeholder="Ví dụ: Tòa Keangnam, Mễ Trì"
+              value={office}
+              onChange={(e) => setOffice(e.target.value)}
+            />
           </div>
         </div>
 
         {/* Card 2: Nội dung chi tiết */}
-        <div className={styles.tableCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-default)', paddingBottom: '8px' }}>
-            <h3 style={{ margin: 0, fontWeight: 700 }}>Card 2: Nội dung chi tiết</h3>
+        <div className={styles.formCard}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardHeaderTitle}>Nội dung chi tiết</h3>
             <button
               type="button"
               onClick={() => setShowAiJdModal(true)}
-              style={{
-                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                color: '#ffffff',
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
-              }}
+              className={styles.aiTriggerBtn}
             >
-              AI Viết JD Tự Động
+              <Wand2 size={16} />
+              <span>AI Viết JD Tự Động</span>
             </button>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Mô tả công việc <span style={{ color: 'var(--color-error)' }}>*</span> (Tối thiểu 50 ký tự)</label>
-            <textarea
-              rows={6}
-              placeholder="Mô tả các công việc chính, trách nhiệm hàng ngày của vị trí..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', fontSize: 'var(--font-size-sm)' }}
-            />
-          </div>
+          <FormField
+            label="Mô tả công việc (Tối thiểu 50 ký tự)"
+            required
+            control="textarea"
+            rows={6}
+            placeholder="Mô tả các công việc chính, trách nhiệm hàng ngày của vị trí..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Yêu cầu ứng viên <span style={{ color: 'var(--color-error)' }}>*</span> (Tối thiểu 50 ký tự)</label>
-            <textarea
-              rows={6}
-              placeholder="Yêu cầu về kỹ năng, kinh nghiệm chuyên môn, công nghệ hoặc bằng cấp..."
-              value={requirements}
-              onChange={(e) => setRequirements(e.target.value)}
-              style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', fontSize: 'var(--font-size-sm)' }}
-            />
-          </div>
+          <FormField
+            label="Yêu cầu ứng viên (Tối thiểu 50 ký tự)"
+            required
+            control="textarea"
+            rows={6}
+            placeholder="Yêu cầu về kỹ năng, kinh nghiệm chuyên môn, công nghệ hoặc bằng cấp..."
+            value={requirements}
+            onChange={(e) => setRequirements(e.target.value)}
+          />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Quyền lợi & Chế độ đãi ngộ</label>
-            <textarea
-              rows={4}
-              placeholder="Mô tả mức bảo hiểm, cơ hội thăng tiến, thưởng dự án, du lịch, v.v..."
-              value={benefits}
-              onChange={(e) => setBenefits(e.target.value)}
-              style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', fontSize: 'var(--font-size-sm)' }}
-            />
-          </div>
+          <FormField
+            label="Quyền lợi & Chế độ đãi ngộ"
+            control="textarea"
+            rows={4}
+            placeholder="Mô tả mức bảo hiểm, cơ hội thăng tiến, thưởng dự án, du lịch, v.v..."
+            value={benefits}
+            onChange={(e) => setBenefits(e.target.value)}
+          />
         </div>
 
         {/* Card 3: Chế độ đãi ngộ & Hạn nộp */}
-        <div className={styles.tableCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <h3 style={{ borderBottom: '1px solid var(--color-border-default)', paddingBottom: '8px', fontWeight: 700 }}>Card 3: Chế độ đãi ngộ & Hạn nộp</h3>
+        <div className={styles.formCard}>
+          <h3 className={styles.cardTitle}>Chế độ đãi ngộ & Hạn nộp</h3>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          <div className={styles.checkboxRow}>
             <input
               type="checkbox"
               id="negotiable"
               checked={isNegotiable}
               onChange={(e) => setIsNegotiable(e.target.checked)}
-              style={{ width: '16px', height: '16px' }}
+              className={styles.checkbox}
             />
-            <label htmlFor="negotiable" style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, cursor: 'pointer' }}>Mức lương thỏa thuận</label>
+            <label htmlFor="negotiable" className={styles.checkboxLabel}>Mức lương thỏa thuận</label>
           </div>
 
           {!isNegotiable && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Lương tối thiểu (VND) <span style={{ color: 'var(--color-error)' }}>*</span></label>
-                <input
-                  type="number"
-                  placeholder="Ví dụ: 15000000"
-                  value={salaryFrom}
-                  onChange={(e) => setSalaryFrom(e.target.value)}
-                  style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
-                />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Lương tối đa (VND)</label>
-                <input
-                  type="number"
-                  placeholder="Ví dụ: 25000000"
-                  value={salaryTo}
-                  onChange={(e) => setSalaryTo(e.target.value)}
-                  style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}
-                />
-              </div>
+            <div className={styles.grid2}>
+              <FormField
+                label="Lương tối thiểu (VND)"
+                required
+                type="number"
+                placeholder="Ví dụ: 15000000"
+                value={salaryFrom}
+                onChange={(e) => setSalaryFrom(e.target.value)}
+              />
+              <FormField
+                label="Lương tối đa (VND)"
+                type="number"
+                placeholder="Ví dụ: 25000000"
+                value={salaryTo}
+                onChange={(e) => setSalaryTo(e.target.value)}
+              />
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600 }}>Hạn nộp hồ sơ <span style={{ color: 'var(--color-error)' }}>*</span> (Tối thiểu 7 ngày, tối đa 90 ngày)</label>
-            <input
-              type="date"
-              value={expiredAt}
-              onChange={(e) => setExpiredAt(e.target.value)}
-              style={{ padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)', width: '100%' }}
-            />
-          </div>
+          <FormField
+            label="Hạn nộp hồ sơ (Tối thiểu 7 ngày, tối đa 90 ngày)"
+            required
+            type="date"
+            value={expiredAt}
+            onChange={(e) => setExpiredAt(e.target.value)}
+          />
         </div>
 
         {/* Form Submission Buttons */}
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', padding: '12px 0 24px 0' }}>
+        <div className={styles.footerActions}>
           <button
             type="button"
             onClick={() => handleSave('DRAFT')}
@@ -528,119 +466,76 @@ export const JobFormPage: React.FC = () => {
         </div>
       </div>
 
-      {/* AI JD Generator Modal */}
-      {showAiJdModal && (
-        <div className={styles.modalOverlay} style={{ backdropFilter: 'blur(4px)', background: 'rgba(15, 23, 42, 0.65)' }}>
-          <div className={styles.modalContent} style={{ maxWidth: '560px', width: '92%', padding: '24px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                  <Wand2 size={20} />
-                </div>
-                <div>
-                  <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: 0, color: '#1e293b' }}>Trợ Lý AI Soạn Thảo JD Tuyển Dụng</h2>
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Tự động sinh Mô tả, Yêu cầu và Quyền lợi chuẩn chuyên nghiệp</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowAiJdModal(false)} 
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '8px', color: '#64748b' }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Vị trí / Tiêu đề tuyển dụng <span style={{ color: '#ef4444' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ví dụ: Backend Developer, Senior .NET Engineer, UI/UX Designer..."
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    border: (!title.trim() && !aiKeywords.trim()) ? '1px solid #f87171' : '1px solid #cbd5e1',
-                    fontSize: '0.9rem',
-                    outline: 'none'
-                  }}
-                />
-                {!title.trim() && !aiKeywords.trim() && (
-                  <span style={{ fontSize: '0.75rem', color: '#ef4444', display: 'block', marginTop: '4px' }}>
-                    * Vui lòng nhập tiêu đề vị trí cần tuyển dụng
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Ngành nghề / Lĩnh vực (Tùy chọn)
-                </label>
-                <input
-                  type="text"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Ví dụ: Công nghệ thông tin / IT"
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Từ khóa bổ sung & Điểm nhấn mong muốn (Tùy chọn)
-                </label>
-                <textarea
-                  rows={3}
-                  value={aiKeywords}
-                  onChange={(e) => setAiKeywords(e.target.value)}
-                  placeholder="Ví dụ: C#, .NET Core, Microservices, SQL Server, 2 năm kinh nghiệm, làm việc hybrid, phụ cấp ăn trưa, thưởng dự án..."
-                  style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
-                />
-                <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>AI sẽ kết hợp tiêu đề tuyển dụng và các từ khóa này để sinh bộ JD hoàn chỉnh nhất.</span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                <button 
-                  type="button"
-                  onClick={() => setShowAiJdModal(false)} 
-                  className={styles.btnSecondary}
-                  disabled={generatingJd}
-                >
-                  Hủy bỏ
-                </button>
-                <button 
-                  type="button"
-                  onClick={handleGenerateAiJd} 
-                  disabled={generatingJd || (!title.trim() && !aiKeywords.trim())}
-                  className={styles.btnPrimary}
-                  style={{
-                    background: (!title.trim() && !aiKeywords.trim())
-                      ? '#94a3b8'
-                      : 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                    cursor: (!title.trim() && !aiKeywords.trim()) ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  {generatingJd ? (
-                    <>
-                      <div style={{ width: '14px', height: '14px', border: '2px solid #ffffff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                      Đang sinh nội dung...
-                    </>
-                  ) : (
-                    'Bắt đầu tạo bằng AI'
-                  )}
-                </button>
-              </div>
-            </div>
+      {/* AI JD Generator Modal using shared Modal component */}
+      <Modal
+        isOpen={showAiJdModal}
+        onClose={() => setShowAiJdModal(false)}
+        title="Trợ Lý AI Soạn Thảo JD Tuyển Dụng"
+        description="Tự động sinh Mô tả, Yêu cầu và Quyền lợi chuẩn chuyên nghiệp"
+        size="lg"
+        footer={
+          <div className={styles.modalFooterActions}>
+            <button 
+              type="button"
+              onClick={() => setShowAiJdModal(false)} 
+              className={styles.btnSecondary}
+              disabled={generatingJd}
+            >
+              Hủy bỏ
+            </button>
+            <button 
+              type="button"
+              onClick={handleGenerateAiJd} 
+              disabled={generatingJd || (!title.trim() && !aiKeywords.trim())}
+              className={styles.aiSubmitBtn}
+            >
+              {generatingJd ? (
+                <>
+                  <div className={styles.spinner} />
+                  <span>Đang sinh nội dung...</span>
+                </>
+              ) : (
+                'Bắt đầu tạo bằng AI'
+              )}
+            </button>
           </div>
+        }
+      >
+        <div className={styles.modalBodyCol}>
+          <FormField
+            label="Vị trí / Tiêu đề tuyển dụng"
+            required
+            placeholder="Ví dụ: Backend Developer, Senior .NET Engineer, UI/UX Designer..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            error={(!title.trim() && !aiKeywords.trim()) ? '* Vui lòng nhập tiêu đề vị trí cần tuyển dụng' : undefined}
+          />
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Ngành nghề / Lĩnh vực (Tùy chọn)</label>
+            <IndustrySelect
+              inlineDisplay
+              value={categoryCode}
+              placeholder="Chọn ngành nghề..."
+              onChange={(code, item) => {
+                setCategoryCode(code);
+                if (item) setCategory(item.name);
+              }}
+            />
+          </div>
+
+          <FormField
+            label="Từ khóa bổ sung & Điểm nhấn mong muốn (Tùy chọn)"
+            control="textarea"
+            rows={3}
+            value={aiKeywords}
+            onChange={(e) => setAiKeywords(e.target.value)}
+            placeholder="Ví dụ: C#, .NET Core, Microservices, SQL Server, 2 năm kinh nghiệm, làm việc hybrid, phụ cấp ăn trưa, thưởng dự án..."
+            hint="AI sẽ kết hợp tiêu đề tuyển dụng và các từ khóa này để sinh bộ JD hoàn chỉnh nhất."
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };
+export default JobFormPage;

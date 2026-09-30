@@ -1,6 +1,6 @@
 .detailPane {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 12px);
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@
 
 .paneHeader {
   padding: var(--space-4, 16px) var(--space-5, 20px);
-  border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+  border-bottom: 1px solid var(--color-border-subtle);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -28,8 +28,8 @@
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md, 8px);
-    background: var(--color-bg-subtle, #f1f5f9);
-    border: 1px solid var(--color-border-subtle, #e2e8f0);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -45,7 +45,7 @@
     .logoInitial {
       font-size: 18px;
       font-weight: 700;
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
     }
   }
 
@@ -58,21 +58,21 @@
     .companyLink {
       font-size: var(--font-size-sm, 13px);
       font-weight: 600;
-      color: var(--color-text-secondary, #475569);
+      color: var(--color-text-secondary);
       text-decoration: none;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
 
       &:hover {
-        color: var(--color-brand-primary, #2563eb);
+        color: var(--color-brand-primary);
         text-decoration: underline;
       }
     }
 
     .companyLocation {
       font-size: 11px;
-      color: var(--color-text-muted, #94a3b8);
+      color: var(--color-text-muted);
     }
   }
 }
@@ -80,7 +80,7 @@
 .jobTitle {
   font-size: var(--font-size-xl, 20px);
   font-weight: 700;
-  color: var(--color-text-primary, #0f172a);
+  color: var(--color-text-primary);
   margin: 0;
   line-height: 1.3;
 }
@@ -89,8 +89,8 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  background: var(--color-bg-subtle, #f8fafc);
-  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md, 8px);
   padding: 12px;
 }
@@ -101,7 +101,7 @@
   gap: 8px;
 
   .itemIcon {
-    color: var(--color-text-muted, #64748b);
+    color: var(--color-text-muted);
     flex-shrink: 0;
     margin-top: 2px;
   }
@@ -114,7 +114,7 @@
 
     .itemLabel {
       font-size: 11px;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -122,13 +122,13 @@
     .itemValue {
       font-size: var(--font-size-xs, 12px);
       font-weight: 600;
-      color: var(--color-text-primary, #1e293b);
+      color: var(--color-text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
 
       &.salaryHighlight {
-        color: var(--color-salary, #8C6B28);
+        color: var(--color-salary);
         font-weight: 700;
         font-variant-numeric: tabular-nums;
       }
@@ -145,8 +145,8 @@
 
 .applyBtn {
   padding: 8px 16px;
-  background: var(--color-brand-primary, #2563eb);
-  color: #ffffff;
+  background: var(--color-brand-primary);
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-md, 6px);
   font-size: var(--font-size-sm, 13px);
@@ -158,15 +158,15 @@
   transition: background-color var(--transition-fast, 0.15s ease);
 
   &:hover {
-    background: var(--color-brand-hover, #1d4ed8);
+    background: var(--color-brand-hover);
   }
 }
 
 .appliedBtn {
   padding: 8px 16px;
-  background: var(--color-success-subtle, #ecfdf5);
-  color: var(--color-success, #059669);
-  border: 1px solid var(--color-success-border, #a7f3d0);
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md, 6px);
   font-size: var(--font-size-sm, 13px);
   font-weight: 600;
@@ -178,10 +178,10 @@
 
 .saveBtn {
   padding: 8px 12px;
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-default, #cbd5e1);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md, 6px);
-  color: var(--color-text-secondary, #475569);
+  color: var(--color-text-secondary);
   font-size: var(--font-size-sm, 13px);
   font-weight: 500;
   cursor: pointer;
@@ -191,23 +191,23 @@
   transition: all var(--transition-fast, 0.15s ease);
 
   &:hover {
-    background: var(--color-bg-hover, #f1f5f9);
-    color: var(--color-text-primary, #0f172a);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
   }
 
   &.saved {
-    color: var(--color-error, #dc2626);
-    border-color: var(--color-error-border, #fca5a5);
-    background: var(--color-error-subtle, #fef2f2);
+    color: var(--color-error);
+    border-color: var(--color-error-border);
+    background: var(--color-error-subtle);
   }
 }
 
 .viewFullLink {
   padding: 8px 12px;
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-default, #cbd5e1);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md, 6px);
-  color: var(--color-brand-primary, #2563eb);
+  color: var(--color-brand-primary);
   font-size: var(--font-size-sm, 13px);
   font-weight: 600;
   cursor: pointer;
@@ -218,7 +218,7 @@
   transition: all var(--transition-fast, 0.15s ease);
 
   &:hover {
-    background: var(--color-brand-subtle, #eff6ff);
+    background: var(--color-brand-subtle);
   }
 }
 
@@ -234,8 +234,8 @@
     width: 5px;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--color-border-default, #cbd5e1);
-    border-radius: 3px;
+    background: var(--color-border-default);
+    border-radius: var(--radius-xs);
   }
 }
 
@@ -247,14 +247,14 @@
   h3 {
     font-size: var(--font-size-sm, 14px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
   p, div {
     font-size: var(--font-size-sm, 13px);
     line-height: 1.6;
-    color: var(--color-text-secondary, #334155);
+    color: var(--color-text-secondary);
     margin: 0;
     white-space: pre-line;
   }
@@ -269,7 +269,7 @@
   padding: 40px 20px;
   text-align: center;
   gap: 12px;
-  color: var(--color-text-muted, #94a3b8);
+  color: var(--color-text-muted);
 
   p {
     font-size: var(--font-size-sm, 14px);

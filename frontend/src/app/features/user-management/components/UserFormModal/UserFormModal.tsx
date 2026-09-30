@@ -267,7 +267,7 @@ export const UserFormModal = ({ isOpen, onClose, onSave, user }: UserFormModalPr
               />
             </div>
           </div>
-          <div className={styles.formGroup} style={{ marginTop: '8px' }}>
+          <div className={`${styles.formGroup} ${styles.marginTopXs}`}>
             <label>Địa chỉ</label>
             <input
               type="text"
@@ -307,7 +307,7 @@ export const UserFormModal = ({ isOpen, onClose, onSave, user }: UserFormModalPr
             </div>
           </div>
 
-          <div className={styles.row} style={{ marginTop: '8px' }}>
+          <div className={`${styles.row} ${styles.marginTopXs}`}>
             <div className={styles.formGroup}>
               <label>Chi nhánh chính</label>
               <select name="siteId" value={formData.siteId} onChange={handleChange}>
@@ -328,7 +328,7 @@ export const UserFormModal = ({ isOpen, onClose, onSave, user }: UserFormModalPr
           </div>
 
           {isEdit && (
-            <div className={styles.checkboxGroup} style={{ marginTop: '12px' }}>
+            <div className={`${styles.checkboxGroup} ${styles.marginTopSm}`}>
               <input
                 type="checkbox"
                 name="isActive"

@@ -303,3 +303,23 @@
     text-decoration: underline;
   }
 }
+
+.formInputGroup {
+  height: 42px;
+  background-color: var(--color-bg-card, #FFFFFF);
+  border: 1px solid var(--color-border-default, #E5E7EB);
+  border-radius: var(--radius-md, 6px);
+  width: 100%;
+
+  &:focus-within {
+    border-color: var(--color-primary, #2563EB);
+    box-shadow: 0 0 0 1px var(--color-primary, #2563EB);
+  }
+}
+
+.optionActive {
+  background-color: var(--color-primary-bg, rgba(37, 99, 235, 0.08)) !important;
+  color: var(--color-primary, #2563EB) !important;
+  font-weight: 600;
+}
+

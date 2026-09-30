@@ -9,8 +9,8 @@
 }
 
 .searchStrip {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-3, 12px) var(--space-4, 16px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -18,8 +18,8 @@
 
 /* Candidate AI Recommendation Bar */
 .aiRecommendationBar {
-  background: var(--color-brand-subtle, #eff6ff);
-  border: 1px solid var(--color-brand-border, #bfdbfe);
+  background: var(--color-brand-subtle);
+  border: 1px solid var(--color-brand-border);
   border-radius: var(--radius-lg, 12px);
   padding: 14px 18px;
   display: flex;
@@ -40,19 +40,19 @@
     gap: 8px;
 
     .aiIcon {
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
     }
 
     h3 {
       font-size: var(--font-size-sm, 14px);
       font-weight: 700;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
       margin: 0;
     }
 
     p {
       font-size: var(--font-size-xs, 12px);
-      color: var(--color-text-secondary, #475569);
+      color: var(--color-text-secondary);
       margin: 0;
     }
   }
@@ -61,9 +61,9 @@
     font-size: 11px;
     font-weight: 700;
     padding: 2px 8px;
-    border-radius: 999px;
-    background: #dbeafe;
-    color: var(--color-brand-primary, #1e40af);
+    border-radius: var(--radius-pill);
+    background: var(--color-primary-soft);
+    color: var(--color-brand-primary);
   }
 }
 
@@ -74,8 +74,8 @@
 }
 
 .aiCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md, 8px);
   padding: 10px 12px;
   cursor: pointer;
@@ -86,7 +86,7 @@
   transition: all var(--transition-fast, 0.15s ease);
 
   &:hover {
-    border-color: var(--color-brand-primary, #2563eb);
+    border-color: var(--color-brand-primary);
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.08);
     transform: translateY(-1px);
   }
@@ -94,21 +94,21 @@
   .aiCardTitle {
     font-size: var(--font-size-xs, 13px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
     line-height: 1.3;
   }
 
   .aiCardCompany {
     font-size: 11px;
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
   .aiCardReason {
     font-size: 11px;
     font-style: italic;
-    color: var(--color-brand-primary, #2563eb);
+    color: var(--color-brand-primary);
     margin: 0;
     line-height: 1.3;
   }
@@ -118,22 +118,22 @@
     align-items: center;
     justify-content: space-between;
     padding-top: 6px;
-    border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+    border-top: 1px solid var(--color-border-subtle);
 
     .aiCardSalary {
       font-size: 11px;
       font-weight: 700;
-      color: var(--color-salary, #8C6B28);
+      color: var(--color-salary);
       font-variant-numeric: tabular-nums;
     }
 
     .aiCardScore {
       font-size: 11px;
       font-weight: 700;
-      color: var(--color-success, #16a34a);
-      background: var(--color-success-subtle, #ecfdf5);
+      color: var(--color-success);
+      background: var(--color-success-subtle);
       padding: 1px 6px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
     }
   }
 }
@@ -154,21 +154,21 @@
     align-items: center;
     gap: 6px;
     padding: 8px 14px;
-    background: var(--color-bg-card, #ffffff);
-    border: 1px solid var(--color-border-default, #cbd5e1);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
     border-radius: var(--radius-md, 6px);
     font-size: var(--font-size-sm, 13px);
     font-weight: 600;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     cursor: pointer;
 
     .filterBadge {
-      background: var(--color-brand-primary, #2563eb);
-      color: #ffffff;
+      background: var(--color-brand-primary);
+      color: var(--color-white);
       font-size: 11px;
       font-weight: 700;
       padding: 0 6px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
     }
   }
 }
@@ -221,8 +221,8 @@
 }
 
 .emptyResults {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 12px);
   padding: 48px 24px;
   text-align: center;
@@ -232,19 +232,19 @@
   gap: 12px;
 
   .emptyIcon {
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--color-text-muted);
   }
 
   h3 {
     font-size: var(--font-size-base, 16px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
   }
 
   p {
     font-size: var(--font-size-sm, 14px);
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     max-width: 400px;
     margin: 0;
   }
@@ -252,8 +252,8 @@
   .clearFiltersBtn {
     margin-top: 8px;
     padding: 8px 16px;
-    background: var(--color-brand-primary, #2563eb);
-    color: #ffffff;
+    background: var(--color-brand-primary);
+    color: var(--color-white);
     border: none;
     border-radius: var(--radius-md, 6px);
     font-size: var(--font-size-sm, 13px);
@@ -261,7 +261,7 @@
     cursor: pointer;
 
     &:hover {
-      background: var(--color-brand-hover, #1d4ed8);
+      background: var(--color-brand-hover);
     }
   }
 }
@@ -277,25 +277,25 @@
 
   .pageBtn {
     padding: 6px 12px;
-    background: var(--color-bg-card, #ffffff);
-    border: 1px solid var(--color-border-default, #cbd5e1);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
     border-radius: var(--radius-md, 6px);
     font-size: var(--font-size-xs, 13px);
     font-weight: 500;
-    color: var(--color-text-secondary, #475569);
+    color: var(--color-text-secondary);
     cursor: pointer;
     font-variant-numeric: tabular-nums;
     transition: all var(--transition-fast, 0.15s ease);
 
     &:hover:not(:disabled) {
-      background: var(--color-bg-hover, #f1f5f9);
-      color: var(--color-text-primary, #0f172a);
+      background: var(--color-bg-hover);
+      color: var(--color-text-primary);
     }
 
     &.active {
-      background: var(--color-brand-primary, #2563eb);
-      color: #ffffff;
-      border-color: var(--color-brand-primary, #2563eb);
+      background: var(--color-brand-primary);
+      color: var(--color-white);
+      border-color: var(--color-brand-primary);
       font-weight: 700;
     }
 

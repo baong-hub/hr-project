@@ -3,6 +3,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { companiesService } from '../../../core/services/companies.service';
 import { authService } from '../../../core/services/auth.service';
+import styles from './CompanyEditPage.module.scss';
+import { FormField } from '../../../shared/components/form-field/FormField';
+import { IndustrySelect } from '../../../shared/components/search/IndustrySelect';
 
 export const CompanyEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -36,15 +39,6 @@ export const CompanyEditPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const sizeRanges = ['10-50', '50-100', '100-500', '500-1000', '1000+'];
-  const industries = [
-    'Công nghệ thông tin',
-    'Tài chính / Ngân hàng',
-    'Marketing / Quảng cáo',
-    'Y tế / Sức khỏe',
-    'Giáo dục / Đào tạo',
-    'Bán lẻ / Tiêu dùng',
-    'Khác',
-  ];
 
   useEffect(() => {
     if (!companyId) {
@@ -61,13 +55,13 @@ export const CompanyEditPage: React.FC = () => {
         
         if (response.data.success && response.data.data) {
           const companyData = response.data.data;
-          setName(companyData.name);
+          setName(companyData.name || '');
           setLogoUrl(companyData.logoUrl || '');
           setBannerUrl(companyData.bannerUrl || '');
           setDescription(companyData.description || '');
           setWebsite(companyData.website || '');
-          setSizeRange(companyData.sizeRange);
-          setIndustry(companyData.industry);
+          setSizeRange(companyData.sizeRange || '');
+          setIndustry(companyData.industry || '');
           setVideoUrl(companyData.videoUrl || '');
           if (companyData.officeGallery) {
             try {
@@ -97,7 +91,7 @@ export const CompanyEditPage: React.FC = () => {
     };
 
     fetchCompanyData();
-  }, [companyId]);
+  }, [companyId, t]);
 
   const handleAddressChange = (index: number, value: string) => {
     const updated = [...addresses];
@@ -152,7 +146,7 @@ export const CompanyEditPage: React.FC = () => {
         website: website.trim() || undefined,
         sizeRange,
         industry,
-        addressList: validAddresses.join('\n'), // joining list back for API
+        addressList: validAddresses.join('\n'),
         benefits: benefits.trim() || undefined,
         videoUrl: videoUrl.trim() || undefined,
         officeGallery: officeGallery.trim() 
@@ -178,123 +172,71 @@ export const CompanyEditPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: 'var(--space-12) 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-        <div style={{
-          border: '4px solid var(--color-border-default)',
-          borderTop: '4px solid var(--color-brand-primary)',
-          borderRadius: '50%',
-          width: '40px',
-          height: '40px',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto var(--space-4)'
-        }} />
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner} />
         {t('common.loading', 'Đang tải biểu mẫu chỉnh sửa...')}
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'var(--space-6) var(--space-4) var(--space-12)', textAlign: 'left' }}>
-      <div style={{ marginBottom: 'var(--space-6)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className={styles.pageContainer}>
+      <div className={styles.header}>
         <div>
-          <h1 style={{ fontSize: 'var(--font-size-2xl)', margin: '0 0 var(--space-1)' }}>{t('companies.edit_title', 'Cập Nhật Trang Doanh Nghiệp')}</h1>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+          <h1>{t('companies.edit_title', 'Cập Nhật Trang Doanh Nghiệp')}</h1>
+          <p>
             {t('companies.edit_subtitle', 'Xây dựng và nâng cao hình ảnh thương hiệu tuyển dụng của công ty bạn trên hệ thống.')}
           </p>
         </div>
         <button
           type="button"
           onClick={() => navigate(companyId ? `/companies/${companyId}` : '/companies')}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: 'var(--color-bg-card)',
-            color: 'var(--color-text-secondary)',
-            border: '1px solid var(--color-border-strong)',
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            fontWeight: 'var(--font-weight-medium)',
-            fontSize: 'var(--font-size-sm)'
-          }}
+          className={styles.btnCancel}
         >
           {t('common.cancel', 'Hủy bỏ')}
         </button>
       </div>
 
       {error && (
-        <div style={{
-          padding: 'var(--space-4)',
-          backgroundColor: 'var(--color-danger-bg)',
-          color: 'var(--color-danger)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--color-danger)',
-          marginBottom: 'var(--space-6)'
-        }}>
+        <div className={styles.errorAlert}>
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      <form onSubmit={handleSubmit} className={styles.form}>
         
         {/* CARD 1: BRAND IMAGES */}
-        <div style={{
-          backgroundColor: 'var(--color-bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--color-border-default)',
-          boxShadow: 'var(--shadow-sm)',
-          padding: 'var(--space-6)'
-        }}>
-          <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
             {t('companies.card_brand_images', '🖼️ Hình ảnh thương hiệu')}
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className={styles.fieldGroupVertical}>
             <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_logo_url', 'Đường dẫn Logo công ty')}
-              </label>
-              <input
-                type="text"
+              <FormField
+                label={t('companies.label_logo_url', 'Đường dẫn Logo công ty')}
                 placeholder="https://example.com/logo.png"
                 value={logoUrl}
                 onChange={(e) => setLogoUrl(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box'
-                }}
               />
               {logoUrl && (
-                <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('common.show', 'Xem trước Logo')}:</span>
-                  <img src={logoUrl} alt="Logo Preview" style={{ width: '40px', height: '40px', objectFit: 'contain', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-sm)' }} onError={(e) => e.currentTarget.style.display = 'none'} />
+                <div className={styles.logoPreviewRow}>
+                  <span className={styles.previewLabel}>{t('common.show', 'Xem trước Logo')}:</span>
+                  <img src={logoUrl} alt="Logo Preview" className={styles.logoImg} onError={(e) => e.currentTarget.style.display = 'none'} />
                 </div>
               )}
             </div>
 
             <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_banner_url', 'Đường dẫn Ảnh bìa (Banner)')}
-              </label>
-              <input
-                type="text"
+              <FormField
+                label={t('companies.label_banner_url', 'Đường dẫn Ảnh bìa (Banner)')}
                 placeholder="https://example.com/banner.jpg"
                 value={bannerUrl}
                 onChange={(e) => setBannerUrl(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box'
-                }}
               />
               {bannerUrl && (
-                <div style={{ marginTop: 'var(--space-2)' }}>
-                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', display: 'block', marginBottom: 'var(--space-1)' }}>{t('common.show', 'Xem trước Banner')}:</span>
-                  <div style={{ width: '100%', height: '80px', backgroundImage: `url(${bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)' }} />
+                <div className={styles.bannerPreviewBox}>
+                  <span className={styles.previewLabel}>{t('common.show', 'Xem trước Banner')}:</span>
+                  <img src={bannerUrl} alt="Banner Preview" className={styles.bannerImg} onError={(e) => e.currentTarget.style.display = 'none'} />
                 </div>
               )}
             </div>
@@ -302,174 +244,96 @@ export const CompanyEditPage: React.FC = () => {
         </div>
 
         {/* CARD 2: GENERAL INFO */}
-        <div style={{
-          backgroundColor: 'var(--color-bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--color-border-default)',
-          boxShadow: 'var(--shadow-sm)',
-          padding: 'var(--space-6)'
-        }}>
-          <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
             {t('companies.card_general_info', 'ℹ️ Thông tin chung')}
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_company_name', 'Tên doanh nghiệp')} <span style={{ color: 'var(--color-danger)' }}>*</span>
-              </label>
-              <input
-                type="text"
+          <div className={styles.fieldGroupGrid}>
+            <div className={styles.colSpanFull}>
+              <FormField
+                label={t('companies.label_company_name', 'Tên doanh nghiệp')}
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box'
-                }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_size_range', 'Quy mô nhân sự')} <span style={{ color: 'var(--color-danger)' }}>*</span>
-              </label>
-              <select
+              <FormField
+                label={t('companies.label_size_range', 'Quy mô nhân sự')}
+                required
+                control="select"
                 value={sizeRange}
                 onChange={(e) => setSizeRange(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  backgroundColor: 'var(--color-bg-card)',
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="">{t('common.select_empty', '-- Chọn quy mô --')}</option>
-                {sizeRanges.map((sz) => (
-                  <option key={sz} value={sz}>{sz} {t('common.records', 'nhân viên')}</option>
-                ))}
-              </select>
+                options={[
+                  { value: '', label: t('common.select_empty', '-- Chọn quy mô --') },
+                  ...sizeRanges.map((sz) => ({
+                    value: sz,
+                    label: `${sz} ${t('common.records', 'nhân viên')}`
+                  }))
+                ]}
+              />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_industry', 'Ngành nghề chính')} <span style={{ color: 'var(--color-danger)' }}>*</span>
-              </label>
-              <select
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  backgroundColor: 'var(--color-bg-card)',
-                  boxSizing: 'border-box'
-                }}
-              >
-                <option value="">{t('common.select_empty', '-- Chọn ngành nghề --')}</option>
-                {industries.map((ind) => (
-                  <option key={ind} value={ind}>{ind}</option>
-                ))}
-              </select>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
+                  {t('companies.label_industry', 'Ngành nghề chính')} <span className={styles.requiredStar}>*</span>
+                </label>
+                <IndustrySelect
+                  inlineDisplay
+                  value={industry}
+                  placeholder={t('common.select_empty', '-- Chọn ngành nghề --')}
+                  onChange={(_code, item) => setIndustry(item ? item.name : _code)}
+                />
+              </div>
             </div>
 
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_website', 'Link Website')}
-              </label>
-              <input
-                type="text"
+            <div className={styles.colSpanFull}>
+              <FormField
+                label={t('companies.label_website', 'Link Website')}
                 placeholder="https://example.com"
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box'
-                }}
               />
             </div>
           </div>
         </div>
 
         {/* CARD 3: DESCRIPTION & LOCATIONS */}
-        <div style={{
-          backgroundColor: 'var(--color-bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--color-border-default)',
-          boxShadow: 'var(--shadow-sm)',
-          padding: 'var(--space-6)'
-        }}>
-          <h3 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-lg)', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)' }}>
+        <div className={styles.card}>
+          <h3 className={styles.cardTitle}>
             {t('companies.card_desc_locations', '📝 Mô tả & Địa điểm')}
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_description', 'Giới thiệu chi tiết doanh nghiệp')}
-              </label>
-              <textarea
-                placeholder={t('companies.label_description', 'Mô tả chi tiết về lịch sử thành lập, văn hóa doanh nghiệp...')}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={6}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
+          <div className={styles.fieldGroupVertical}>
+            <FormField
+              label={t('companies.label_description', 'Giới thiệu chi tiết doanh nghiệp')}
+              control="textarea"
+              rows={6}
+              placeholder={t('companies.label_description', 'Mô tả chi tiết về lịch sử thành lập, văn hóa doanh nghiệp...')}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
 
             {/* Branch offices */}
             <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_office_addresses', '📍 Danh sách địa chỉ văn phòng')} <span style={{ color: 'var(--color-danger)' }}>*</span>
+              <label className={styles.label}>
+                {t('companies.label_office_addresses', '📍 Danh sách địa chỉ văn phòng')} <span className={styles.requiredStar}>*</span>
               </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <div className={styles.fieldGroupVertical}>
                 {addresses.map((addr, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                  <div key={idx} className={styles.addressRow}>
                     <input
                       type="text"
                       placeholder={`Văn phòng chi nhánh ${idx + 1}`}
                       value={addr}
                       onChange={(e) => handleAddressChange(idx, e.target.value)}
-                      style={{
-                        flexGrow: 1,
-                        padding: '10px 12px',
-                        border: '1px solid var(--color-border-strong)',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: 'var(--font-size-base)',
-                        boxSizing: 'border-box'
-                      }}
+                      className={styles.input}
                     />
                     <button
                       type="button"
                       onClick={() => removeAddress(idx)}
-                      style={{
-                        padding: '10px 14px',
-                        backgroundColor: 'var(--color-danger-bg)',
-                        color: 'var(--color-danger)',
-                        border: '1px solid var(--color-danger)',
-                        borderRadius: 'var(--radius-md)',
-                        cursor: 'pointer',
-                        fontWeight: 'bold'
-                      }}
+                      className={styles.btnDeleteAddress}
                     >
                       {t('common.delete', 'Xóa')}
                     </button>
@@ -479,17 +343,7 @@ export const CompanyEditPage: React.FC = () => {
               <button
                 type="button"
                 onClick={addAddress}
-                style={{
-                  marginTop: 'var(--space-3)',
-                  padding: '8px 16px',
-                  backgroundColor: 'var(--color-brand-primary-soft)',
-                  color: 'var(--color-brand-primary-dark)',
-                  border: '1px solid var(--color-brand-primary)',
-                  borderRadius: 'var(--radius-md)',
-                  cursor: 'pointer',
-                  fontWeight: 'var(--font-weight-medium)',
-                  fontSize: 'var(--font-size-sm)'
-                }}
+                className={styles.btnAddAddress}
               >
                 {t('companies.btn_add_address', '+ Thêm địa điểm')}
               </button>
@@ -498,15 +352,9 @@ export const CompanyEditPage: React.FC = () => {
         </div>
 
         {/* CARD 4: EMPLOYER BRANDING & CAREERS PORTAL */}
-        <div style={{
-          backgroundColor: 'var(--color-bg-card)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--color-border-default)',
-          boxShadow: 'var(--shadow-sm)',
-          padding: 'var(--space-6)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border-default)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-            <h3 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+        <div className={styles.card}>
+          <div className={styles.cardHeaderRow}>
+            <h3 className={styles.cardTitle}>
               {t('companies.card_branding_portal', '🌟 Thương hiệu & Cổng Tuyển Dụng')}
             </h3>
             {companyId && (
@@ -514,95 +362,47 @@ export const CompanyEditPage: React.FC = () => {
                 href={`/companies/${companyId}/careers`} 
                 target="_blank" 
                 rel="noreferrer"
-                style={{ fontSize: '13px', color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }}
+                className={styles.careersLink}
               >
                 🚀 {t('companies.btn_explore_careers', 'Xem Cổng Tuyển Dụng Thực Tế')} ↗
               </a>
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_video_url', '🎥 Video giới thiệu văn hóa công ty (YouTube / MP4 URL)')}
-              </label>
-              <input
-                type="text"
-                placeholder="Ví dụ: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
+          <div className={styles.fieldGroupVertical}>
+            <FormField
+              label={t('companies.label_video_url', '🎥 Video giới thiệu văn hóa công ty (YouTube / MP4 URL)')}
+              placeholder="Ví dụ: https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+            />
 
-            <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_office_gallery', '🖼️ Hình ảnh văn phòng & Môi trường làm việc (Mỗi dòng một link URL ảnh)')}
-              </label>
-              <textarea
-                placeholder="https://example.com/office-1.jpg&#10;https://example.com/pantry-2.jpg&#10;https://example.com/teambuilding.jpg"
-                value={officeGallery}
-                onChange={(e) => setOfficeGallery(e.target.value)}
-                rows={4}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
+            <FormField
+              label={t('companies.label_office_gallery', '🖼️ Hình ảnh văn phòng & Môi trường làm việc (Mỗi dòng một link URL ảnh)')}
+              control="textarea"
+              rows={4}
+              placeholder="https://example.com/office-1.jpg&#10;https://example.com/pantry-2.jpg&#10;https://example.com/teambuilding.jpg"
+              value={officeGallery}
+              onChange={(e) => setOfficeGallery(e.target.value)}
+            />
 
-            <div>
-              <label style={{ display: 'block', fontWeight: 'var(--font-weight-medium)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-2)' }}>
-                {t('companies.label_benefits', '🎁 Lợi ích & Chế độ đãi ngộ bổ sung (Benefits)')}
-              </label>
-              <textarea
-                placeholder="Ví dụ: Thưởng tháng 13, Gói bảo hiểm sức khỏe Bảo Việt, Khám sức khỏe định kỳ, Du lịch 5 sao..."
-                value={benefits}
-                onChange={(e) => setBenefits(e.target.value)}
-                rows={3}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: '1px solid var(--color-border-strong)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: 'var(--font-size-base)',
-                  boxSizing: 'border-box',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
+            <FormField
+              label={t('companies.label_benefits', '🎁 Lợi ích & Chế độ đãi ngộ bổ sung (Benefits)')}
+              control="textarea"
+              rows={3}
+              placeholder="Ví dụ: Thưởng tháng 13, Gói bảo hiểm sức khỏe Bảo Việt, Khám sức khỏe định kỳ, Du lịch 5 sao..."
+              value={benefits}
+              onChange={(e) => setBenefits(e.target.value)}
+            />
           </div>
         </div>
 
         {/* Form Action Footer */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
+        <div className={styles.formFooter}>
           <button
             type="submit"
             disabled={saving}
-            style={{
-              padding: '12px 32px',
-              backgroundColor: 'var(--color-brand-primary)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 'var(--radius-md)',
-              cursor: saving ? 'not-allowed' : 'pointer',
-              fontWeight: 'var(--font-weight-bold)',
-              fontSize: 'var(--font-size-base)',
-              boxShadow: 'var(--shadow-md)',
-              opacity: saving ? 0.7 : 1
-            }}
+            className={styles.btnSubmit}
           >
             {saving ? t('companies.saving_company', 'Đang lưu thông tin...') : t('companies.btn_save_company', 'Lưu thông tin trang')}
           </button>
@@ -611,3 +411,4 @@ export const CompanyEditPage: React.FC = () => {
     </div>
   );
 };
+export default CompanyEditPage;

@@ -46,11 +46,16 @@
   }
 }
 
+.titleBell {
+  vertical-align: middle;
+  margin-right: var(--space-2);
+  color: var(--color-primary);
+}
+
 .contentCard {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -117,7 +122,7 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   background: var(--color-danger);
-  color: #ffffff;
+  color: var(--color-primary-contrast);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
@@ -153,10 +158,10 @@
 }
 
 .item_unread {
-  background-color: var(--color-brand-primary-soft);
+  background-color: var(--color-bg-subtle);
   
   &:hover {
-    background-color: rgba(201, 169, 97, 0.12);
+    background-color: var(--color-bg-hover);
   }
   
   .item__title {

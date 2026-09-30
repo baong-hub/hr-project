@@ -96,7 +96,7 @@ export const UserManagementPage = () => {
           <h2>{t('sidebar.module_user') || 'Quản lý tài khoản'}</h2>
           <p>{t('user.subtitle') || 'Danh sách nhân viên sử dụng hệ thống'}</p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className={styles.headerActions}>
           <Button variant="outline" onClick={() => handleOpenUserSessions()} icon={<ShieldAlert size={18} />}>
             Giám sát phiên đăng nhập
           </Button>
@@ -132,7 +132,7 @@ export const UserManagementPage = () => {
                   <th>Phòng ban CRM</th>
                   <th>{t('user.site') || 'Chi nhánh'}</th>
                   <th>{t('common.status') || 'Trạng thái'}</th>
-                  <th style={{ textAlign: 'right' }}>{t('common.actions') || 'Thao tác'}</th>
+                  <th className={styles.colActions}>{t('common.actions') || 'Thao tác'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,7 +140,7 @@ export const UserManagementPage = () => {
                   <tr key={u.id} className={!u.isActive ? styles.inactiveRow : ''}>
                     <td className={styles.username}>{u.username}</td>
                     <td className={styles.fullName}>{u.fullName}</td>
-                    <td>{u.sipUsername ? <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#0284c7' }}>{u.sipUsername}</span> : <span style={{ color: '#94a3b8' }}>--</span>}</td>
+                    <td>{u.sipUsername ? <span className={styles.sipCode}>{u.sipUsername}</span> : <span className={styles.textMuted}>--</span>}</td>
                     <td>
                       <span className={`${styles.badge} ${u.accountType === 'Admin' ? styles.admin : styles.user}`}>
                         {u.accountType}
@@ -148,16 +148,16 @@ export const UserManagementPage = () => {
                     </td>
                     <td>
                       {u.roles && u.roles.length > 0 ? (
-                        <span style={{ fontWeight: 500, color: '#334155' }}>{u.roles.join(', ')}</span>
+                        <span>{u.roles.join(', ')}</span>
                       ) : (
-                        <span style={{ color: '#94a3b8' }}>--</span>
+                        <span className={styles.textMuted}>--</span>
                       )}
                     </td>
                     <td>
                       {u.departmentName ? (
-                        <span style={{ fontWeight: 500, color: '#334155' }}>{u.departmentName}</span>
+                        <span>{u.departmentName}</span>
                       ) : (
-                        <span style={{ color: '#94a3b8' }}>--</span>
+                        <span className={styles.textMuted}>--</span>
                       )}
                     </td>
                     <td>{u.siteName}</td>
@@ -176,7 +176,7 @@ export const UserManagementPage = () => {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan={9} style={{ textAlign: 'center', padding: '40px' }}>{t('user.empty') || 'Không có dữ liệu người dùng'}</td>
+                    <td colSpan={9} className={styles.tableEmpty}>{t('user.empty') || 'Không có dữ liệu người dùng'}</td>
                   </tr>
                 )}
               </tbody>

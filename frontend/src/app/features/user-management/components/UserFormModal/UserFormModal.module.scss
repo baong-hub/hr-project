@@ -1,34 +1,36 @@
+@use '../../../../../styles/tokens' as *;
+
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--spacing-md);
 
   .error {
-    background-color: #fff1f0;
-    border: 1px solid #ffa39e;
-    color: #cf1322;
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-size: 14px;
+    background-color: var(--color-danger-bg);
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
   }
 
   .section {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 16px 20px;
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-sm);
   }
 
   .sectionTitle {
-    margin: 0 0 4px 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #1e293b;
-    border-bottom: 1px solid #cbd5e1;
-    padding-bottom: 8px;
+    margin: 0 0 var(--spacing-xxs) 0;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border-default);
+    padding-bottom: var(--spacing-xs);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -36,74 +38,81 @@
   .formGroup {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--spacing-xxs);
 
     label {
-      font-weight: 500;
-      font-size: 13px;
-      color: #334155;
+      font-weight: 600;
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
 
       .required {
-        color: #ef4444;
-        margin-left: 4px;
+        color: var(--color-danger);
+        margin-left: var(--spacing-xxs);
       }
     }
 
     input,
     select {
-      padding: 9px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      font-size: 13px;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
       outline: none;
-      transition: all 0.2s ease;
-      background-color: #ffffff;
+      transition: border-color var(--transition-base);
+      background-color: var(--color-bg-input);
+      color: var(--color-text-primary);
 
       &:focus {
-        border-color: #0284c7;
-        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        border-color: var(--color-primary);
       }
 
       &:disabled {
-        background-color: #f1f5f9;
-        color: #94a3b8;
+        background-color: var(--color-bg-subtle);
+        color: var(--color-text-muted);
         cursor: not-allowed;
       }
     }
   }
 
   .fieldHelp {
-    font-size: 12px;
-    color: #64748b;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
     margin: 2px 0 0 0;
   }
 
   .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: var(--spacing-md);
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   .row3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
+    gap: var(--spacing-md);
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
   }
 
   .checkboxGroup {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--spacing-xs);
 
     input {
       width: 16px;
       height: 16px;
-      accent-color: #0284c7;
     }
 
     label {
-      font-size: 14px;
-      color: #334155;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-primary);
       cursor: pointer;
     }
   }
@@ -111,7 +120,56 @@
   .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 10px;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+  }
+
+  .marginTopXs {
+    margin-top: var(--spacing-xs);
+  }
+
+  .marginTopSm {
+    margin-top: var(--spacing-sm);
+  }
+
+  .marginTopMd {
+    margin-top: var(--spacing-md);
+  }
+
+  .passwordRow {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+
+    input {
+      flex: 1;
+      background-color: var(--color-bg-subtle);
+      cursor: text;
+    }
+
+    button {
+      padding: var(--spacing-xs) var(--spacing-sm);
+    }
+  }
+
+  .warningCard {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--color-warning-bg);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+    color: var(--color-warning);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+
+    strong {
+      color: var(--color-warning);
+    }
+  }
+
+  .centerText {
+    text-align: center;
+    padding: var(--spacing-lg) 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
   }
 }

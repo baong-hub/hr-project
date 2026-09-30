@@ -197,7 +197,7 @@ export const SystemSettingsPage = () => {
   if (loading) {
     return (
       <div className={styles.pageContainer}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className={styles.loadingContainer}>
           <RefreshCw className="animate-spin" size={20} />
           <span>Đang tải cấu hình hệ thống...</span>
         </div>
@@ -215,19 +215,7 @@ export const SystemSettingsPage = () => {
       </div>
 
       {message && (
-        <div
-          style={{
-            padding: '12px 16px',
-            borderRadius: '8px',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: message.type === 'success' ? '#f0fdf4' : '#fef2f2',
-            color: message.type === 'success' ? '#166534' : '#991b1b',
-            border: `1px solid ${message.type === 'success' ? '#bbf7d0' : '#fecaca'}`
-          }}
-        >
+        <div className={`${styles.alert} ${message.type === 'success' ? styles.alertSuccess : styles.alertDanger}`}>
           {message.type === 'success' && <CheckCircle size={16} />}
           <span>{message.text}</span>
         </div>
@@ -264,9 +252,9 @@ export const SystemSettingsPage = () => {
               <div className={styles.formGrid}>
                 {activeGroup.items.map(item => (
                   <div key={item.configKey} className={styles.fieldGroup}>
-                    <label style={{ display: 'block', marginBottom: 6 }}>
+                    <label className={styles.fieldLabelBlock}>
                       {item.configKey === 'system.company_email_domain' ? (
-                        <div style={{ fontWeight: 600, color: '#1f2937' }}>
+                        <div className={styles.fieldLabelPrimary}>
                           Cho phép sử dụng đuôi mail của công ty để thực hiện login vào hệ thống
                         </div>
                       ) : (
@@ -284,19 +272,7 @@ export const SystemSettingsPage = () => {
                   type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '8px 20px',
-                    borderRadius: 6,
-                    border: 'none',
-                    background: '#2563eb',
-                    color: '#ffffff',
-                    fontWeight: 500,
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    opacity: saving ? 0.7 : 1
-                  }}
+                  className={styles.saveBtn}
                 >
                   <Save size={16} />
                   <span>{saving ? 'Đang lưu...' : 'Lưu cấu hình'}</span>

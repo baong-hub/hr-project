@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, ChevronRight, FileText, PlusCircle } from 'lucide-react';
 import { SeoHead } from '../../shared/components/SeoHead';
 import { SearchBar } from '../../shared/components/search/SearchBar';
 import { JobCard } from '../../shared/components/cards/JobCard';
@@ -8,6 +8,9 @@ import { jobsService } from '../../core/services/jobs.service';
 import { companiesService } from '../../core/services/companies.service';
 import { articlesService, type ArticleSummary } from '../../core/services/articles.service';
 import { salaryInsightsService, type SalaryInsightsResult } from '../../core/services/salary-insights.service';
+import { authService } from '../../core/services/auth.service';
+import { savedJobService } from '../../core/services/saved-job.service';
+import { toast } from '../../core/services/toast.service';
 import {
   metaService,
   type ProvinceItem,
@@ -20,9 +23,11 @@ import type { CompanyDto } from '../../core/models/company.model';
 import styles from './LandingPage.module.scss';
 
 export const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
   // Reference Data
   const [industries, setIndustries] = useState<IndustryItem[]>(STATIC_INDUSTRIES);
   const [provinces, setProvinces] = useState<ProvinceItem[]>(STATIC_PROVINCES);
+  const [savedJobIds, setSavedJobIds] = useState<Set<number>>(new Set());
   const [sortAlphabetical, setSortAlphabetical] = useState(false);
 
   // Real Counts
@@ -116,10 +121,60 @@ export const LandingPage: React.FC = () => {
       })
       .catch(() => {});
 
+    // Fetch saved jobs for candidate
+    if (authService.isAuthenticated()) {
+      savedJobService.getSavedJobs({ page: 1, pageSize: 200 })
+        .then((res) => {
+          if (res.data?.success && res.data.data?.items) {
+            setSavedJobIds(new Set(res.data.data.items.map((item: any) => item.jobId)));
+          }
+        })
+        .catch(() => {});
+    }
+
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const handleToggleSaveJob = async (jobId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!authService.isAuthenticated()) {
+      toast.info('Vui lòng đăng nhập để lưu việc làm yêu thích.');
+      navigate(`/auth/login?redirect=${encodeURIComponent('/jobs/' + jobId)}`);
+      return;
+    }
+
+    const wasSaved = savedJobIds.has(jobId);
+    setSavedJobIds((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(jobId);
+      else next.add(jobId);
+      return next;
+    });
+
+    try {
+      const res = await savedJobService.toggleSave(jobId);
+      if (res.data?.success && res.data.data) {
+        const { isSaved } = res.data.data;
+        setSavedJobIds((prev) => {
+          const next = new Set(prev);
+          if (isSaved) next.add(jobId);
+          else next.delete(jobId);
+          return next;
+        });
+        toast.success(isSaved ? 'Đã lưu việc làm!' : 'Đã bỏ lưu việc làm.');
+      }
+    } catch {
+      setSavedJobIds((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(jobId);
+        else next.delete(jobId);
+        return next;
+      });
+      toast.error('Lỗi khi lưu việc làm.');
+    }
+  };
 
   // Filter industries to display
   const displayedIndustries = [...industries].sort((a, b) => {
@@ -233,7 +288,12 @@ export const LandingPage: React.FC = () => {
 
           <div className={styles.jobsGrid}>
             {currentJobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard
+                key={job.id}
+                job={job}
+                isSaved={savedJobIds.has(job.id)}
+                onToggleSave={handleToggleSaveJob}
+              />
             ))}
           </div>
 
@@ -369,9 +429,26 @@ export const LandingPage: React.FC = () => {
                   Tạo hồ sơ trực tuyến, tìm kiếm việc làm minh bạch và nhận phân tích mức độ tương thích kỹ năng với từng vị trí tuyển dụng.
                 </p>
               </div>
-              <Link to="/jobs" className={styles.dualColBtn}>
-                Tìm việc ngay <ChevronRight size={15} />
-              </Link>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+                <Link to="/jobs" className={styles.dualColBtn}>
+                  Tìm việc ngay <ChevronRight size={15} />
+                </Link>
+                <button
+                  type="button"
+                  className={styles.dualColBtnSecondary}
+                  onClick={() => {
+                    if (!authService.isAuthenticated()) {
+                      toast.info('Vui lòng đăng nhập tài khoản ứng viên để tạo và quản lý CV.');
+                      navigate('/auth/login?redirect=%2Fcvs');
+                    } else {
+                      navigate('/cvs');
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <FileText size={15} /> Tạo CV ngay
+                </button>
+              </div>
             </div>
 
             <div className={styles.dualDivider} />
@@ -383,9 +460,26 @@ export const LandingPage: React.FC = () => {
                   Đăng tin tuyển dụng nhanh chóng, tiếp cận ứng viên tiềm năng và quản lý quy trình xét duyệt hồ sơ trên một hệ thống tập trung.
                 </p>
               </div>
-              <Link to="/pricing" className={styles.dualColBtnSecondary}>
-                Xem bảng giá đăng tin <ChevronRight size={15} />
-              </Link>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '12px' }}>
+                <Link to="/pricing" className={styles.dualColBtnSecondary}>
+                  Xem bảng giá đăng tin <ChevronRight size={15} />
+                </Link>
+                <button
+                  type="button"
+                  className={styles.dualColBtn}
+                  onClick={() => {
+                    if (!authService.isAuthenticated()) {
+                      toast.info('Vui lòng đăng nhập tài khoản nhà tuyển dụng để đăng tin.');
+                      navigate('/auth/login?redirect=%2Femployer%2Fjobs%2Fnew');
+                    } else {
+                      navigate('/employer/jobs/new');
+                    }
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <PlusCircle size={15} /> Đăng tin ngay
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -64,48 +64,37 @@ export const ViewPasswordModal = ({ isOpen, onClose, userId, username }: ViewPas
       title={`Xem mật khẩu - ${username}`}
       width="400px"
     >
-      <div className={styles.form} style={{ padding: '8px 0' }}>
+      <div className={styles.form}>
         {error && <div className={styles.error}>{error}</div>}
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '20px 0' }}>Đang tải mật khẩu...</div>
+          <div className={styles.centerText}>Đang tải mật khẩu...</div>
         ) : noData ? (
-          <div style={{ padding: '16px 0' }}>
-            <div style={{ 
-              padding: '12px 16px', 
-              backgroundColor: '#fef3c7', 
-              border: '1px solid #f59e0b', 
-              borderRadius: '8px',
-              color: '#92400e',
-              fontSize: '13px',
-              lineHeight: '1.5'
-            }}>
-              <strong>Chưa có dữ liệu mật khẩu.</strong><br />
-              Tài khoản này được tạo trước khi có tính năng đồng bộ mật khẩu. 
-              Hãy <strong>đặt lại mật khẩu</strong> cho tài khoản này để hệ thống lưu lại mật khẩu mới.
-            </div>
+          <div className={styles.warningCard}>
+            <strong>Chưa có dữ liệu mật khẩu.</strong><br />
+            Tài khoản này được tạo trước khi có tính năng đồng bộ mật khẩu. 
+            Hãy <strong>đặt lại mật khẩu</strong> cho tài khoản này để hệ thống lưu lại mật khẩu mới.
           </div>
         ) : (
           <div className={styles.formGroup}>
             <label>Mật khẩu hiện tại</label>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className={styles.passwordRow}>
               <input 
                 type={showPlain ? "text" : "password"} 
                 value={password} 
                 readOnly
-                style={{ flex: 1, backgroundColor: '#f1f5f9', cursor: 'text' }}
               />
-              <Button type="button" onClick={() => setShowPlain(!showPlain)} variant="secondary" style={{ padding: '8px 12px' }}>
+              <Button type="button" onClick={() => setShowPlain(!showPlain)} variant="secondary">
                 {showPlain ? <EyeOff size={16} /> : <Eye size={16} />}
               </Button>
-              <Button type="button" onClick={handleCopy} variant="outline" style={{ padding: '8px 12px' }} disabled={!password}>
+              <Button type="button" onClick={handleCopy} variant="outline" disabled={!password}>
                 <Copy size={16} />
               </Button>
             </div>
           </div>
         )}
 
-        <div className={styles.actions} style={{ marginTop: '24px' }}>
+        <div className={`${styles.actions} ${styles.marginTopMd}`}>
           <Button type="button" onClick={onClose} variant="secondary">Đóng</Button>
         </div>
       </div>

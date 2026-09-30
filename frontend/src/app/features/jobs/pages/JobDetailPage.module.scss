@@ -14,27 +14,27 @@
   align-items: center;
   gap: 6px;
   font-size: var(--font-size-xs, 12px);
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary);
   overflow-x: auto;
   white-space: nowrap;
   padding: 4px 0;
 
   a {
-    color: var(--color-text-secondary, #64748b);
+    color: var(--color-text-secondary);
     text-decoration: none;
     transition: color var(--transition-fast, 0.15s ease);
 
     &:hover {
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
     }
   }
 
   .separator {
-    color: var(--color-text-muted, #94a3b8);
+    color: var(--color-text-muted);
   }
 
   .current {
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     font-weight: 600;
   }
 }
@@ -61,8 +61,8 @@
 
 /* Header Card */
 .headerCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 24px);
   display: flex;
@@ -79,8 +79,8 @@
     width: 56px;
     height: 56px;
     border-radius: var(--radius-md, 8px);
-    background: var(--color-bg-subtle, #f1f5f9);
-    border: 1px solid var(--color-border-subtle, #e2e8f0);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -96,7 +96,7 @@
     .logoInitial {
       font-size: 22px;
       font-weight: 700;
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
     }
   }
 
@@ -109,14 +109,14 @@
     .companyLink {
       font-size: var(--font-size-base, 15px);
       font-weight: 700;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
       text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
 
       &:hover {
-        color: var(--color-brand-primary, #2563eb);
+        color: var(--color-brand-primary);
         text-decoration: underline;
       }
     }
@@ -124,11 +124,11 @@
     .verifiedBadge {
       font-size: 11px;
       font-weight: 600;
-      color: var(--color-success, #059669);
-      background: var(--color-success-subtle, #ecfdf5);
-      border: 1px solid var(--color-success-border, #a7f3d0);
+      color: var(--color-success);
+      background: var(--color-success-subtle);
+      border: 1px solid var(--color-success-border);
       padding: 1px 6px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       display: inline-flex;
       align-items: center;
       gap: 3px;
@@ -140,7 +140,7 @@
 .jobTitle {
   font-size: var(--font-size-2xl, 24px);
   font-weight: 800;
-  color: var(--color-text-primary, #0f172a);
+  color: var(--color-text-primary);
   margin: 0;
   line-height: 1.3;
 }
@@ -150,8 +150,8 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
-  background: var(--color-bg-subtle, #f8fafc);
-  border: 1px solid var(--color-border-subtle, #e2e8f0);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg, 10px);
   padding: 16px;
 
@@ -170,7 +170,7 @@
   gap: 10px;
 
   .blockIcon {
-    color: var(--color-brand-primary, #2563eb);
+    color: var(--color-brand-primary);
     flex-shrink: 0;
     margin-top: 2px;
   }
@@ -185,20 +185,20 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-muted, #64748b);
+      color: var(--color-text-muted);
       font-weight: 600;
     }
 
     .blockValue {
       font-size: var(--font-size-sm, 13px);
       font-weight: 700;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
 
       &.salary {
-        color: var(--color-salary, #8C6B28);
+        color: var(--color-salary);
         font-variant-numeric: tabular-nums;
       }
     }
@@ -207,8 +207,8 @@
 
 /* AI Fit Banner */
 .aiFitBanner {
-  background: var(--color-brand-subtle, #eff6ff);
-  border: 1px solid var(--color-brand-border, #bfdbfe);
+  background: var(--color-brand-subtle);
+  border: 1px solid var(--color-brand-border);
   border-radius: var(--radius-lg, 10px);
   padding: 12px 16px;
   display: flex;
@@ -222,17 +222,17 @@
     align-items: center;
     gap: 8px;
     font-size: var(--font-size-sm, 13px);
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
 
     .aiFitIcon {
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
     }
   }
 
   .aiFitBtn {
     padding: 6px 14px;
-    background: var(--color-brand-primary, #2563eb);
-    color: #ffffff;
+    background: var(--color-brand-primary);
+    color: var(--color-white);
     border: none;
     border-radius: var(--radius-md, 6px);
     font-size: var(--font-size-xs, 12px);
@@ -243,15 +243,15 @@
     gap: 6px;
 
     &:hover {
-      background: var(--color-brand-hover, #1d4ed8);
+      background: var(--color-brand-hover);
     }
   }
 }
 
 /* Prose Content Card */
 .proseCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 24px);
   display: flex;
@@ -267,19 +267,19 @@
   h2 {
     font-size: var(--font-size-md, 16px);
     font-weight: 700;
-    color: var(--color-text-primary, #0f172a);
+    color: var(--color-text-primary);
     margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
     padding-bottom: 8px;
-    border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   .sectionBody {
     font-size: var(--font-size-sm, 14px);
     line-height: 1.7;
-    color: var(--color-text-secondary, #334155);
+    color: var(--color-text-secondary);
     white-space: pre-line;
   }
 }
@@ -294,8 +294,8 @@
 }
 
 .actionCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-5, 20px);
   display: flex;
@@ -306,8 +306,8 @@
 .mainApplyBtn {
   width: 100%;
   padding: 12px;
-  background: var(--color-brand-primary, #2563eb);
-  color: #ffffff;
+  background: var(--color-brand-primary);
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-base, 15px);
@@ -320,16 +320,16 @@
   transition: background-color var(--transition-fast, 0.15s ease);
 
   &:hover {
-    background: var(--color-brand-hover, #1d4ed8);
+    background: var(--color-brand-hover);
   }
 }
 
 .appliedStateBtn {
   width: 100%;
   padding: 12px;
-  background: var(--color-success-subtle, #ecfdf5);
-  color: var(--color-success, #059669);
-  border: 1px solid var(--color-success-border, #a7f3d0);
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md, 8px);
   font-size: var(--font-size-base, 15px);
   font-weight: 700;
@@ -348,12 +348,12 @@
 
 .secondaryActionBtn {
   padding: 8px 12px;
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-default, #cbd5e1);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md, 6px);
   font-size: var(--font-size-xs, 12px);
   font-weight: 600;
-  color: var(--color-text-secondary, #475569);
+  color: var(--color-text-secondary);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -362,21 +362,21 @@
   transition: all var(--transition-fast, 0.15s ease);
 
   &:hover {
-    background: var(--color-bg-hover, #f1f5f9);
-    color: var(--color-text-primary, #0f172a);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
   }
 
   &.saved {
-    color: var(--color-error, #dc2626);
-    border-color: var(--color-error-border, #fca5a5);
-    background: var(--color-error-subtle, #fef2f2);
+    color: var(--color-error);
+    border-color: var(--color-error-border);
+    background: var(--color-error-subtle);
   }
 }
 
 /* Mini Company Card */
 .miniCompanyCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-4, 18px);
   display: flex;
@@ -388,7 +388,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
-    color: var(--color-text-muted, #64748b);
+    color: var(--color-text-muted);
     margin: 0;
   }
 
@@ -401,13 +401,13 @@
       width: 44px;
       height: 44px;
       border-radius: var(--radius-md, 6px);
-      background: var(--color-bg-subtle, #f1f5f9);
-      border: 1px solid var(--color-border-subtle, #e2e8f0);
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
       overflow: hidden;
       flex-shrink: 0;
 
@@ -427,17 +427,17 @@
       .miniName {
         font-size: var(--font-size-sm, 14px);
         font-weight: 700;
-        color: var(--color-text-primary, #0f172a);
+        color: var(--color-text-primary);
         text-decoration: none;
 
         &:hover {
-          color: var(--color-brand-primary, #2563eb);
+          color: var(--color-brand-primary);
         }
       }
 
       .miniIndustry {
         font-size: 11px;
-        color: var(--color-text-secondary, #64748b);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -447,12 +447,12 @@
     flex-direction: column;
     gap: 6px;
     padding-top: 10px;
-    border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+    border-top: 1px solid var(--color-border-subtle);
 
     a {
       font-size: var(--font-size-xs, 12px);
       font-weight: 600;
-      color: var(--color-brand-primary, #2563eb);
+      color: var(--color-brand-primary);
       text-decoration: none;
       display: inline-flex;
       align-items: center;
@@ -467,8 +467,8 @@
 
 /* Similar Jobs Card */
 .similarJobsCard {
-  background: var(--color-bg-card, #ffffff);
-  border: 1px solid var(--color-border-subtle, #e5e7eb);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-xl, 14px);
   padding: var(--space-4, 18px);
   display: flex;
@@ -480,7 +480,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 700;
-    color: var(--color-text-muted, #64748b);
+    color: var(--color-text-muted);
     margin: 0;
   }
 
@@ -492,8 +492,8 @@
 
   .similarItem {
     padding: 8px 10px;
-    background: var(--color-bg-subtle, #f8fafc);
-    border: 1px solid var(--color-border-subtle, #f1f5f9);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-md, 8px);
     text-decoration: none;
     display: flex;
@@ -502,28 +502,28 @@
     transition: all var(--transition-fast, 0.15s ease);
 
     &:hover {
-      background: var(--color-brand-subtle, #eff6ff);
-      border-color: var(--color-brand-border, #bfdbfe);
+      background: var(--color-brand-subtle);
+      border-color: var(--color-brand-border);
     }
 
     .similarJobTitle {
       font-size: var(--font-size-xs, 13px);
       font-weight: 700;
-      color: var(--color-text-primary, #0f172a);
+      color: var(--color-text-primary);
       margin: 0;
       line-height: 1.3;
     }
 
     .similarCompany {
       font-size: 11px;
-      color: var(--color-text-secondary, #64748b);
+      color: var(--color-text-secondary);
       margin: 0;
     }
 
     .similarSalary {
       font-size: 11px;
       font-weight: 700;
-      color: var(--color-salary, #8C6B28);
+      color: var(--color-salary);
       font-variant-numeric: tabular-nums;
     }
   }
@@ -550,3 +550,31 @@
     box-shadow: none !important;
   }
 }
+
+.loadingState {
+  padding: 60px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.errorState {
+  padding: 60px;
+  text-align: center;
+}
+
+.errorMessage {
+  color: var(--color-danger);
+  margin-bottom: 16px;
+}
+
+.colSpan2 {
+  grid-column: span 2;
+}
+
+.btnAuto {
+  width: auto !important;
+  display: inline-flex !important;
+  padding: 8px 20px !important;
+}
+
+

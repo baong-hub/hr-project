@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { companiesService } from '../../../core/services/companies.service';
 import { jobsService } from '../../../core/services/jobs.service';
@@ -109,6 +109,7 @@ export const CompanyCareersPage: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const companyId = Number(id);
 
   const [company, setCompany] = useState<CompanyDto | null>(null);
@@ -192,7 +193,7 @@ export const CompanyCareersPage: React.FC = () => {
   const handleFollowToggle = async () => {
     if (!isAuthenticated) {
       toast.info(t('auth.login_title', 'Vui lòng đăng nhập để theo dõi doanh nghiệp.'));
-      navigate('/auth/login');
+      navigate(`/auth/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
       return;
     }
 
@@ -217,20 +218,20 @@ export const CompanyCareersPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 0', gap: 16 }}>
-        <Loader2 style={{ animation: 'spin 1s linear infinite', color: '#4f46e5', width: 40, height: 40 }} />
-        <span style={{ fontSize: '15px', color: 'var(--color-text-secondary)' }}>{t('companies.loading', 'Đang tải Cổng tuyển dụng & Thương hiệu doanh nghiệp...')}</span>
+      <div className={styles.loadingContainer}>
+        <Loader2 className={styles.loadingIcon} />
+        <span>{t('companies.loading', 'Đang tải Cổng tuyển dụng & Thương hiệu doanh nghiệp...')}</span>
       </div>
     );
   }
 
   if (error || !company) {
     return (
-      <div style={{ maxWidth: 800, margin: '60px auto', padding: 32, textAlign: 'center', background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0' }}>
-        <Building2 size={48} color="#94a3b8" style={{ marginBottom: 16 }} />
-        <h2 style={{ fontSize: 20, margin: '0 0 8px 0' }}>{t('companies.empty_title', 'Không tìm thấy trang tuyển dụng')}</h2>
-        <p style={{ color: '#64748b', marginBottom: 24 }}>{error || t('companies.empty_desc', 'Doanh nghiệp này không tồn tại hoặc chưa kích hoạt trang thương hiệu.')}</p>
-        <Link to="/companies" style={{ display: 'inline-flex', padding: '10px 20px', background: '#4f46e5', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600 }}>
+      <div className={styles.emptyContainer}>
+        <Building2 size={48} className={styles.emptyIcon} />
+        <h2 className={styles.emptyTitle}>{t('companies.empty_title', 'Không tìm thấy trang tuyển dụng')}</h2>
+        <p className={styles.emptyDesc}>{error || t('companies.empty_desc', 'Doanh nghiệp này không tồn tại hoặc chưa kích hoạt trang thương hiệu.')}</p>
+        <Link to="/companies" className={styles.btnEmptyBack}>
           {t('companies.back_to_list', 'Xem danh sách doanh nghiệp khác')}
         </Link>
       </div>
@@ -287,25 +288,10 @@ export const CompanyCareersPage: React.FC = () => {
   return (
     <div className={styles.careersPortal}>
       {/* Back Button */}
-      <div style={{ marginBottom: '12px', paddingTop: '4px' }}>
+      <div className={styles.backButtonWrapper}>
         <button
           onClick={() => navigate('/companies')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            background: 'var(--color-bg-default, #fff)',
-            border: '1px solid var(--color-border-default, #e2e8f0)',
-            borderRadius: 'var(--radius-md, 8px)',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 500,
-            color: 'var(--color-text-secondary, #64748b)',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-subtle, #f8fafc)'; e.currentTarget.style.color = 'var(--color-text-primary, #1e293b)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-default, #fff)'; e.currentTarget.style.color = 'var(--color-text-secondary, #64748b)'; }}
+          className={styles.btnBackTop}
         >
           <ArrowLeft size={16} /> {t('companies.back_to_list', 'Quay lại danh sách doanh nghiệp')}
         </button>
@@ -347,7 +333,7 @@ export const CompanyCareersPage: React.FC = () => {
               disabled={followLoading}
               onClick={handleFollowToggle}
             >
-              <Heart size={16} fill={isFollowing ? '#4f46e5' : 'none'} color={isFollowing ? '#4f46e5' : '#64748b'} />
+              <Heart size={16} fill={isFollowing ? 'var(--color-primary)' : 'none'} color={isFollowing ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
               {isFollowing ? t('companies.btn_following', 'Đang theo dõi') : t('companies.btn_follow', 'Theo dõi')} ({followersCount})
             </button>
 
@@ -381,7 +367,7 @@ export const CompanyCareersPage: React.FC = () => {
             <div className={styles.metaPill}>
               <Globe />
               <a href={company.website.startsWith('http') ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer">
-                {t('companies.website_link', 'Website công ty')} <ExternalLink size={12} style={{ display: 'inline' }} />
+                {t('companies.website_link', 'Website công ty')} <ExternalLink size={12} className={styles.inlineIcon} />
               </a>
             </div>
           )}
@@ -411,7 +397,7 @@ export const CompanyCareersPage: React.FC = () => {
             ) : (
               <div className={styles.videoPlaceholder}>
                 <div className={styles.playBtn} onClick={() => alert(t('companies.video_explore', { name: company.name, defaultValue: `Khám phá hành trình văn hóa tại ${company.name}` }))}>
-                  <Play size={24} fill="#fff" color="#fff" />
+                  <Play size={24} fill="var(--color-text-inverse)" color="var(--color-text-inverse)" />
                 </div>
                 <span>{t('companies.video_explore', { name: company.name, defaultValue: `Khám phá hành trình văn hóa tại ${company.name}` })}</span>
               </div>
@@ -525,8 +511,8 @@ export const CompanyCareersPage: React.FC = () => {
 
         {/* Custom Benefits text if provided */}
         {company.benefits && (
-          <div style={{ marginTop: 24, padding: 20, background: '#f8fafc', borderRadius: 16, border: '1px solid #e2e8f0', fontSize: '14px', color: '#475569', lineHeight: 1.7 }}>
-            <strong style={{ color: '#0f172a', display: 'block', marginBottom: 6 }}>{t('companies.benefits_additional', 'Phúc lợi bổ sung từ công ty:')}</strong>
+          <div className={styles.benefitsAdditionalBox}>
+            <strong>{t('companies.benefits_additional', 'Phúc lợi bổ sung từ công ty:')}</strong>
             {company.benefits}
           </div>
         )}
@@ -534,7 +520,7 @@ export const CompanyCareersPage: React.FC = () => {
 
       {/* 5. ACTIVE JOB OPENINGS */}
       <section id="active-jobs" className={styles.jobsSection}>
-        <div className={styles.sectionHeader} style={{ marginBottom: 24 }}>
+        <div className={styles.sectionHeader}>
           <span className={styles.subBadge}><Briefcase size={12} /> {t('companies.jobs_sub', 'Tuyển dụng trực tiếp')}</span>
           <h2>{t('companies.jobs_title', 'Cơ Hội Nghề Nghiệp Đang Mở')}</h2>
           <p>{t('companies.jobs_desc', 'Khám phá các vị trí công việc phù hợp với kỹ năng và định hướng phát triển của bạn.')}</p>
@@ -561,16 +547,16 @@ export const CompanyCareersPage: React.FC = () => {
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', fontSize: '13.5px', color: '#64748b', fontWeight: 600 }}>
+          <div className={styles.jobsMatchingCount}>
             {t('companies.jobs_matching_count', { count: filteredJobs.length, defaultValue: `Hiển thị ${filteredJobs.length} vị trí phù hợp` })}
           </div>
         </div>
 
         {/* Jobs List */}
         {filteredJobs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 0', color: '#64748b' }}>
-            <Briefcase size={40} style={{ opacity: 0.5, marginBottom: 12 }} />
-            <p style={{ margin: 0 }}>{t('companies.jobs_empty_filter', 'Hiện chưa có vị trí nào khớp với bộ lọc tìm kiếm của bạn.')}</p>
+          <div className={styles.jobsEmptyFilter}>
+            <Briefcase size={40} />
+            <p>{t('companies.jobs_empty_filter', 'Hiện chưa có vị trí nào khớp với bộ lọc tìm kiếm của bạn.')}</p>
           </div>
         ) : (
           <div className={styles.jobCardsList}>
@@ -622,7 +608,7 @@ export const CompanyCareersPage: React.FC = () => {
             <div key={idx} className={styles.testimonialCard}>
               <div className={styles.starsRow}>
                 {[...Array(item.rating || 5)].map((_, sIdx) => (
-                  <Star key={sIdx} size={15} fill="#f59e0b" color="#f59e0b" />
+                  <Star key={sIdx} size={15} fill="var(--color-warning)" color="var(--color-warning)" />
                 ))}
               </div>
 
