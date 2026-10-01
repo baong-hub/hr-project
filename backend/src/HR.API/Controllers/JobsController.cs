@@ -24,6 +24,7 @@ public class JobsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = new[] { "*" })]
     public async Task<IActionResult> GetAll([FromQuery] GetJobsQuery query)
     {
         var result = await mediator.Send(query);

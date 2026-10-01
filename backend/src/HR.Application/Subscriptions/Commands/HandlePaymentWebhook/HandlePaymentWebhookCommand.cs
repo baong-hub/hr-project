@@ -13,6 +13,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 
+using Microsoft.Extensions.Logging;
+
 namespace HR.Application.Subscriptions.Commands.HandlePaymentWebhook;
 
 public record HandlePaymentWebhookCommand(PaymentWebhookRequest Request, string? SecretHeader = null) : IRequest<bool>;
@@ -20,11 +22,13 @@ public record HandlePaymentWebhookCommand(PaymentWebhookRequest Request, string?
 public class HandlePaymentWebhookCommandHandler(
     IApplicationDbContext context,
     IEmailService emailService,
-    IConfiguration configuration) : IRequestHandler<HandlePaymentWebhookCommand, bool>
+    IConfiguration configuration,
+    ILogger<HandlePaymentWebhookCommandHandler> logger) : IRequestHandler<HandlePaymentWebhookCommand, bool>
 {
     public async Task<bool> Handle(HandlePaymentWebhookCommand command, CancellationToken cancellationToken)
     {
         var req = command.Request;
+        logger.LogInformation("Processing payment webhook: OrderId={OrderId}, Status={Status}, Amount={Amount}", req.OrderId, req.Status, req.Amount);
 
         // Xác thực chữ ký số HMAC-SHA256 hoặc Secret Header từ cổng thanh toán
         var secret = configuration["Payment:WebhookSecret"] 
@@ -52,11 +56,13 @@ public class HandlePaymentWebhookCommandHandler(
 
         if (!isHeaderValid && !isSignatureValid)
         {
+            logger.LogWarning("Invalid webhook signature or secret header for OrderId={OrderId}", req.OrderId);
             throw new UnauthorizedException("INVALID_WEBHOOK_SIGNATURE", "Chữ ký webhook hoặc Secret xác thực không hợp lệ. Yêu cầu bị từ chối.");
         }
 
         if (req.Status != "PAID" && req.Status != "SUCCESS")
         {
+            logger.LogInformation("Webhook status {Status} is not PAID or SUCCESS for OrderId={OrderId}, ignoring.", req.Status, req.OrderId);
             return false;
         }
 
@@ -132,6 +138,7 @@ public class HandlePaymentWebhookCommandHandler(
         }
 
         await context.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Successfully activated plan {Plan} for CompanyId={CompanyId} until {EndDate}", plan, companyId, sub.EndDate);
 
         // Gửi email xác nhận thanh toán thành công
         var employer = await context.Employers

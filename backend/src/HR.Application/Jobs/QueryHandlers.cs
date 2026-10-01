@@ -14,6 +14,7 @@ public class GetJobByIdQueryHandler(IApplicationDbContext context, ICurrentUserS
     public async Task<JobDto?> Handle(GetJobByIdQuery request, CancellationToken cancellationToken)
     {
         var j = await context.Jobs
+            .AsNoTracking()
             .Include(j => j.Company)
             .Include(j => j.Employer)
             .FirstOrDefaultAsync(x => x.Id == request.Id && x.DeletedAt == null, cancellationToken);

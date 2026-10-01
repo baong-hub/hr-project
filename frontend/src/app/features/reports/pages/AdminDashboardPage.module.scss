@@ -3,10 +3,12 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
   width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   box-sizing: border-box;
-  padding: var(--spacing-4) var(--spacing-6);
+  padding: var(--spacing-xl);
 }
 
 .header {

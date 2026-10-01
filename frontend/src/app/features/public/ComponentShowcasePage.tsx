@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, User, Eye, Edit2, PauseCircle, Sparkles, Check } from 'lucide-react';
-import { JobCardBase } from '../../shared/components/job-card/JobCardBase';
-import { JobCard } from '../../shared/components/job-card/JobCard';
+import { JobCard, JobCardBase } from '../../shared/components/cards/JobCard';
 import { Modal } from '../../shared/components/modal/Modal';
 import { StatusBadge } from '../../shared/components/status-badge/StatusBadge';
 import { FormField } from '../../shared/components/form-field/FormField';

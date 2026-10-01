@@ -17,6 +17,9 @@ using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using Xunit;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace HR.UnitTests.Subscriptions;
 
 public class SubscriptionsTests : IDisposable
@@ -24,6 +27,7 @@ public class SubscriptionsTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<HandlePaymentWebhookCommandHandler> _logger = NullLogger<HandlePaymentWebhookCommandHandler>.Instance;
     private const string WebhookSecret = "test_webhook_secret_key_123456";
 
     public SubscriptionsTests()
@@ -65,7 +69,7 @@ public class SubscriptionsTests : IDisposable
     public async Task HandlePaymentWebhook_WithoutValidSignatureOrSecret_ShouldThrowUnauthorized()
     {
         // Arrange
-        var handler = new HandlePaymentWebhookCommandHandler(_context, _emailService, _configuration);
+        var handler = new HandlePaymentWebhookCommandHandler(_context, _emailService, _configuration, _logger);
         var webhook = new PaymentWebhookRequest
         {
             OrderId = "HR_SUB_10_123456789_PRO",
@@ -106,7 +110,7 @@ public class SubscriptionsTests : IDisposable
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(WebhookSecret));
         var validSignature = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawData))).ToLowerInvariant();
 
-        var handler = new HandlePaymentWebhookCommandHandler(_context, _emailService, _configuration);
+        var handler = new HandlePaymentWebhookCommandHandler(_context, _emailService, _configuration, _logger);
         var webhook = new PaymentWebhookRequest
         {
             OrderId = orderId,
@@ -134,7 +138,7 @@ public class SubscriptionsTests : IDisposable
         _context.Companies.Add(company);
         await _context.SaveChangesAsync();
 
-        var handler = new HandlePaymentWebhookCommandHandler(_context, _emailService, _configuration);
+        var handler = new HandlePaymentWebhookCommandHandler(_context, _emailService, _configuration, _logger);
         var webhook = new PaymentWebhookRequest
         {
             OrderId = "HR_SUB_20_123456789_BUSINESS",

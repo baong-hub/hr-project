@@ -1,58 +1,36 @@
--- Seed script for HR Portal
+-- Seed script for HR Portal (Companies, Roles & System Seed Data)
 
-CREATE TABLE IF NOT EXISTS roles (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  name VARCHAR(30) NOT NULL,
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  deleted_at DATETIME(6) NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_roles_name (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+USE `hr_portal`;
 
-CREATE TABLE IF NOT EXISTS permissions (
-  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  code VARCHAR(50) NOT NULL,
-  description VARCHAR(100) NULL,
-  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  deleted_at DATETIME(6) NULL,
-  PRIMARY KEY (id),
-  UNIQUE KEY uq_permissions_code (code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE IF NOT EXISTS role_permissions (
-  role_id INT UNSIGNED NOT NULL,
-  permission_id INT UNSIGNED NOT NULL,
-  PRIMARY KEY (role_id, permission_id),
-  CONSTRAINT fk_role_permissions_roles FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
-  CONSTRAINT fk_role_permissions_permissions FOREIGN KEY (permission_id) REFERENCES permissions(code) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Seed Roles
-INSERT INTO roles (id, name) VALUES 
-(1, 'CANDIDATE'),
-(2, 'EMPLOYER'),
-(3, 'ADMIN')
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
--- Seed Permissions
-INSERT INTO permissions (code, description) VALUES
-('job:search', 'Tìm kiếm tin tuyển dụng'),
-('job:apply', 'Ứng tuyển việc làm'),
-('cv:manage', 'Quản lý CV cá nhân'),
-('interview:view', 'Xem lịch hẹn phỏng vấn'),
-('company:view', 'Xem trang doanh nghiệp'),
-('job:save', 'Lưu tin tuyển dụng và theo dõi công ty'),
-('notification:view', 'Xem thông báo cá nhân'),
-('job:post', 'Đăng tuyển dụng mới'),
-('job:manage', 'Quản lý tin tuyển dụng và ứng tuyển'),
-('cv:search', 'Tìm kiếm hồ sơ ứng viên'),
-('interview:schedule', 'Lên lịch hẹn phỏng vấn'),
-('company:update', 'Cập nhật trang công ty'),
-('employer:verify', 'Kiểm duyệt tài khoản doanh nghiệp'),
-('job:moderate', 'Kiểm duyệt tin đăng tuyển'),
-('user:manage', 'Quản lý người dùng toàn hệ thống'),
-('report:view', 'Xem báo cáo thống kê tuyển dụng'),
-('report:view_all', 'Xem báo cáo toàn sàn')
-ON DUPLICATE KEY UPDATE description=VALUES(description);
+-- Seed Top Companies Dataset (TopCV / LinkedIn inspired)
+INSERT INTO `companies` (`code`, `name`, `description`, `industry`, `industry_code`, `size_range`, `address`, `address_list`, `website`, `is_verified`, `is_active`, `verification_status`, `logo_url`, `banner_url`, `benefits`, `created_at`, `updated_at`)
+VALUES 
+('FPT', 'Tập đoàn FPT (FPT Corporation)', 'FPT là tập đoàn công nghệ thông tin và viễn thông hàng đầu Việt Nam, tiên phong trong chuyển đổi số, trí tuệ nhân tạo (AI) và xuất khẩu phần mềm toàn cầu.', 'Công nghệ thông tin', 'IT', '10,000+ nhân viên', 'Tòa nhà FPT Tower, 10 Phạm Văn Bạch, Cầu Giấy, Hà Nội', 'Hà Nội, TP. HCM, Đà Nẵng, Quy Nhơn', 'https://fpt.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&auto=format&fit=crop&q=80', '- Lương thưởng tháng 13, thưởng dự án & thưởng hiệu quả kinh doanh.\n- Chăm sóc sức khỏe FPT Care cho bản thân và người thân.\n- Cơ hội làm việc Onsite tại Nhật Bản, Mỹ, Châu Âu, Singapore.', NOW(6), NOW(6)),
+('VIETTEL', 'Tập đoàn Công nghiệp - Viễn thông Quân đội (Viettel)', 'Viettel là tập đoàn viễn thông và công nghệ lớn nhất Việt Nam, top 50 thương hiệu viễn thông giá trị nhất thế giới với mạng lưới kinh doanh tại 11 quốc gia.', 'Viễn thông & Công nghệ', 'IT', '10,000+ nhân viên', 'Lô D26 Khu đô thị mới Cầu Giấy, Yên Hòa, Cầu Giấy, Hà Nội', 'Hà Nội, TP. HCM, Đà Nẵng', 'https://viettel.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&auto=format&fit=crop&q=80', '- Thu nhập thuộc top đầu ngành viễn thông & công nghệ.\n- Chế độ bảo hiểm đặc thù ngành, phụ cấp quốc phòng.\n- Môi trường kỷ luật, thách thức và thăng tiến rõ ràng.', NOW(6), NOW(6)),
+('VNG', 'VNG Corporation (Công ty Cổ phần VNG)', 'VNG là kỳ lân công nghệ đầu tiên của Việt Nam với sinh thái sản phẩm Zalo, VNGGames, ZaloPay và VNG Cloud phục vụ hàng chục triệu người dùng.', 'Công nghệ & Giải trí số', 'IT', '1000-5000 nhân viên', 'VNG Campus, Z06 Đường 13, KCX Tân Thuận, Quận 7, TP. HCM', 'TP. HCM, Hà Nội, Đà Nẵng', 'https://vng.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&auto=format&fit=crop&q=80', '- Khu văn phòng đẳng cấp Silicon Valley với phòng Gym, Bể bơi, Căng tin 5 sao miễn phí.\n- Gói bảo hiểm sức khỏe VIP toàn diện.\n- Văn hóa cởi mở, sáng tạo và nhiều cơ hội thăng tiến.', NOW(6), NOW(6)),
+('TCB', 'Ngân hàng TMCP Kỹ thương Việt Nam (Techcombank)', 'Techcombank là một trong những ngân hàng thương mại cổ phần hàng đầu Việt Nam, tiên phong trong chuyển đổi số ngân hàng (Digital Banking & Cloud).', 'Tài chính - Ngân hàng', 'FINANCE', '5000-10,000 nhân viên', 'Số 6 Quang Trung, Trần Hưng Đạo, Hoàn Kiếm, Hà Nội', 'Hà Nội, TP. HCM, Đà Nẵng', 'https://techcombank.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1541359927273-d76820fc43f9?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1556740758-90de374c12ad?w=1200&auto=format&fit=crop&q=80', '- Thưởng kinh doanh theo hiệu suất công việc xuất sắc (4-6 tháng lương/năm).\n- Ưu đãi lãi suất vay mua nhà/xe dành riêng cho cán bộ nhân viên.\n- Môi trường ngân hàng chuẩn quốc tế.', NOW(6), NOW(6)),
+('MOMO', 'MoMo (M-Service Corporation)', 'MoMo là siêu ứng dụng tài chính số 1 Việt Nam với hơn 31 triệu người dùng, dẫn đầu mảng thanh toán điện tử, tín dụng tiêu dùng và công nghệ tài chính.', 'Fintech / Công nghệ tài chính', 'FINANCE', '1000-5000 nhân viên', 'Lầu 6, Tòa nhà Phú Mỹ Hưng, 8 Hoàng Văn Thái, Quận 7, TP. HCM', 'TP. HCM, Hà Nội', 'https://momo.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?w=1200&auto=format&fit=crop&q=80', '- Thưởng ESOP cho nhân sự xuất sắc.\n- Máy tính Macbook Pro / Dell XPS mới 100% khi nhận việc.\n- Môi trường làm việc trẻ trung, linh hoạt, nhiều hoạt động Teambuilding.', NOW(6), NOW(6)),
+('SHOPEE', 'Shopee Vietnam (Công ty TNHH Shopee)', 'Shopee là sàn thương mại điện tử hàng đầu tại Đông Nam Á và Đài Loan, cung cấp trải nghiệm mua sắm trực tuyến mượt mà, tiện lợi cho hàng triệu khách hàng.', 'Thương mại điện tử', 'SALES', '1000-5000 nhân viên', 'Tầng 17, Tòa nhà Saigon Centre Tower 2, 67 Lê Lợi, Quận 1, TP. HCM', 'TP. HCM, Hà Nội', 'https://shopee.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1556742049-0a670fc8077a?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=1200&auto=format&fit=crop&q=80', '- Mức lương cạnh tranh hàng đầu ngành E-Commerce.\n- Phụ cấp ăn trưa, quà tặng các dịp lễ tết và sự kiện lớn.\n- Cơ hội thăng tiến nhanh theo năng lực thực tế.', NOW(6), NOW(6)),
+('VINGROUP', 'Tập đoàn Vingroup (Vinhomes / VinFast / Vinpearl)', 'Vingroup là tập đoàn kinh tế tư nhân đa ngành lớn nhất Việt Nam, hoạt động trong các lĩnh vực Công nghệ - Công nghiệp (VinFast), Thương mại Dịch vụ (Vinhomes, Vinpearl).', 'Đa ngành / Bất động sản / Ô tô', 'CONSTRUCTION', '10,000+ nhân viên', 'Số 7 Đường Bằng Lăng 1, KĐT Vinhomes Riverside, Long Biên, Hà Nội', 'Hà Nội, TP. HCM, Hải Phòng, Nha Trang, Phú Quốc', 'https://vingroup.net', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80', '- Mức lương thưởng siêu hấp dẫn, chính sách đãi ngộ hàng đầu.\n- Chiết khấu ưu đãi khi mua nhà Vinhomes, ô tô VinFast, nghỉ dưỡng Vinpearl.\n- Cơ hội kiến tạo những dự án mang tầm vóc quốc gia và quốc tế.', NOW(6), NOW(6)),
+('SUNGROUP', 'Tập đoàn Sun Group', 'Sun Group là tập đoàn hàng đầu Việt Nam trong lĩnh vực Du lịch nghỉ dưỡng, Vui chơi giải trí, Bất động sản cao cấp và Hạ tầng cơ sở với nhiều công trình kỷ luật thế giới.', 'Bất động sản & Du lịch nghỉ dưỡng', 'HOSPITALITY', '5000-10,000 nhân viên', 'Tòa nhà Sun City, 13 Phố Hai Bà Trưng, Hoàn Kiếm, Hà Nội', 'Hà Nội, Đà Nẵng, Phú Quốc, Quảng Ninh, Sa Pa', 'https://sungroup.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&auto=format&fit=crop&q=80', '- Vé cáp treo & vé vui chơi Sun World miễn phí cho cán bộ nhân viên và gia đình.\n- Gói đãi ngộ du lịch nghỉ dưỡng 5 sao hàng năm.\n- Môi trường làm việc chuyên nghiệp, nhân văn.', NOW(6), NOW(6)),
+('UNILEVER', 'Unilever Vietnam', 'Unilever là tập đoàn hàng tiêu dùng nhanh (FMCG) hàng đầu thế giới với các thương hiệu quen thuộc như OMO, Lifebuoy, Sunsilk, Dove, Knorr, Comfort.', 'Hàng tiêu dùng nhanh (FMCG)', 'MARKETING', '1000-5000 nhân viên', 'Tòa nhà Unilever, 156 Nguyễn Lương Bằng, Quận 7, TP. HCM', 'TP. HCM, Hà Nội', 'https://unilever.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&auto=format&fit=crop&q=80', '- Môi trường làm việc Agile, chuẩn toàn cầu được bình chọn Nơi làm việc tốt nhất Việt Nam.\n- Lương thưởng hấp dẫn, gói sản phẩm Unilever hàng tháng cho nhân viên.\n- Chương trình đào tạo lãnh đạo bài bản.', NOW(6), NOW(6)),
+('MASAN', 'Tập đoàn Masan (Masan Group)', 'Masan là tập đoàn bán lẻ & tiêu dùng hàng đầu Việt Nam sở hữu chuỗi WinMart/WinMart+, Chin-su, Nam Ngư, Wake-up 247, MeatDeli và Phúc Long.', 'Hàng tiêu dùng & Bán lẻ', 'SALES', '10,000+ nhân viên', 'Tầng 8, Tòa nhà Central Plaza, 17 Lê Duẩn, Quận 1, TP. HCM', 'TP. HCM, Hà Nội, Bình Dương', 'https://masangroup.com', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1542744887-51321027969f?w=1200&auto=format&fit=crop&q=80', '- Thưởng quý & thưởng cuối năm vượt trội.\n- Ưu đãi mua sắm trên toàn hệ thống chuỗi bán lẻ WinMart & Phúc Long.\n- Lộ trình thăng tiến rõ ràng cho nhân tài.', NOW(6), NOW(6)),
+('GRAB', 'Grab Vietnam', 'Grab là siêu ứng dụng hàng đầu Đông Nam Á cung cấp dịch vụ đặt xe, giao đồ ăn GrabFood, giao hàng GrabExpress và thanh toán điện tử.', 'Vận tải & Giao nhận công nghệ', 'LOGISTICS', '1000-5000 nhân viên', 'Tầng 15, Tòa nhà Mapletree Business Centre, 1060 Nguyễn Văn Linh, Quận 7, TP. HCM', 'TP. HCM, Hà Nội', 'https://grab.com/vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1494515843206-f3117d3f51b7?w=1200&auto=format&fit=crop&q=80', '- Tặng credit sử dụng GrabCar / GrabFood hàng tháng cho nhân viên.\n- Chế độ làm việc Hybrid flexible (làm việc từ xa linh hoạt).\n- Bảo hiểm sức khỏe quốc tế cao cấp.', NOW(6), NOW(6)),
+('VCB', 'Ngân hàng TMCP Ngoại thương Việt Nam (Vietcombank)', 'Vietcombank là ngân hàng thương mại hàng đầu Việt Nam với quy mô tài sản lớn nhất, đi đầu trong mảng thanh toán quốc tế và dịch vụ tài chính doanh nghiệp.', 'Tài chính - Ngân hàng', 'FINANCE', '10,000+ nhân viên', '198 Trần Quang Khải, Hoàn Kiếm, Hà Nội', 'Hà Nội, TP. HCM, Đà Nẵng, Hải Phòng, Cần Thơ', 'https://vietcombank.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=1200&auto=format&fit=crop&q=80', '- Thương hiệu ngân hàng uy tín số 1 Việt Nam.\n- Chế độ đãi ngộ, lương thưởng và phúc lợi ổn định lâu dài.\n- Môi trường làm việc chuyên nghiệp, bài bản.', NOW(6), NOW(6)),
+('SAMSUNG', 'Samsung Electronics Vietnam', 'Samsung Electronics là tập đoàn điện tử công nghệ số 1 thế giới với các tổ hợp sản xuất thiết bị di động, bán dẫn và trung tâm R&D Samsung lớn nhất Đông Nam Á tại Hà Nội.', 'Sản xuất & Điện tử cao cấp', 'MANUFACTURING', '10,000+ nhân viên', 'KCN Yên Phong, Xã Long Châu, Yên Phong, Bắc Ninh', 'Hà Nội, Bắc Ninh, Thái Nguyên, TP. HCM', 'https://samsung.com/vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&auto=format&fit=crop&q=80', '- Xe đưa đón cán bộ công nhân viên tận nơi hàng ngày.\n- Ký túc xá hiện đại, căng tin phục vụ các món ăn đa dạng.\n- Thưởng sản xuất & thưởng thành tích xuất sắc.', NOW(6), NOW(6)),
+('DHG', 'Công ty Cổ phần Dược Hậu Giang (DHG Pharma)', 'DHG Pharma là doanh nghiệp dược phẩm hàng đầu Việt Nam đạt tiêu chuẩn JAPAN-GMP, chuyên sản xuất và kinh doanh các sản phẩm thuốc chất lượng cao.', 'Y tế - Dược phẩm', 'HEALTHCARE', '1000-5000 nhân viên', '288 Nguyễn Văn Cừ, Phường An Hòa, Ninh Kiều, Cần Thơ', 'Cần Thơ, TP. HCM, Hà Nội', 'https://dhgpharma.com.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80', '- Mức lương cạnh tranh trong ngành dược phẩm.\n- Môi trường làm việc ổn định, tôn trọng sự cống hiến.\n- Đào tạo chuyên môn dược tiên tiến theo tiêu chuẩn quốc tế.', NOW(6), NOW(6)),
+('FE', 'Tổ chức Giáo dục FPT (FPT Education)', 'FPT Education là hệ thống giáo dục tư nhân hàng đầu tại Việt Nam bao gồm Đại học FPT, Phổ thông FPT, FPT Polytechnic, đào tạo hàng chục ngàn sinh viên mỗi năm.', 'Giáo dục - Đào tạo', 'EDUCATION', '1000-5000 nhân viên', 'Khu Giáo dục và Đào tạo – Khu Công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội', 'Hà Nội, TP. HCM, Đà Nẵng, Cần Thơ, Quy Nhơn', 'https://fpt.edu.vn', 1, 1, 'VERIFIED', 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=300&auto=format&fit=crop&q=80', 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&auto=format&fit=crop&q=80', '- Ưu đãi học phí tới 50%-100% cho con em cán bộ giảng viên.\n- Môi trường giáo dục giàu tính sáng tạo và học thuật.\n- Cơ hội tham gia nghiên cứu khoa học và hợp tác quốc tế.', NOW(6), NOW(6))
+ON DUPLICATE KEY UPDATE 
+`name` = VALUES(`name`),
+`description` = VALUES(`description`),
+`industry` = VALUES(`industry`),
+`industry_code` = VALUES(`industry_code`),
+`size_range` = VALUES(`size_range`),
+`address` = VALUES(`address`),
+`address_list` = VALUES(`address_list`),
+`website` = VALUES(`website`),
+`logo_url` = VALUES(`logo_url`),
+`banner_url` = VALUES(`banner_url`),
+`benefits` = VALUES(`benefits`),
+`is_verified` = 1,
+`verification_status` = 'VERIFIED';

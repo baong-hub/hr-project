@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Xunit;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace HR.UnitTests.Authentication;
 
 public class GoogleLoginTests : IDisposable
@@ -17,6 +20,7 @@ public class GoogleLoginTests : IDisposable
     private readonly ApplicationDbContext _context;
     private readonly IJwtService _jwtService;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ILogger<GoogleLoginCommandHandler> _logger = NullLogger<GoogleLoginCommandHandler>.Instance;
 
     public GoogleLoginTests()
     {
@@ -39,7 +43,7 @@ public class GoogleLoginTests : IDisposable
     public async Task GoogleLogin_WithoutGoogleToken_ShouldThrowBadRequestException()
     {
         // Arrange
-        var handler = new GoogleLoginCommandHandler(_context, _jwtService, _passwordHasher);
+        var handler = new GoogleLoginCommandHandler(_context, _jwtService, _passwordHasher, _logger);
         var command = new GoogleLoginCommand(
             Email: "attacker@fake.com",
             GoogleToken: null,
@@ -59,7 +63,7 @@ public class GoogleLoginTests : IDisposable
     public async Task GoogleLogin_WithInvalidGoogleToken_ShouldThrowUnauthorizedException()
     {
         // Arrange
-        var handler = new GoogleLoginCommandHandler(_context, _jwtService, _passwordHasher);
+        var handler = new GoogleLoginCommandHandler(_context, _jwtService, _passwordHasher, _logger);
         var command = new GoogleLoginCommand(
             Email: "victim@example.com",
             GoogleToken: "invalid_unverified_bogus_token_12345",

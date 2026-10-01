@@ -64,12 +64,14 @@ public class GetCompaniesHandler : IRequestHandler<GetCompaniesQuery, PagedResul
         foreach (var company in items)
         {
             var followersCount = await _context.CandidateFollows
+                .AsNoTracking()
                 .CountAsync(cf => cf.CompanyId == company.Id, cancellationToken);
 
             bool? isFollowing = null;
             if (userId != 0)
             {
                 isFollowing = await _context.CandidateFollows
+                    .AsNoTracking()
                     .AnyAsync(cf => cf.CandidateId == userId && cf.CompanyId == company.Id, cancellationToken);
             }
 

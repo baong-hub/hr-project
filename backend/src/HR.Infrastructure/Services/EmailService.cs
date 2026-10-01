@@ -80,35 +80,50 @@ public class EmailService : IEmailService
             enableSsl = _configuration.GetValue<bool>("Smtp:EnableSsl", true);
         }
 
-        // If SMTP credentials configured, attempt real send
+        // If SMTP credentials configured, attempt real send with automatic retry policy (5 attempts)
         if (!string.IsNullOrWhiteSpace(smtpHost) && int.TryParse(smtpPortStr, out var smtpPort) && !string.IsNullOrWhiteSpace(smtpUser) && !string.IsNullOrWhiteSpace(smtpPass))
         {
-            try
+            const int maxRetryAttempts = 5;
+            for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
             {
-                using var client = new SmtpClient(smtpHost, smtpPort)
+                try
                 {
-                    EnableSsl = enableSsl,
-                    DeliveryMethod = SmtpDeliveryMethod.Network,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(smtpUser.Trim(), smtpPass.Trim())
-                };
+                    using var client = new SmtpClient(smtpHost, smtpPort)
+                    {
+                        EnableSsl = enableSsl,
+                        DeliveryMethod = SmtpDeliveryMethod.Network,
+                        UseDefaultCredentials = false,
+                        Credentials = new NetworkCredential(smtpUser.Trim(), smtpPass.Trim()),
+                        Timeout = 10000 // 10 seconds timeout per attempt
+                    };
 
-                var mailMessage = new MailMessage
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(fromEmail.Trim(), fromName.Trim()),
+                        Subject = subject,
+                        Body = htmlBody,
+                        IsBodyHtml = true
+                    };
+                    mailMessage.To.Add(toEmail.Trim());
+
+                    await client.SendMailAsync(mailMessage, cancellationToken);
+                    _logger.LogInformation("[EMAIL] Successfully sent email to {ToEmail} with subject: '{Subject}' via SMTP {Host}:{Port} on attempt {Attempt}", toEmail, subject, smtpHost, smtpPort, attempt);
+                    return true;
+                }
+                catch (Exception ex)
                 {
-                    From = new MailAddress(fromEmail.Trim(), fromName.Trim()),
-                    Subject = subject,
-                    Body = htmlBody,
-                    IsBodyHtml = true
-                };
-                mailMessage.To.Add(toEmail.Trim());
+                    _logger.LogWarning(ex, "[EMAIL] Attempt {Attempt}/{MaxAttempts} failed sending email to {ToEmail}. Error: {Error}", attempt, maxRetryAttempts, toEmail, ex.Message);
 
-                await client.SendMailAsync(mailMessage, cancellationToken);
-                _logger.LogInformation("[EMAIL] Successfully sent email to {ToEmail} with subject: '{Subject}' via SMTP {Host}:{Port}", toEmail, subject, smtpHost, smtpPort);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[EMAIL] Failed to send email to {ToEmail} via SMTP ({Host}:{Port}, User: {User}). Error: {Error}. Fallback to mock log.", toEmail, smtpHost, smtpPort, smtpUser, ex.Message);
+                    if (attempt == maxRetryAttempts)
+                    {
+                        _logger.LogError(ex, "[EMAIL] All {MaxAttempts} retry attempts exhausted for sending email to {ToEmail}. Fallback to mock log.", maxRetryAttempts, toEmail);
+                    }
+                    else
+                    {
+                        var delayMs = (int)Math.Pow(2, attempt) * 500; // Exponential backoff: 1s, 2s, 4s, 8s
+                        await Task.Delay(delayMs, cancellationToken);
+                    }
+                }
             }
         }
 

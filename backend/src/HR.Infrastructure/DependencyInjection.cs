@@ -63,6 +63,8 @@ public static class DependencyInjection
         services.AddScoped<IAiService, HR.Infrastructure.Services.GeminiAiService>();
         services.AddHttpClient();
         services.AddMemoryCache();
+        services.AddDistributedMemoryCache();
+        services.AddSingleton<ICacheService, HR.Infrastructure.Services.RedisCacheService>();
 
         // Identity & JWT
         services.AddTransient<IJwtService, HR.Infrastructure.Services.JwtService>();

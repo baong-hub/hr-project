@@ -11,6 +11,8 @@ using HR.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
+using Microsoft.Extensions.Logging;
+
 namespace HR.Application.Auth.Commands.GoogleLogin;
 
 public record GoogleLoginCommand(
@@ -22,10 +24,12 @@ public record GoogleLoginCommand(
 public class GoogleLoginCommandHandler(
     IApplicationDbContext context,
     IJwtService jwtService,
-    IPasswordHasher passwordHasher) : IRequestHandler<GoogleLoginCommand, LoginResultDto>
+    IPasswordHasher passwordHasher,
+    ILogger<GoogleLoginCommandHandler> logger) : IRequestHandler<GoogleLoginCommand, LoginResultDto>
 {
     public async Task<LoginResultDto> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Attempting Google OAuth login verification");
         if (string.IsNullOrWhiteSpace(request.GoogleToken))
         {
             throw new BadRequestException("GOOGLE_TOKEN_REQUIRED", "Google Token là bắt buộc để đăng nhập bằng Google.");
@@ -76,13 +80,16 @@ public class GoogleLoginCommandHandler(
             {
                 verifiedAvatarUrl = picProp.GetString();
             }
+            logger.LogInformation("Google token verified successfully for email {Email}", email);
         }
-        catch (UnauthorizedException)
+        catch (UnauthorizedException ex)
         {
+            logger.LogWarning("Google login unauthorized: {Reason}", ex.Message);
             throw;
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Google login failed unexpectedly");
             throw new UnauthorizedException("GOOGLE_AUTH_FAILED", $"Lỗi xác thực với Google: {ex.Message}");
         }
 

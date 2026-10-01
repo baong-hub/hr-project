@@ -21,6 +21,7 @@ public class CompaniesController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = new[] { "*" })]
     public async Task<IActionResult> GetAll([FromQuery] GetCompaniesQuery query)
     {
         var result = await mediator.Send(query);
@@ -29,6 +30,7 @@ public class CompaniesController(IMediator mediator) : ControllerBase
 
     [HttpGet("{id:int}")]
     [AllowAnonymous]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = new[] { "id" })]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await mediator.Send(new GetCompanyByIdQuery(id));

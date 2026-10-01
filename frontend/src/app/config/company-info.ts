@@ -10,10 +10,11 @@ export interface CompanyInfo {
 
 export const COMPANY_INFO: CompanyInfo = {
   name: 'HR Portal',
-  legalName: '[CẦN ĐIỀN: Tên Công Ty / Legal Entity Name]',
-  address: '[CẦN ĐIỀN: Địa chỉ trụ sở chính]',
-  phone: '[CẦN ĐIỀN: Hotline / Điện thoại liên hệ]',
-  email: '[CẦN ĐIỀN: Email hỗ trợ]',
-  taxCode: '[CẦN ĐIỀN: Mã số thuế]',
+  legalName: 'Công ty TNHH Công nghệ & Nhân sự HR Portal',
+  address: 'Tầng 8, Tòa nhà Innovation Center, 123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+  phone: '1900 6868 - (028) 7300 8888',
+  email: 'support@hrportal.vn',
+  taxCode: '0316889999',
   operatingHours: 'Thứ Hai - Thứ Sáu (8:00 - 17:30)',
 };
+

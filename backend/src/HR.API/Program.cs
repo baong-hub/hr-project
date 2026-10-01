@@ -56,6 +56,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddResponseCaching();
 builder.Services.AddAuthorization();
 
 // Add Layers
@@ -153,6 +154,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseCors("CorsPolicy");
+app.UseResponseCaching();
 
 app.UseRateLimiter();
 

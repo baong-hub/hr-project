@@ -16,22 +16,20 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ICacheService _cacheService;
 
-    public GetJobsQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public GetJobsQueryHandler(IApplicationDbContext context, ICurrentUserService currentUserService, ICacheService cacheService)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _cacheService = cacheService;
     }
 
     public async Task<PagedResult<JobDto>> Handle(GetJobsQuery request, CancellationToken cancellationToken)
     {
-        var query = _context.Jobs
-            .Include(j => j.Company)
-            .Include(j => j.Employer)
-            .AsNoTracking();
-
         var userId = _currentUserService.UserId;
         var user = await _context.Users
+            .AsNoTracking()
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
@@ -39,6 +37,23 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
         var roles = user?.UserRoles.Select(ur => ur.Role.Name).ToList() ?? [];
         var isSuperAdmin = roles.Contains("Super Admin") || user?.Username == "admin";
         var isEmployer = roles.Contains("Nhà tuyển dụng");
+
+        // Public guest / candidate caching
+        string? cacheKey = null;
+        if (!isSuperAdmin && !isEmployer)
+        {
+            cacheKey = $"jobs:public:{request.Search ?? request.Q}:{request.Provinces ?? request.Province ?? request.City}:{request.Categories ?? request.Category ?? request.Industry}:{request.WorkMode ?? request.Mode}:{request.Page}:{request.PageSize}:{request.Sort}";
+            var cachedResult = await _cacheService.GetAsync<PagedResult<JobDto>>(cacheKey, cancellationToken);
+            if (cachedResult != null)
+            {
+                return cachedResult;
+            }
+        }
+
+        var query = _context.Jobs
+            .Include(j => j.Company)
+            .Include(j => j.Employer)
+            .AsNoTracking();
 
         if (isSuperAdmin)
         {
@@ -50,6 +65,7 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
         else if (isEmployer)
         {
             var employer = await _context.Employers
+                .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
             if (employer != null)
             {
@@ -183,10 +199,17 @@ public class GetJobsQueryHandler : IRequestHandler<GetJobsQuery, PagedResult<Job
             j.CategoryCode
         )).ToList();
 
-        return new PagedResult<JobDto>
+        var result = new PagedResult<JobDto>
         {
             Items = items,
             Meta = new PagingMeta { Page = page, PageSize = pageSize, Total = total }
         };
+
+        if (!string.IsNullOrEmpty(cacheKey))
+        {
+            await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(2), cancellationToken);
+        }
+
+        return result;
     }
 }

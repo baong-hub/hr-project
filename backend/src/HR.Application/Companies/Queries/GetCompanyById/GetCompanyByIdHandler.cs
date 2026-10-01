@@ -22,6 +22,7 @@ public class GetCompanyByIdHandler : IRequestHandler<GetCompanyByIdQuery, Compan
     public async Task<CompanyDto> Handle(GetCompanyByIdQuery request, CancellationToken cancellationToken)
     {
         var company = await _context.Companies
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
 
         if (company == null)
@@ -30,6 +31,7 @@ public class GetCompanyByIdHandler : IRequestHandler<GetCompanyByIdQuery, Compan
         }
 
         var followersCount = await _context.CandidateFollows
+            .AsNoTracking()
             .CountAsync(cf => cf.CompanyId == company.Id, cancellationToken);
 
         bool? isFollowing = null;
@@ -37,6 +39,7 @@ public class GetCompanyByIdHandler : IRequestHandler<GetCompanyByIdQuery, Compan
         if (userId != 0)
         {
             isFollowing = await _context.CandidateFollows
+                .AsNoTracking()
                 .AnyAsync(cf => cf.CandidateId == userId && cf.CompanyId == company.Id, cancellationToken);
         }
 

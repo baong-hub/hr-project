@@ -122,17 +122,43 @@ public static class JobFilteringHelper
         DateTime now
     )
     {
-        // 1. Keyword search
+        // 1. Enhanced Full-Text Keyword search
         var kw = (search ?? q)?.Trim();
         if (!string.IsNullOrEmpty(kw))
         {
-            var lower = kw.ToLower();
-            query = query.Where(j =>
-                j.Title.ToLower().Contains(lower) ||
-                j.Description.ToLower().Contains(lower) ||
-                j.Requirements.ToLower().Contains(lower) ||
-                (j.Company != null && j.Company.Name.ToLower().Contains(lower))
-            );
+            var lowerKw = kw.ToLower();
+            var tokens = lowerKw.Split(new[] { ' ', ',', '+', '-' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Where(t => t.Length > 1)
+                                .Distinct()
+                                .ToList();
+
+            if (tokens.Count <= 1)
+            {
+                query = query.Where(j =>
+                    j.Title.ToLower().Contains(lowerKw) ||
+                    (j.Category != null && j.Category.ToLower().Contains(lowerKw)) ||
+                    (j.City != null && j.City.ToLower().Contains(lowerKw)) ||
+                    j.Description.ToLower().Contains(lowerKw) ||
+                    j.Requirements.ToLower().Contains(lowerKw) ||
+                    (j.Company != null && j.Company.Name.ToLower().Contains(lowerKw))
+                );
+            }
+            else
+            {
+                // Multi-token match: Job must match exact full keyword OR contain all key search tokens
+                query = query.Where(j =>
+                    (j.Title.ToLower().Contains(lowerKw) ||
+                     (j.Company != null && j.Company.Name.ToLower().Contains(lowerKw))) ||
+                    tokens.All(token =>
+                        j.Title.ToLower().Contains(token) ||
+                        (j.Category != null && j.Category.ToLower().Contains(token)) ||
+                        (j.City != null && j.City.ToLower().Contains(token)) ||
+                        j.Description.ToLower().Contains(token) ||
+                        j.Requirements.ToLower().Contains(token) ||
+                        (j.Company != null && j.Company.Name.ToLower().Contains(token))
+                    )
+                );
+            }
         }
 
         // 2. Province filter
