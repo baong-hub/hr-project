@@ -1,12 +1,12 @@
 @use '../../../../styles/tokens' as *;
 
 .jobFormPage {
-  max-width: 800px;
-  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
-  padding: var(--spacing-2) 0 var(--spacing-8) 0;
+  padding: var(--spacing-4) var(--spacing-6) var(--spacing-8);
 }
 
 .headerRow {

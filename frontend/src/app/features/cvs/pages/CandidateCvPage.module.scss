@@ -1,9 +1,9 @@
 @use '../../../../styles/tokens' as *;
 
 .pageContainer {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: var(--spacing-6);
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--spacing-4) var(--spacing-6);
 }
 
 .header {

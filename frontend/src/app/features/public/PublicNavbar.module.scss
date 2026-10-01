@@ -15,9 +15,9 @@
 }
 
 .topBarContainer {
-  max-width: var(--container-public, 1200px);
-  margin: 0 auto;
-  padding: 0 var(--space-4, 16px);
+  width: 100%;
+  padding: 0 var(--space-6, 24px);
+  box-sizing: border-box;
   height: 100%;
   display: flex;
   align-items: center;
@@ -148,9 +148,9 @@
 }
 
 .mainContainer {
-  max-width: var(--container-public, 1200px);
-  margin: 0 auto;
-  padding: 0 var(--space-4, 16px);
+  width: 100%;
+  padding: 0 var(--space-6, 24px);
+  box-sizing: border-box;
   height: 100%;
   display: flex;
   align-items: center;

@@ -47,6 +47,7 @@
   --color-border:              #E5E7EB;
   --color-border-default:      #E5E7EB;
   --color-border-strong:       #D1D5DB;
+  --color-border-hover:        #CBD5E1;
   --color-border-focus:        #c9a961;   /* Gold border on focus */
 
   /* === Semantic Status === */
@@ -60,6 +61,12 @@
   --color-danger-bg:           #FEE2E2;
   --color-neutral:             #64748B;
   --color-neutral-bg:          #F1F5F9;
+
+  /* === Subtle Status Color Aliases === */
+  --color-primary-subtle:      #EFF6FF;
+  --color-success-subtle:      #ECFDF5;
+  --color-warning-subtle:      #FEF3C7;
+  --color-danger-subtle:       #FEE2E2;
 
   --color-overlay:             rgba(15, 23, 42, 0.5);
 
@@ -75,6 +82,8 @@
   --font-size-lg:   1rem;       /* 16px */
   --font-size-xl:   1.125rem;   /* 18px */
   --font-size-2xl:  1.375rem;   /* 22px */
+  --font-size-3xl:  1.75rem;    /* 28px */
+  --font-size-4xl:  2.25rem;    /* 36px */
 
   /* Line heights */
   --line-height-tight:  1.25;
@@ -98,6 +107,7 @@
   --radius-lg:     8px;
   --radius-xl:     12px;
   --radius-pill:   9999px;
+  --radius-full:   9999px;
   --radius-circle: 50%;
 
   /* === Shadow === */
@@ -118,6 +128,19 @@
   --space-12:      var(--spacing-3xl); /* 48px */
   --space-16:      4rem;               /* 64px */
 
+  /* === Spacing Numeric Aliases === */
+  --spacing-1:     var(--space-1);
+  --spacing-2:     var(--space-2);
+  --spacing-3:     var(--space-3);
+  --spacing-4:     var(--space-4);
+  --spacing-5:     var(--space-5);
+  --spacing-6:     var(--space-6);
+  --spacing-7:     1.75rem;            /* 28px */
+  --spacing-8:     var(--space-8);
+  --spacing-10:    var(--space-10);
+  --spacing-12:    var(--space-12);
+  --spacing-16:    var(--space-16);
+
   /* === Job Board Public Tokens === */
   --color-page-public:         #F4F5F7;   /* Clean neutral cold background for public job board */
   --color-salary:              #8C6B28;   /* Deep gold for salary figures (WCAG AA) */
@@ -131,7 +154,7 @@
   --color-ink:                 #1E2130;
   --color-hairline:            #E5E7EB;
   --font-family-display:       "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --container-public:          1200px;
+  --container-public:          1440px;
   --container-prose:           720px;
 
   /* === Transitions === */
@@ -180,6 +203,7 @@ body.dark-mode {
   --color-border:              #334155;
   --color-border-default:      #334155;
   --color-border-strong:       #475569;
+  --color-border-hover:        #475569;
   --color-border-light:        #334155;
   --color-border-focus:        #c9a961;
 
@@ -197,6 +221,12 @@ body.dark-mode {
   --color-danger-bg:           rgba(220, 38, 38, 0.15);
   --color-neutral:             #94A3B8;
   --color-neutral-bg:          rgba(148, 163, 184, 0.15);
+
+  /* === Subtle Status Color Aliases in Dark Mode === */
+  --color-primary-subtle:      rgba(37, 99, 235, 0.15);
+  --color-success-subtle:      rgba(5, 150, 105, 0.15);
+  --color-warning-subtle:      rgba(217, 119, 6, 0.15);
+  --color-danger-subtle:       rgba(220, 38, 38, 0.15);
 
   --color-overlay:             rgba(0, 0, 0, 0.7);
 

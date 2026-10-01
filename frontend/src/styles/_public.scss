@@ -17,9 +17,8 @@
 
 .container-public {
   width: 100%;
-  max-width: var(--container-public, 1200px);
-  margin: 0 auto;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-6, 24px);
+  box-sizing: border-box;
 }
 
 .container-prose {
